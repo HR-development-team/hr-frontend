@@ -2,13 +2,14 @@
 
 'use client';
 
-import React, { useState, useRef } from 'react'; // <-- Impor useRef
+import React, { useState, useRef } from 'react';
 import { PrimeReactProvider } from 'primereact/api';
 import { classNames } from 'primereact/utils';
 import Link from 'next/link';
-import { Avatar } from 'primereact/avatar'; 
-import { Menu } from 'primereact/menu'; // Ini adalah KOMPONEN
-import type { Menu as MenuType } from 'primereact/menu'; // <-- 1. Impor TIPENYA dengan alias
+import { Avatar } from 'primereact/avatar';
+import { Menu } from 'primereact/menu';
+import type { Menu as MenuType } from 'primereact/menu';
+import Image from 'next/image'; // <-- 1. TAMBAHKAN IMPORT INI
 
 // Impor file menu Anda
 import AppMenu from './AppMenu'; 
@@ -26,15 +27,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const [sidebarActive, setSidebarActive] = useState(true);
-  
-  // PERBAIKAN 1: Gunakan alias 'MenuType' di sini
   const menuRef = useRef<MenuType>(null); 
 
   const wrapperClass = classNames('layout-wrapper', {
       'layout-static-inactive': !sidebarActive
   });
 
-  // Definisikan model untuk menu (hanya Logout)
   const userMenuModel = [
     {
       label: 'LogOut',
@@ -69,7 +67,18 @@ export default function RootLayout({
                 </button>
 
                 <Link href="/" className="layout-topbar-logo">
-                  <Avatar label="HR" size="large" className="p-avatar-info mr-2" />
+                  
+                  {/* --- 2. GANTI BAGIAN INI --- */}
+                  <Image
+                    src="/logo.png"
+                    alt="Logo Perusahaan"
+                    width={40}  // Atur lebar logo
+                    height={40} // Atur tinggi logo
+                    className="mr-2"
+                    style={{ borderRadius: '6px' }} // Opsional: agar sudut rapi
+                  />
+                  {/* --- BATAS AKHIR PERUBAHAN --- */}
+
                   <div className="flex flex-column">
                     <span className="logo-text-main">SI-HR</span>
                     <span className="logo-text-sub">Karyawan</span>
@@ -80,14 +89,11 @@ export default function RootLayout({
               {/* Grup Kanan: Menu User (DIPERBARUI) */}
               <div className="layout-topbar-right">
                 
-                {/* Komponen Menu (popup) */}
                 <Menu model={userMenuModel} popup ref={menuRef} /> 
                 
-                {/* Tombol untuk toggle menu */}
                 <button 
                   type="button" 
                   className="p-link layout-topbar-button layout-user-button"
-                  // PERBAIKAN 2: Gunakan '?' (Optional Chaining)
                   onClick={(e) => menuRef.current?.toggle(e)} 
                 >
                   <Avatar 
@@ -97,7 +103,6 @@ export default function RootLayout({
                   />
                   <div className="flex flex-column mx-2 text-left">
                     <span className="user-name">Lugas Hermanto</span>
-                    {/* Ganti 'user-id' menjadi 'email' jika Anda mau */}
                     <span className="email">lugas655@gmail.com</span> 
                   </div>
                   <i className="pi pi-angle-down" />
