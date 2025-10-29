@@ -1,0 +1,226 @@
+/* /app/globals.css */
+
+body {
+    overflow-y: hidden; 
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+/* Ukuran dasar */
+:root {
+    --topbar-height: 5rem;
+    --sidebar-width: 18rem;
+    --content-padding: 2rem;
+    
+    /* --- PERUBAHAN UTAMA DI SINI --- */
+    --topbar-bg: #ffffff;             /* Topbar jadi putih */
+    --topbar-color: #040a13;          /* Teks di topbar jadi gelap */
+    --topbar-border: #dee2e6;         /* Border pemisah */
+    
+    --text-muted: #040a13;            /* Warna teks abu-abu (untuk NIP/subteks) */
+    --hover-bg: #f1f5f9;              /* Latar belakang saat hover */
+    --active-bg: #f1f5f9;             /* Latar belakang menu aktif (abu-abu) */
+    --active-color: #040a13;          /* Warna teks menu aktif (gelap) */
+}
+
+/* Wrapper Utama */
+.layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: margin-left 0.3s;
+}
+
+/* 1. Topbar (Diperbarui) */
+.layout-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--topbar-height);
+    background-color: var(--topbar-bg); /* <-- Warna dari var */
+    border-bottom: 1px solid var(--topbar-bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* <-- Penting: Kiri dan Kanan */
+    padding: 0 1rem; /* <-- Padding disesuaikan */
+    z-index: 1000;
+}
+
+/* Grup Kiri (Hamburger + Logo) */
+.layout-topbar-left {
+    display: flex;
+    align-items: center;
+}
+
+/* Tombol Hamburger & Tombol User */
+.layout-menu-button,
+.layout-user-button {
+    font-size: 1.5rem;
+    color: var(--topbar-color); /* <-- Warna ikon */
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 0.75rem;
+    transition: background-color 0.2s;
+}
+.layout-menu-button:hover,
+.layout-user-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Logo di Topbar */
+.layout-topbar-logo {
+    display: flex;
+    align-items: center;
+    color: var(--topbar-color);
+    text-decoration: none;
+    margin-left: 1rem;
+}
+.logo-text-main {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+.logo-text-sub {
+    font-size: 0.8rem;
+    color: #383a41; /* <-- Warna 'Mahasiswa' */
+}
+
+/* Grup Kanan (Menu User) */
+.layout-topbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.layout-user-button {
+    display: flex;
+    align-items: center;
+}
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--topbar-color);
+}
+.email {
+    font-size: 0.75rem;
+    color: #383a41;
+}
+
+/* 2. Sidebar (Tidak Berubah) */
+.layout-sidebar {
+    position: fixed;
+    top: var(--topbar-height); 
+    left: 0;
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--topbar-height));
+    background-color: #ffffff;
+    border-right: 1px solid #dee2e6;
+    overflow-y: auto;
+    transition: transform 0.3s;
+    z-index: 999;
+}
+
+/* 3. Konten Utama (Tidak Berubah) */
+.layout-main-container {
+    padding-top: var(--topbar-height);
+    padding-left: var(--sidebar-width);
+    transition: padding-left 0.3s;
+    flex: 1;
+}
+
+.layout-main {
+    padding: var(--content-padding);
+    background-color: #f8f9fa;
+    min-height: calc(100vh - var(--topbar-height));
+    overflow-y: auto;
+    height: calc(100vh - var(--topbar-height)); 
+}
+
+/* Logika Buka/Tutup Sidebar (Tidak Berubah) */
+.layout-wrapper.layout-static-inactive .layout-sidebar {
+    transform: translateX(-100%);
+}
+
+.layout-wrapper.layout-static-inactive .layout-main-container {
+    padding-left: 0;
+}
+
+/* 4. Gaya Menu (Termasuk Submenu) */
+.layout-menu {
+    list-style-type: none;
+    padding: 1rem;
+    margin: 0;
+}
+.layout-menu li {
+    margin-bottom: 0.5rem;
+}
+.layout-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    color: #4b5563;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+.layout-menu li a:hover {
+    background-color: #f1f5f9;
+}
+.layout-menu li.active-menuitem a {
+    background-color: #e0e7ff;
+    color: #4338ca;
+}
+.layout-menuitem-icon {
+    margin-right: 0.75rem;
+    font-size: 1.25rem;
+}
+
+/* Style Submenu */
+.layout-submenu-toggler {
+    font-size: 0.875rem;
+    margin-left: auto;
+    transition: transform 0.2s;
+}
+.active-menuitem > a > .layout-submenu-toggler {
+    transform: rotate(-180deg);
+}
+.layout-submenu {
+    list-style-type: none;
+    padding: 0 0 0 1.5rem;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+}
+.layout-submenu.layout-submenu-active {
+    max-height: 1000px;
+    transition: max-height 0.5s ease-in-out;
+}
+.layout-submenu li a {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    padding-left: 0.75rem;
+}
+.layout-submenu li.active-menuitem a {
+    background-color: transparent;
+    color: #4338ca;
+    font-weight: 700;
+}
+
+/* Kustomisasi Avatar PrimeReact (Opsional) */
+.p-avatar.p-avatar-info {
+    background-color: #007bff;
+    color: #ffffff;
+}
+/* ... (SEMUA KODE CSS LAMA ANDA BIARKAN DI ATAS) ... */
+
+/* --- TAMBAHKAN KODE DI BAWAH INI --- */
+
+/* Kustomisasi Menu Dropdown User (membuat 'LogOut' jadi merah) */
+.p-menu .p-menuitem.logout-menu-item > .p-menuitem-link .p-menuitem-text,
+.p-menu .p-menuitem.logout-menu-item > .p-menuitem-link .p-menuitem-icon {
+    color: #EF4444; /* Warna merah (Tailwind 'red-500') */
+    font-weight: 600;
+}
