@@ -7,49 +7,49 @@ import { Password } from "primereact/password";
 export default function Home() {
   return (
     <main className="relative min-h-screen">
-      <div className="absolute h-full w-full bg-login-pattern" />
+      <div className="absolute h-full w-full bg-login-pattern bg-cover bg-center bg-no-repeat" />
 
       <div className="absolute inset-0 h-full w-full bg-black/10" />
 
-      <div className="relative z-5 w-full min-h-screen font-bold mx-auto flex align-items-center justify-content-center">
-        <div className="hidden p-6 md:w-6 md:min-h-screen md:flex md:align-items-center md:justify-content-center">
-          <div className="flex flex-column gap-4 w-9">
-            <div className="surface-50 w-7rem h-7rem flex align-items-center justify-content-center border-round-xl shadow-6 mx-auto">
-              <img src="/img/logo.png" alt="logo" className="w-4rem" />
+      <div className="relative z-10 w-full md:w-3/4 min-h-screen font-bold mx-auto flex items-center justify-center">
+        <div className="hidden md:w-1/2 md:min-h-screen md:flex md:items-center p-10">
+          <div className="space-y-8">
+            <div className="bg-slate-50 w-28 h-28 flex items-center justify-center rounded-xl shadow-2xl mx-auto">
+              <img src="/img/logo.png" alt="logo" className="w-20" />
             </div>
 
-            <h1 className="text-4xl font-bold text-800 text-center my-0">
+            <h1 className="text-4xl font-bold text-slate-800 text-center">
               SISTEM INFORMASI SUMBER DAYA MANUSIA
             </h1>
 
-            <p className="text-500 text-center font-normal my-0">
+            <p className="text-slate-800 text-center font-normal leading-relaxed">
               Selamat datang di Portal Karyawan PT Marstech Global. Silahkan
               masuk untuk melanjutkan.
             </p>
           </div>
         </div>
 
-        <div className="block w-11 h-screen md:w-6 md:p-6 flex align-items-center justify-content-center">
-          <div className="relative surface-50 border-round-xl text-800 font-normal md:w-9 shadow-6 py-6 px-4 flex flex-column gap-4 border-top-3 border-red-500">
-            <div className="flex justify-content-center">
-              <div className="bg-red-500 max-w-min p-4 border-round-xl">
+        <div className="w-11/12 md:w-1/2 md:p-10">
+          <div className="relative bg-slate-50 rounded-xl text-slate-900 font-normal shadow-2xl py-6 space-y-8 border-t-4 border-red-500">
+            <div className="flex justify-center">
+              <div className="bg-red-500 max-w-min p-4 rounded-2xl">
                 <i className="pi pi-sign-in text-2xl text-white"></i>
               </div>
             </div>
 
-            <div className="flex flex-column gap-4">
+            <div className="space-y-3">
               <h1 className="text-slate-800 text-3xl font-bold text-center">
                 Selamat Datang
               </h1>
 
-              <p className="text-500 text-center">
+              <p className="text-slate-500 text-base font-normal text-center">
                 Silahkan masuk dengan kredensial Anda. Akses absensi, pengajuan
                 cuti & lembur, slip gaji, dan lainnya. Silahkan masuk
               </p>
             </div>
 
-            <div className="max-w-full">
-              <form className="flex flex-column gap-4">
+            <div className="px-6">
+              <form className="space-y-4">
                 <div className="grid gap-2">
                   <label htmlFor="email" className="font-semibold">
                     Email
@@ -57,7 +57,7 @@ export default function Home() {
                   <InputText
                     id="email"
                     placeholder="ex: budi@example.com"
-                    className="w-full"
+                    className="w-full p-4"
                   />
                 </div>
 
@@ -67,7 +67,6 @@ export default function Home() {
                   </label>
                   <Password
                     placeholder="Masukkan password Anda"
-                    className="w-full"
                     inputClassName="w-full"
                     feedback={false}
                     toggleMask

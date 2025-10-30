@@ -1,12 +1,6 @@
-// import "./globals.css";
-import { Inter } from "next/font/google";
-import Providers from "./provider";
-
-import "primereact/resources/primereact.min.css";
-import "primeicons/primeicons.css";
-import "primereact/resources/themes/lara-light-indigo/theme.css";
-
 import "./globals.css";
+import { Inter } from "next/font/google";
+import { PrimeReactProvider } from "primereact/api";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,9 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <Providers>{children}</Providers>
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
