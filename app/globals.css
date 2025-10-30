@@ -1,6 +1,11 @@
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; */
+
+@import "primereact/resources/primereact.min.css";
+@import "primeicons/primeicons.css";
+@import "primereact/resources/themes/lara-light-indigo/theme.css";
+@import "primeflex/primeflex.css";
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -16,6 +21,32 @@
   }
 }
 
+body,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.translate-x-0 {
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out; 
+}
+
+h1,
+span,
+p {
+  margin: 0;
+}
+
+.bg-login-pattern {
+  background-image: url("/img/bg-login.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
@@ -24,4 +55,21 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+}
+
+/* 1. Untuk hover link sidebar (padanan hover:bg-gray-100) */
+.p-link-custom {
+  transition-property: background-color, color;
+  transition-duration: 200ms;
+}
+.p-link-custom:not(.bg-blue-50):hover {
+  background-color: #F3F4F6; /* Warna gray-100 */
+}
+
+/* 2. Untuk margin konten utama di desktop (padanan md:ml-80) */
+/* Breakpoint 'md' PrimeFlex adalah 768px */
+@media (min-width: 768px) {
+  .main-content-desktop {
+    margin-left: 20rem; /* 320px */
+  }
 }
