@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
 import type { Menu as MenuType } from 'primereact/menu';
-import Image from 'next/image'; // <-- 1. TAMBAHKAN IMPORT INI
+import Image from 'next/image';
 
 // Impor file menu Anda
 import AppMenu from './AppMenu'; 
@@ -55,8 +55,7 @@ export default function RootLayout({
             
             {/* 1. TOPBAR (Bagian Atas) */}
             <div className="layout-topbar">
-              
-              {/* Grup Kiri: Tombol Hamburger & Logo */}
+              {/* ... (Seluruh kode Topbar Anda tetap sama) ... */}
               <div className="layout-topbar-left">
                 <button 
                   type="button" 
@@ -65,32 +64,23 @@ export default function RootLayout({
                 >
                   <i className="pi pi-bars" />
                 </button>
-
                 <Link href="/" className="layout-topbar-logo">
-                  
-                  {/* --- 2. GANTI BAGIAN INI --- */}
                   <Image
-                    src="/logo.png"
+                    src="/logo.png" // Pastikan ini ada di /public/logo.png
                     alt="Logo Perusahaan"
-                    width={40}  // Atur lebar logo
-                    height={40} // Atur tinggi logo
+                    width={40}
+                    height={40}
                     className="mr-2"
-                    style={{ borderRadius: '6px' }} // Opsional: agar sudut rapi
+                    style={{ borderRadius: '6px' }} 
                   />
-                  {/* --- BATAS AKHIR PERUBAHAN --- */}
-
                   <div className="flex flex-column">
                     <span className="logo-text-main">SI-HR</span>
                     <span className="logo-text-sub">Karyawan</span>
                   </div>
                 </Link>
               </div>
-
-              {/* Grup Kanan: Menu User (DIPERBARUI) */}
               <div className="layout-topbar-right">
-                
                 <Menu model={userMenuModel} popup ref={menuRef} /> 
-                
                 <button 
                   type="button" 
                   className="p-link layout-topbar-button layout-user-button"
@@ -121,6 +111,12 @@ export default function RootLayout({
                 {children}
               </div>
             </div>
+
+            {/* --- 4. TAMBAHKAN KODE INI --- */}
+            {/* Ini adalah 'mask' (layar gelap) untuk mode mobile */}
+            {/* onClick di sini akan menutup sidebar saat area gelap disentuh */}
+            <div className="layout-mask" onClick={() => setSidebarActive(false)}></div>
+            {/* ----------------------------- */}
 
           </div>
         </PrimeReactProvider>

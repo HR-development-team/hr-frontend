@@ -14,18 +14,18 @@ export default function AppMenu() {
 
   // 1. Model menu diperbarui
   const model = [
-    { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
-    { label: 'Absensi', icon: 'pi pi-fw pi-database', to: '/absensi' },
+    { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/karyawan' },
+    { label: 'Absensi', icon: 'pi pi-fw pi-database', to: '/karyawan/Absensi' },
     {
       label: 'Pengajuan',
       icon: 'pi pi-fw pi-desktop',
       items: [
-        { label: 'Pengajuan Cuti', to: '/pengajuan/cuti' },
-        { label: 'Pengajuan Lembur', to: '/pengajuan/lembur' },
-        { label: 'Status Pengajuan', to: '/pengajuan/status' }, // <-- INI YANG BARU
+        { label: 'Pengajuan Cuti', to: '/karyawan/Pengajuan/cuti' },
+        { label: 'Pengajuan Lembur', to: '/karyawan/Pengajuan/lembur' },
+       { label: 'Status Pengajuan', to: '/karyawan/Pengajuan/status' }, // <-- INI YANG BARU
       ],
     },
-    { label: 'Profil', icon: 'pi pi-fw pi-cog', to: '/profil' },
+    { label: 'Profil', icon: 'pi pi-fw pi-cog', to: '/karyawan/Profil' },
   ];
 
   return (

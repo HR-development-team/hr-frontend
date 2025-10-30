@@ -4,23 +4,27 @@ body {
     overflow-y: hidden; 
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    color: #334155; /* Warna teks default */
+    background-color: #f8f9fa; /* Latar belakang body */
 }
 
 /* Ukuran dasar */
 :root {
     --topbar-height: 5rem;
     --sidebar-width: 18rem;
+    --sidebar-mobile-width: 16rem; /* Lebar sidebar di mobile */
     --content-padding: 2rem;
+    --content-mobile-padding: 1rem; /* Padding konten di mobile */
     
-    /* --- PERUBAHAN UTAMA DI SINI --- */
-    --topbar-bg: #ffffff;             /* Topbar jadi putih */
-    --topbar-color: #040a13;          /* Teks di topbar jadi gelap */
-    --topbar-border: #dee2e6;         /* Border pemisah */
+    /* Tema Putih */
+    --topbar-bg: #ffffff;
+    --topbar-color: #334155;
+    --topbar-border: #dee2e6;
     
-    --text-muted: #040a13;            /* Warna teks abu-abu (untuk NIP/subteks) */
-    --hover-bg: #f1f5f9;              /* Latar belakang saat hover */
-    --active-bg: #f1f5f9;             /* Latar belakang menu aktif (abu-abu) */
-    --active-color: #040a13;          /* Warna teks menu aktif (gelap) */
+    --text-muted: #64748b;
+    --hover-bg: #f1f5f9;
+    --active-bg: #f1f5f9;
+    --active-color: #334155;
 }
 
 /* Wrapper Utama */
@@ -31,20 +35,20 @@ body {
     transition: margin-left 0.3s;
 }
 
-/* 1. Topbar (Diperbarui) */
+/* 1. Topbar */
 .layout-topbar {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: var(--topbar-height);
-    background-color: var(--topbar-bg); /* <-- Warna dari var */
-    border-bottom: 1px solid var(--topbar-bg);
+    background-color: var(--topbar-bg);
+    border-bottom: 1px solid var(--topbar-border);
     display: flex;
     align-items: center;
-    justify-content: space-between; /* <-- Penting: Kiri dan Kanan */
-    padding: 0 1rem; /* <-- Padding disesuaikan */
-    z-index: 1000;
+    justify-content: space-between;
+    padding: 0 1rem;
+    z-index: 1000; /* Topbar di atas secara default */
 }
 
 /* Grup Kiri (Hamburger + Logo) */
@@ -57,7 +61,7 @@ body {
 .layout-menu-button,
 .layout-user-button {
     font-size: 1.5rem;
-    color: var(--topbar-color); /* <-- Warna ikon */
+    color: var(--topbar-color);
     cursor: pointer;
     background: transparent;
     border: none;
@@ -67,7 +71,7 @@ body {
 }
 .layout-menu-button:hover,
 .layout-user-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--hover-bg);
 }
 
 /* Logo di Topbar */
@@ -84,7 +88,7 @@ body {
 }
 .logo-text-sub {
     font-size: 0.8rem;
-    color: #383a41; /* <-- Warna 'Mahasiswa' */
+    color: var(--text-muted);
 }
 
 /* Grup Kanan (Menu User) */
@@ -97,17 +101,23 @@ body {
     display: flex;
     align-items: center;
 }
-.user-name {
+.user-name, .email { /* Menggabungkan .email */
     font-weight: 600;
     font-size: 0.9rem;
     color: var(--topbar-color);
 }
-.email {
+.user-id, .email { /* Menggabungkan .email */
     font-size: 0.75rem;
-    color: #383a41;
+    color: var(--text-muted);
+}
+/* Style spesifik jika .email ada di layout.tsx */
+.user-id.email, span.email { 
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: normal; 
 }
 
-/* 2. Sidebar (Tidak Berubah) */
+/* 2. Sidebar */
 .layout-sidebar {
     position: fixed;
     top: var(--topbar-height); 
@@ -115,17 +125,17 @@ body {
     width: var(--sidebar-width);
     height: calc(100vh - var(--topbar-height));
     background-color: #ffffff;
-    border-right: 1px solid #dee2e6;
-    overflow-y: auto;
-    transition: transform 0.3s;
-    z-index: 999;
+    border-right: 1px solid var(--topbar-border);
+    overflow-y: auto; /* Pastikan bisa scroll jika menu panjang */
+    transition: transform 0.3s ease-in-out; /* Animasi lebih halus */
+    z-index: 999; /* Sidebar di bawah topbar di desktop */
 }
 
-/* 3. Konten Utama (Tidak Berubah) */
+/* 3. Konten Utama */
 .layout-main-container {
     padding-top: var(--topbar-height);
     padding-left: var(--sidebar-width);
-    transition: padding-left 0.3s;
+    transition: padding-left 0.3s ease-in-out; /* Animasi lebih halus */
     flex: 1;
 }
 
@@ -137,7 +147,7 @@ body {
     height: calc(100vh - var(--topbar-height)); 
 }
 
-/* Logika Buka/Tutup Sidebar (Tidak Berubah) */
+/* Logika Buka/Tutup Sidebar (Desktop) */
 .layout-wrapper.layout-static-inactive .layout-sidebar {
     transform: translateX(-100%);
 }
@@ -158,28 +168,30 @@ body {
 .layout-menu li a {
     display: flex;
     align-items: center;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
+    padding: 0.85rem 1rem; /* Sedikit lebih tinggi */
+    border-radius: 8px; /* Lebih rounded */
     color: #4b5563;
     text-decoration: none;
     font-weight: 500;
     transition: background-color 0.2s, color 0.2s;
 }
 .layout-menu li a:hover {
-    background-color: #f1f5f9;
+    background-color: var(--hover-bg);
 }
+
+/* Highlight menu aktif */
 .layout-menu li.active-menuitem a {
-    background-color: #e0e7ff;
-    color: #4338ca;
+    background-color: var(--active-bg);
+    color: var(--active-color);
 }
 .layout-menuitem-icon {
-    margin-right: 0.75rem;
+    margin-right: 0.85rem; /* Jarak ikon sedikit lebih jauh */
     font-size: 1.25rem;
 }
 
 /* Style Submenu */
 .layout-submenu-toggler {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     margin-left: auto;
     transition: transform 0.2s;
 }
@@ -188,8 +200,8 @@ body {
 }
 .layout-submenu {
     list-style-type: none;
-    padding: 0 0 0 1.5rem;
-    margin: 0;
+    padding: 0 0 0 1.75rem; /* Indentasi submenu lebih dalam */
+    margin: 0.5rem 0;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
@@ -199,28 +211,118 @@ body {
     transition: max-height 0.5s ease-in-out;
 }
 .layout-submenu li a {
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
     padding-left: 0.75rem;
 }
 .layout-submenu li.active-menuitem a {
     background-color: transparent;
-    color: #4338ca;
+    color: var(--active-color);
     font-weight: 700;
 }
 
-/* Kustomisasi Avatar PrimeReact (Opsional) */
+/* Kustomisasi Avatar (Abu-abu) */
 .p-avatar.p-avatar-info {
-    background-color: #007bff;
-    color: #ffffff;
+    background-color: #e5e7eb;
+    color: #4b5563;
 }
-/* ... (SEMUA KODE CSS LAMA ANDA BIARKAN DI ATAS) ... */
 
-/* --- TAMBAHKAN KODE DI BAWAH INI --- */
-
-/* Kustomisasi Menu Dropdown User (membuat 'LogOut' jadi merah) */
+/* Kustomisasi Logout (Merah) */
 .p-menu .p-menuitem.logout-menu-item > .p-menuitem-link .p-menuitem-text,
 .p-menu .p-menuitem.logout-menu-item > .p-menuitem-link .p-menuitem-icon {
-    color: #EF4444; /* Warna merah (Tailwind 'red-500') */
+    color: #EF4444; /* Warna merah */
     font-weight: 600;
 }
+
+
+/* --- 5. STYLE RESPONSIVE (LEBIH STYLISH) --- */
+
+/* Style untuk 'mask' (latar belakang gelap) */
+.layout-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3); /* Sedikit lebih transparan */
+    z-index: 998; /* Di bawah sidebar (999), di atas konten */
+    display: none;
+    transition: opacity 0.3s ease-in-out; /* Animasi fade */
+    opacity: 0;
+}
+/* Fade-in mask saat aktif */
+.layout-wrapper:not(.layout-static-inactive) .layout-mask {
+    display: block;
+    opacity: 1;
+}
+
+/* Tampilan untuk layar di bawah 992px (Tablet dan HP) */
+@media (max-width: 991px) {
+
+    /* 1. Sidebar jadi overlay */
+    .layout-sidebar {
+        transform: translateX(-100%);
+        z-index: 999; /* Di bawah topbar */
+        top: var(--topbar-height); 
+        height: calc(100vh - var(--topbar-height)); 
+        overflow-y: auto; 
+        width: var(--sidebar-mobile-width); /* Perkecil lebar sidebar */
+        border-right: none; /* Hilangkan border */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Tambah shadow */
+    }
+
+    /* 2. Konten jadi full-width */
+    .layout-main-container {
+        padding-left: 0 !important;
+    }
+    .layout-main {
+        padding: var(--content-mobile-padding); /* Perkecil padding konten */
+    }
+
+    /* 3. Aturan untuk menampilkan sidebar */
+    .layout-wrapper:not(.layout-static-inactive) .layout-sidebar {
+         transform: translateX(0); /* Tampilkan sidebar */
+    }
+
+    /* 4. Tampilkan 'mask' saat sidebar tampil (sudah diatur di atas) */
+
+    /* 5. Teks di topbar yang disembunyikan */
+    .layout-topbar .user-name,
+    .layout-topbar .user-id,
+    .layout-topbar .email {
+        display: none;
+    }
+    .layout-topbar-logo {
+        margin-left: 0.5rem;
+    }
+    .layout-topbar {
+        padding: 0 0.75rem; /* Sedikit lebih banyak padding di topbar mobile */
+    }
+    
+    /* 6. Perbesar sedikit target klik di menu mobile */
+    .layout-menu li a {
+        padding: 1rem 1.25rem;
+    }
+    .layout-submenu {
+        padding-left: 2rem;
+    }
+     .layout-submenu li a {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+}
+/* --- TAMBAHKAN KODE INI DI DALAM @media --- */
+    /* Perkecil padding dan font di DataTable saat 'stack' */
+    .compact-datatable-mobile .p-datatable-tbody > tr > td {
+        padding: 0.5rem 0.75rem; /* Kurangi padding vertikal & horizontal */
+        font-size: 0.875rem; /* Kecilkan sedikit font */
+    }
+    
+    /* Atur ulang style header kolom saat 'stack' */
+    .compact-datatable-mobile .p-datatable-tbody > tr > td .p-column-title {
+        padding: 0.25rem 0; /* Kurangi jarak bawah header kolom */
+        font-size: 0.75rem; /* Kecilkan font header kolom */
+        font-weight: 600;
+        display: block; /* Pastikan header tampil */
+    }
+    /* ------------------------------------------- */
