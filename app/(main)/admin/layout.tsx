@@ -17,7 +17,7 @@ export default function AdminLayout({
     setSidebarOpen(false);
   }, [pathName]);
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen surface-50">
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <div className="flex">
         <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
