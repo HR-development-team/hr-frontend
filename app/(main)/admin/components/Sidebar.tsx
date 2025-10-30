@@ -1,15 +1,9 @@
 "use client";
 
 import {
-	Building,
 	Building2,
-	ClipboardClock,
-	ClipboardX,
-	Divide,
 	FileText,
-	icons,
 	MonitorCheck,
-	User,
 	Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -18,7 +12,20 @@ import { Accordion, AccordionTab } from "primereact/accordion";
 import { ReactNode, useState } from "react";
 import { idText } from "typescript";
 
-const menuItems = [
+interface ChildrenMenuItems {
+	label: string;
+	href: string;
+}
+
+interface MenuItems {
+	id: string;
+	label: string;
+	icon: ReactNode;
+	href?: string;
+	children?: ChildrenMenuItems[];
+}
+
+const menuItems: MenuItems[] = [
 	{
 		id: "dashboard",
 		label: "Dashboard",
@@ -32,22 +39,18 @@ const menuItems = [
 		children: [
 			{
 				label: "Master Departemen",
-				icon: <Building />,
 				href: "#",
 			},
 			{
 				label: "Master Divisi",
-				icon: <Building2 />,
 				href: "#",
 			},
 			{
 				label: "Master Karyawan",
-				icon: <Users />,
 				href: "#",
 			},
 			{
 				label: "Master User",
-				icon: <User />,
 				href: "#",
 			},
 		],
@@ -59,12 +62,10 @@ const menuItems = [
 		children: [
 			{
 				label: "Monitoring Kehadiran",
-				icon: <ClipboardClock />,
 				href: "#",
 			},
 			{
 				label: "Pengajuan Cuti",
-				icon: <ClipboardX />,
 				href: "#",
 			},
 		],
@@ -111,11 +112,11 @@ export default function SidebarPopup({
 					<Accordion>
 						<AccordionTab
 							header={
-                <div className="flex align-items-center gap-2">
-                  <span>{item.icon}</span>
-                  <span>{item.label}</span>
-                </div>
-              }
+								<div className="flex align-items-center gap-2">
+									<span>{item.icon}</span>
+									<span>{item.label}</span>
+								</div>
+							}
 							pt={{
 								headerAction: {
 									className:
@@ -140,7 +141,9 @@ export default function SidebarPopup({
 									}`}
 								>
 									{/* <span>{child.icon}</span> */}
-									<span className="text-500 font-medium py-1 ml-3">{child.label}</span>
+									<span className="text-500 font-medium py-1 ml-3">
+										{child.label}
+									</span>
 								</Link>
 							))}
 						</AccordionTab>
@@ -172,10 +175,10 @@ export default function SidebarPopup({
 	};
 
 	return (
-		<aside className="surface-100 w-3 px-3 min-h-screen">
+		<aside className={`fixed left-0 top-0 md:relative z-4 h-screen min-w-min md:w-2 bg-white shadow-1 px-3 transition-transform animation-duration-300 animation-ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 			<div
 				style={{ marginTop: "7rem", marginBottom: "7rem" }}
-				className="bg-white p-3 border-round-xl shadow-2"
+				className="bg-white px-2 border-round-xl"
 			>
 				<nav>{menuItems.map(renderNavItem)}</nav>
 			</div>
