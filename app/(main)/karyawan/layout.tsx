@@ -74,8 +74,9 @@ export default function RootLayout({
                     style={{ borderRadius: '6px' }} 
                   />
                   <div className="flex flex-column">
-                    <span className="logo-text-main">SI-HR</span>
-                    <span className="logo-text-sub">Karyawan</span>
+                    <span className="logo-text-main">Marstech</span>
+                    <span className='logo-text-main'>Sistem Informasi</span>
+                    <span className="logo-text-sub">Karyawan</span>                    
                   </div>
                 </Link>
               </div>

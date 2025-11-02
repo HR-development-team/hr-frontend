@@ -33,8 +33,6 @@ export default function AppMenu() {
       {model.map((item, i) => {
         
         if (item.items) {
-          // Cek apakah menu parent ini sedang aktif (terbuka)
-          // Kita juga cek apakah salah satu anaknya aktif
           const isParentActive = activeMenu === item.label || 
                                  item.items.some(sub => pathname.startsWith(sub.to));
 
@@ -86,4 +84,4 @@ export default function AppMenu() {
       })}
     </ul>
   );
-}
+} 

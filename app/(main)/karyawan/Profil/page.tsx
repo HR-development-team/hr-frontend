@@ -11,29 +11,27 @@ import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Divider } from 'primereact/divider';
 import { Skeleton } from 'primereact/skeleton';
-// 1. Impor TabView dan TabPanel untuk layout baru
 import { TabView, TabPanel } from 'primereact/tabview';
-// 1. Impor FileUpload dan tipenya
-import { FileUpload, FileUploadSelectEvent, FileUploadHandlerEvent } from 'primereact/fileupload';
+import { FileUpload, FileUploadSelectEvent } from 'primereact/fileupload';
 
-// --- Tipe Data Bohongan (Mock) ---
+// --- Tipe Data (Harus sesuai dengan respons API) ---
 interface UserProfile {
   id: number;
   first_name: string;
   last_name: string;
   contact_phone: string;
   address: string;
-  join_date: string; // Akan kita format
+  join_date: string; 
   position_id: number;
   profile_image_url: string | null;
   
-  // Data tambahan (mock)
+  // Data tambahan (didapat dari 'join' di backend)
   email: string;
   position_name: string;
   department_name: string;
 }
 
-// --- Data Bohongan (Mock) ---
+// --- Data Bohongan (Hanya untuk fallback/simulasi) ---
 const mockProfile: UserProfile = {
   id: 1,
   first_name: 'Lugas',
@@ -43,10 +41,14 @@ const mockProfile: UserProfile = {
   address: 'Jl. Merdeka No. 17, Jakarta Pusat, DKI Jakarta 10110',
   join_date: '2023-03-15T00:00:00Z',
   position_id: 10,
-  profile_image_url: null, // Set ke null untuk tes fallback inisial
+  profile_image_url: null, 
   position_name: 'Software Developer',
   department_name: 'Information Technology (IT)',
 };
+
+// --- Konstanta API ---
+// Ganti ini dengan URL API Anda yang sebenarnya
+const API_URL = '/api/karyawan/profil'; 
 
 export default function ProfilPage() {
   const toast = useRef<Toast>(null);
@@ -63,38 +65,67 @@ export default function ProfilPage() {
     address: ''
   });
 
-  // --- 2. State Baru untuk File Upload ---
+  // State untuk File Upload
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileUploadRef = useRef<FileUpload>(null); // Ref untuk clear file
+  const fileUploadRef = useRef<FileUpload>(null);
 
-  // Muat data profil saat halaman dibuka
+  // --- 1. MEMUAT DATA PROFIL (useEffect) ---
   useEffect(() => {
-    //
-    // --- TEMPAT UNTUK KONEKSI BACKEND (Fetch Profil) ---
-    //
-    // const fetchProfile = async () => { ... };
-    // fetchProfile();
-    //
     
-    // Simulasi (Hapus ini saat backend siap)
-    setTimeout(() => {
-      setProfile(mockProfile);
-      if (mockProfile) {
-          setFormData({
-            contact_phone: mockProfile.contact_phone,
-            address: mockProfile.address
-          });
-      }
-      setIsLoading(false);
-    }, 1200);
-  }, []);
+    const loadProfileData = async () => {
+      setIsLoading(true);
+      try {
+        //
+        // --- TEMPAT BACKEND: Ambil Data Profil ---
+        // (Hilangkan komentar ini saat backend siap)
+        //
+        // const response = await fetch(API_URL); // Method GET
+        // if (!response.ok) {
+        //   throw new Error('Gagal memuat profil dari server');
+        // }
+        // const data: UserProfile = await response.json();
+        // setProfile(data);
+        // setFormData({
+        //   contact_phone: data.contact_phone,
+        //   address: data.address
+        // });
+        //
+        // --- Batas Tempat Backend ---
 
-  // --- Fungsi Aksi ---
+        // --- Simulasi (HAPUS INI SAAT BACKEND SIAP) ---
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        setProfile(mockProfile);
+        if (mockProfile) {
+            setFormData({
+              contact_phone: mockProfile.contact_phone,
+              address: mockProfile.address
+            });
+        }
+        // --- Batas Simulasi ---
+
+      } catch (error) {
+        console.error(error);
+        toast.current?.show({ 
+          severity: 'error', 
+          summary: 'Error', 
+          detail: (error as Error).message || 'Gagal memuat profil' 
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadProfileData();
+  }, []); // [] = Dijalankan sekali saat halaman dimuat
+
+  // --- 2. FUNGSI AKSI (Edit, Batal, Pilih File) ---
+  // (Ini adalah murni logika frontend, sudah rapi)
+  
   const handleEdit = () => {
     setIsEditMode(true);
-    setImagePreview(null); // Bersihkan preview saat masuk mode edit
-    setSelectedFile(null); // Bersihkan file saat masuk mode edit
+    setImagePreview(null);
+    setSelectedFile(null);
   };
 
   const handleCancel = () => {
@@ -105,68 +136,98 @@ export default function ProfilPage() {
       });
     }
     setIsEditMode(false);
-    setImagePreview(null); // Bersihkan preview
-    setSelectedFile(null); // Bersihkan file
-    fileUploadRef.current?.clear(); // Hapus file dari komponen FileUpload
+    setImagePreview(null);
+    setSelectedFile(null);
+    fileUploadRef.current?.clear();
+  };
+  
+  const handleFileSelect = (e: FileUploadSelectEvent) => {
+    const file = e.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
-  const handleSave = () => {
+  // --- 3. MENYIMPAN DATA (handleSave) ---
+  // Dibuat 'async' dan siap untuk mengirim 'FormData'
+  
+  const handleSave = async () => {
     setIsSubmitting(true);
     
     //
-    // --- TEMPAT UNTUK SIMPAN KE BACKEND ---
+    // --- TEMPAT BACKEND: Kirim Data Profil ---
     //
-    // // 1. Buat FormData
+    // // 1. Buat FormData untuk mengirim data teks + file
     // const dataToSave = new FormData();
-    // ... (Logika FormData Anda) ...
+    // dataToSave.append('contact_phone', formData.contact_phone);
+    // dataToSave.append('address', formData.address);
+    // if (selectedFile) {
+    //   dataToSave.append('profile_image', selectedFile); // 'profile_image' = nama field di API
+    // }
     //
-    // // 2. Kirim ke API
-    // const saveProfile = async (formData) => {
-    //   ... (Logika fetch Anda) ...
-    // };
-    // saveProfile(dataToSave);
-    //
-    // --- Akhir Tempat Simpan Backend ---
+    
+    try {
+      // // 2. Kirim ke API (Method PUT atau POST/PATCH)
+      // const response = await fetch(API_URL, {
+      //   method: 'PUT',
+      //   // PENTING: JANGAN set Content-Type header. 
+      //   // Browser akan otomatis mengaturnya ke 'multipart/form-data'
+      //   // dan menambahkan 'boundary' yang benar.
+      //   body: dataToSave,
+      // });
+      // 
+      // if (!response.ok) {
+      //   throw new Error('Gagal menyimpan profil');
+      // }
+      // const updatedProfile: UserProfile = await response.json();
+      //
+      // --- Batas Tempat Backend ---
 
-    // Simulasi (Hapus ini saat backend siap)
-    setTimeout(() => {
-      // 1. Simpan data teks
+
+      // --- Simulasi (HAPUS INI SAAT BACKEND SIAP) ---
+      await new Promise(resolve => setTimeout(resolve, 1500));
       let updatedProfile = { ...profile!, ...formData };
-
-      // 2. Jika ada file preview, update URL profil (simulasi)
       if (imagePreview) {
         updatedProfile.profile_image_url = imagePreview;
       }
-      
+      // --- Batas Simulasi ---
+
+      // 3. Update UI setelah sukses (dari data 'updatedProfile' di atas)
       setProfile(updatedProfile);
+      setFormData({
+        contact_phone: updatedProfile.contact_phone,
+        address: updatedProfile.address
+      });
       
-      setIsSubmitting(false);
-      setIsEditMode(false);
-      setImagePreview(null);
-      setSelectedFile(null);
-      fileUploadRef.current?.clear();
       toast.current?.show({ 
         severity: 'success', 
         summary: 'Sukses', 
         detail: 'Profil berhasil diperbarui', 
         life: 3000 
       });
-    }, 1500);
-  };
 
-  // --- 3. Fungsi untuk menangani pemilihan file ---
-  const handleFileSelect = (e: FileUploadSelectEvent) => {
-    const file = e.files[0];
-    if (file) {
-      setSelectedFile(file);
-      // Buat URL lokal untuk preview
-      setImagePreview(URL.createObjectURL(file));
+    } catch (error) {
+      console.error(error);
+      toast.current?.show({ 
+        severity: 'error', 
+        summary: 'Error', 
+        detail: (error as Error).message || 'Gagal menyimpan profil' 
+      });
+    } finally {
+      // 4. Reset state
+      setIsSubmitting(false);
+      setIsEditMode(false);
+      setImagePreview(null);
+      setSelectedFile(null);
+      fileUploadRef.current?.clear();
     }
   };
 
-
-  // Helper untuk format tanggal
+  // --- 4. Helper & Tampilan (JSX) ---
+  
   const formatJoinDate = (dateString: string) => {
+    // ... (Logika format tanggal tidak berubah) ...
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('id-ID', {
       day: 'numeric',
@@ -175,13 +236,13 @@ export default function ProfilPage() {
     });
   };
 
-  // --- Tampilan Skeleton (Loading) ---
+  // Tampilan Skeleton (Loading)
   if (isLoading) {
+    // ... (Kode skeleton tidak berubah) ...
     return (
       <div className="grid">
         <div className="col-12">
             <Card className="shadow-1 mb-4">
-                {/* Gunakan PrimeFlex (flex-column md:flex-row) agar skeleton juga responsif */}
                 <div className="flex flex-column md:flex-row align-items-center">
                     <Skeleton shape="circle" size="8rem" className="mb-3 md:mb-0 md:mr-4"></Skeleton>
                     <div className="flex-1">
@@ -198,11 +259,12 @@ export default function ProfilPage() {
     );
   }
 
-  // --- Tampilan Halaman (Setelah Data Dimuat) ---
+  // Tampilan Halaman (Jika data gagal dimuat)
   if (!profile) {
-    return <Card title="Error">Gagal memuat profil.</Card>;
+    return <Card title="Error">Gagal memuat profil. Silakan coba muat ulang halaman.</Card>;
   }
 
+  // Tampilan Halaman (Data sukses dimuat)
   return (
     <div className="grid">
       <Toast ref={toast} />
@@ -210,9 +272,7 @@ export default function ProfilPage() {
       {/* --- 1. Header Profil (Full Width) --- */}
       <div className="col-12">
         <Card className="shadow-1">
-          {/* PrimeFlex 'flex-column' (mobile) 'md:flex-row' (desktop) sudah responsif */}
           <div className="flex flex-column md:flex-row align-items-center">
-            
             <Avatar 
               image={imagePreview || profile.profile_image_url || undefined} 
               label={!imagePreview && !profile.profile_image_url 
@@ -222,8 +282,6 @@ export default function ProfilPage() {
               className="mb-3 md:mb-0 md:mr-4 p-avatar-info"
               style={{ width: '128px', height: '128px', fontSize: '3rem' }}
             />
-
-            {/* PrimeFlex 'flex-1' (ambil sisa ruang) 'text-center' (mobile) 'md:text-left' (desktop) */}
             <div className="flex-1 text-center md:text-left">
               <h2 className="m-0">{profile.first_name} {profile.last_name}</h2>
               <p className="text-color-secondary mt-1 text-lg">{profile.position_name}</p>
@@ -234,11 +292,9 @@ export default function ProfilPage() {
 
       {/* --- 2. Konten (Full Width) --- */}
       <div className="col-12 mt-4">
-        {/* PERUBAHAN 1: Tambahkan 'scrollable' agar header tab responsif */}
         <TabView scrollable>
-          
           {/* --- Tab 1: Detail Profil & Form Edit --- */}
-          <TabPanel header="Detail Profil">
+          <TabPanel header="Detail Profil" leftIcon="pi pi-user mr-2">
             <Card>
               <div className="flex justify-content-end gap-2 mb-4">
                 {!isEditMode ? (
@@ -267,13 +323,15 @@ export default function ProfilPage() {
                 )}
               </div>
               
-              {/* PrimeFlex 'grid' sudah responsif dengan 'col-12' (mobile) dan 'md:col-6' (desktop) */}
               <div className="p-fluid grid">
                 
                 {isEditMode && (
                   <>
                     <div className="field col-12">
-                      <label htmlFor="upload" className="font-semibold block mb-2">Ubah Foto Profil</label>
+                      <label htmlFor="upload" className="font-semibold block mb-2">
+                        <i className="pi pi-image mr-2" />
+                        Ubah Foto Profil
+                      </label>
                       <FileUpload 
                         ref={fileUploadRef}
                         name="profile_pic" 
@@ -285,26 +343,22 @@ export default function ProfilPage() {
                         onSelect={handleFileSelect}
                         chooseLabel="Pilih Foto"
                         cancelLabel="Hapus"
-                        uploadLabel="Upload" 
-                        // --- PERBAIKAN STYLING DI SINI ---
+                        uploadLabel="Upload" // Tombol ini tidak akan kita gunakan
                         headerTemplate={(options) => (
-                            // Gunakan PrimeFlex: flex-column (mobile) md:flex-row (desktop)
                             <div className="flex flex-column md:flex-row align-items-center justify-content-between p-3 surface-overlay border-bottom-1 surface-border">
                                 <span className="text-lg font-semibold mb-2 md:mb-0">Pilih Foto Profil Baru</span>
-                                <div className="flex gap-2"> {/* Tambahkan gap antar tombol */}
+                                <div className="flex gap-2">
                                     {options.chooseButton}
                                     {options.cancelButton}
                                 </div>
                             </div>
                         )}
                         emptyTemplate={
-                            // Gunakan PrimeFlex & text-center
                             <div className="flex align-items-center justify-content-center text-center flex-column py-4">
                                 <i className="pi pi-image text-5xl text-color-secondary mb-3"></i>
                                 <p className="mt-0 mb-0 text-color-secondary text-sm md:text-base">Seret dan lepas file ke sini, atau klik "Pilih Foto".</p>
                             </div>
                         }
-                        // --- AKHIR PERBAIKAN STYLING ---
                       />
                     </div>
                     <div className="col-12">
@@ -315,17 +369,26 @@ export default function ProfilPage() {
 
                 {/* Field Nama (Selalu Read-Only) */}
                 <div className="field col-12 md:col-6">
-                  <label htmlFor="firstname" className="font-semibold block mb-2">Nama Depan</label>
+                  <label htmlFor="firstname" className="font-semibold block mb-2">
+                    <i className="pi pi-user mr-2" />
+                    Nama Depan
+                  </label>
                   <InputText id="firstname" value={profile.first_name} readOnly disabled />
                 </div>
                 <div className="field col-12 md:col-6">
-                  <label htmlFor="lastname" className="font-semibold block mb-2">Nama Belakang</label>
+                  <label htmlFor="lastname" className="font-semibold block mb-2">
+                    <i className="pi pi-user mr-2" />
+                    Nama Belakang
+                  </label>
                   <InputText id="lastname" value={profile.last_name} readOnly disabled />
                 </div>
                 
                 {/* Field yang Bisa Diedit */}
                 <div className="field col-12 md:col-6">
-                  <label htmlFor="phone" className="font-semibold block mb-2">No. Telepon Kontak</label>
+                  <label htmlFor="phone" className="font-semibold block mb-2">
+                    <i className="pi pi-phone mr-2" />
+                    No. Telepon Kontak
+                  </label>
                   <InputText 
                     id="phone" 
                     value={isEditMode ? formData.contact_phone : profile.contact_phone}
@@ -335,7 +398,10 @@ export default function ProfilPage() {
                   />
                 </div>
                 <div className="field col-12">
-                  <label htmlFor="address" className="font-semibold block mb-2">Alamat</label>
+                  <label htmlFor="address" className="font-semibold block mb-2">
+                    <i className="pi pi-home mr-2" />
+                    Alamat
+                  </label>
                   <InputTextarea 
                     id="address" 
                     value={isEditMode ? formData.address : profile.address}
@@ -351,32 +417,42 @@ export default function ProfilPage() {
           </TabPanel>
 
           {/* --- Tab 2: Informasi Pekerjaan (Read-Only) --- */}
-          <TabPanel header="Informasi Pekerjaan">
+          <TabPanel header="Informasi Pekerjaan" leftIcon="pi pi-briefcase mr-2">
             <Card>
               <div className="p-3">
-                {/* PERUBAHAN 2: Layout Key-Value dibuat responsif */}
                 <div className="flex flex-column gap-4">
-                  {/* Email */}
                   <div className="flex flex-column md:flex-row md:justify-content-between gap-2 md:gap-0">
-                    <span className="font-semibold text-lg">Email</span>
+                    <span className="font-semibold text-lg flex align-items-center">
+                      <i className="pi pi-envelope mr-3 text-xl" />
+                      Email
+                    </span>
                     <span className="text-color-secondary text-lg md:text-right">{profile.email}</span>
                   </div>
                   <Divider />
-                  {/* Posisi */}
+                  
                   <div className="flex flex-column md:flex-row md:justify-content-between gap-2 md:gap-0">
-                    <span className="font-semibold text-lg">Posisi / Jabatan</span>
+                    <span className="font-semibold text-lg flex align-items-center">
+                      <i className="pi pi-id-card mr-3 text-xl" />
+                      Posisi / Jabatan
+                    </span>
                     <span className="text-color-secondary text-lg md:text-right">{profile.position_name}</span>
                   </div>
                   <Divider />
-                  {/* Departemen */}
+                  
                   <div className="flex flex-column md:flex-row md:justify-content-between gap-2 md:gap-0">
-                    <span className="font-semibold text-lg">Departemen</span>
+                    <span className="font-semibold text-lg flex align-items-center">
+                      <i className="pi pi-sitemap mr-3 text-xl" />
+                      Departemen
+                    </span>
                     <span className="text-color-secondary text-lg md:text-right">{profile.department_name}</span>
                   </div>
                   <Divider />
-                  {/* Tanggal Bergabung */}
+                  
                   <div className="flex flex-column md:flex-row md:justify-content-between gap-2 md:gap-0">
-                    <span className="font-semibold text-lg">Tanggal Bergabung</span>
+                    <span className="font-semibold text-lg flex align-items-center">
+                      <i className="pi pi-calendar-plus mr-3 text-xl" />
+                      Tanggal Bergabung
+                    </span>
                     <span className="text-color-secondary text-lg">{formatJoinDate(profile.join_date)}</span>
                   </div>
                 </div>

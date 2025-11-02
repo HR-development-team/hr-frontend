@@ -10,8 +10,8 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
 import { InputText } from 'primereact/inputtext';
-// Hapus 'import type' yang error
 import { Skeleton } from 'primereact/skeleton'; 
+import { Divider } from 'primereact/divider'; // <-- 1. Impor Divider
 
 // --- Tipe Data (Sama seperti sebelumnya) ---
 type AttendanceStatus = 'loading' | 'not_checked_in' | 'checked_in' | 'checked_out';
@@ -45,16 +45,16 @@ export default function AbsensiPage() {
   // State untuk Pencarian
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
-  
-  // --- PERBAIKAN DI SINI ---
-  // Gunakan tipe HTML standar, ini pasti terbaca
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // --- 2. State Baru untuk Jam Real-time ---
+  const [currentTime, setCurrentTime] = useState('--:--:--');
+  const [currentDate, setCurrentDate] = useState('');
 
   // --- useEffect (Tidak ada perubahan) ---
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        // ... (Simulasi loading Anda) ...
         await new Promise(resolve => setTimeout(resolve, 1000)); 
         setStatus('not_checked_in'); 
         setAttendanceLog(mockLog); 
@@ -72,6 +72,34 @@ export default function AbsensiPage() {
         searchInputRef.current?.focus();
     }
   }, [isSearchVisible]);
+
+  // --- 3. useEffect Baru untuk Jam Real-time ---
+  useEffect(() => {
+    // Fungsi untuk update waktu
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString('id-ID', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+      }));
+      setCurrentDate(now.toLocaleDateString('id-ID', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+      }));
+    };
+    
+    // Panggil sekali di awal
+    updateTime();
+    
+    // Set interval untuk update setiap detik
+    const timerId = setInterval(updateTime, 1000);
+
+    // Bersihkan interval saat komponen dibongkar
+    return () => clearInterval(timerId);
+  }, []); // [] = Dijalankan sekali
 
   // --- Handler (Tidak ada perubahan) ---
   const handleCheckIn = async () => {
@@ -122,65 +150,94 @@ export default function AbsensiPage() {
     }
   };
 
-  // --- Helper Render (Tidak ada perubahan) ---
+  // --- 4. Helper Render Diperbarui ---
   const renderAttendanceAction = () => {
+    
+    // --- Bagian Jam (Selalu Tampil) ---
+    const clockDisplay = (
+      <div className="text-center mb-4">
+        <h1 className="m-0" style={{ fontSize: '3.5rem', color: 'var(--text-color)' }}>
+          {currentTime}
+        </h1>
+        <p className="m-0 text-color-secondary text-lg">{currentDate}</p>
+      </div>
+    );
+
+    // Tampilkan Skeleton (loading) saat data awal dimuat
     if (status === 'loading') {
         return (
             <div className="text-center">
-                <Skeleton shape="circle" size="3rem" className="mb-3"></Skeleton>
-                <Skeleton width="10rem" height="1.5rem" className="mb-2"></Skeleton>
-                <Skeleton width="15rem" height="1rem" className="mb-4"></Skeleton>
+                <Skeleton width="12rem" height="3.5rem" className="mb-2 mx-auto"></Skeleton>
+                <Skeleton width="15rem" height="1.5rem" className="mb-4 mx-auto"></Skeleton>
+                <Divider />
+                <Skeleton width="10rem" height="1.5rem" className="mb-2 mx-auto"></Skeleton>
+                <Skeleton width="15rem" height="1rem" className="mb-4 mx-auto"></Skeleton>
                 <Skeleton height="3.5rem"></Skeleton>
             </div>
         );
     }
     
+    // Tampilan setelah loading
     switch (status) {
       case 'not_checked_in':
         return (
           <div className="text-center">
-            <i className="pi pi-clock" style={{ fontSize: '3rem', color: 'var(--text-muted)' }}></i>
-            <h3 className="mt-3">Aksi Absensi</h3>
-            <p className="text-color-secondary">Anda belum melakukan absensi masuk hari ini.</p>
-            <Button
-              label="Check-In Sekarang"
-              icon="pi pi-sign-in"
-              className="w-full p-button-success p-button-lg mt-2"
-              onClick={handleCheckIn}
-              loading={isSubmitting}
-            />
+            {clockDisplay} {/* Tampilkan jam */}
+            <Divider /> {/* Pemisah */}
+            <div className="mt-4">
+              <i className="pi pi-clock" style={{ fontSize: '2rem', color: 'var(--text-muted)' }}></i>
+              <h3 className="mt-2">Aksi Absensi</h3>
+              <p className="text-color-secondary">Anda belum melakukan absensi masuk hari ini.</p>
+              <Button
+                label="Check-In Sekarang"
+                icon="pi pi-sign-in"
+                className="w-full p-button-success p-button-lg mt-2"
+                onClick={handleCheckIn}
+                loading={isSubmitting}
+              />
+            </div>
           </div>
         );
       
       case 'checked_in':
         return (
           <div className="text-center">
-            <i className="pi pi-check-circle" style={{ fontSize: '3rem', color: 'var(--green-500)' }}></i>
-            <h3 className="mt-3">Anda Sudah Masuk</h3>
-            <p className="text-color-secondary">Waktu Check-In:</p>
-            <h2 className="my-2" style={{ color: 'var(--text-color)' }}>{checkInTime} WIB</h2>
-            <Button
-              label="Check-Out"
-              icon="pi pi-sign-out"
-              className="w-full p-button-danger p-button-lg mt-2"
-              onClick={handleCheckOut}
-              loading={isSubmitting}
-            />
+            {clockDisplay} {/* Tampilkan jam */}
+            <Divider /> {/* Pemisah */}
+            <div className="mt-4">
+              <i className="pi pi-check-circle" style={{ fontSize: '2rem', color: 'var(--green-500)' }}></i>
+              <h3 className="mt-2">Anda Sudah Masuk</h3>
+              <p className="text-color-secondary">Waktu Check-In:</p>
+              <h2 className="my-2" style={{ color: 'var(--text-color)' }}>{checkInTime} WIB</h2>
+              <Button
+                label="Check-Out"
+                icon="pi pi-sign-out"
+                className="w-full p-button-danger p-button-lg mt-2"
+                onClick={handleCheckOut}
+                loading={isSubmitting}
+              />
+            </div>
           </div>
         );
         
       case 'checked_out':
         return (
           <div className="text-center">
-            <i className="pi pi-thumbs-up" style={{ fontSize: '3rem', color: 'var(--blue-500)' }}></i>
-            <h3 className="mt-3">Absensi Selesai</h3>
-            <p className="text-color-secondary">
-              Anda sudah berhasil Check-Out hari ini. Terima kasih!
-            </p>
+            {clockDisplay} {/* Tampilkan jam */}
+            <Divider /> {/* Pemisah */}
+            <div className="mt-4">
+              <i className="pi pi-thumbs-up" style={{ fontSize: '2rem', color: 'var(--blue-500)' }}></i>
+              <h3 className="mt-2">Absensi Selesai</h3>
+              <p className="text-color-secondary">
+                Anda sudah berhasil Check-Out hari ini. Terima kasih!
+              </p>
+            </div>
           </div>
         );
     }
   };
+  
+  // --- Fungsi Render lainnya (tidak berubah) ---
   
   const statusBodyTemplate = (log: AttendanceLog) => { 
     const severityMap: { [key: string]: 'success' | 'warning' | 'danger' } = {
@@ -259,4 +316,3 @@ export default function AbsensiPage() {
     </div>
   );
 }
-

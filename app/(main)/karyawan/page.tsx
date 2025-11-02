@@ -1,8 +1,8 @@
-// /app/karyawan/page.tsx
+// /app/page.tsx
 
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react'; // <-- Impor useEffect
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Panel } from 'primereact/panel';
@@ -10,11 +10,14 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
 import Link from 'next/link';
+import { Divider } from 'primereact/divider';
+import { Toast } from 'primereact/toast'; // <-- 1. Impor Toast
+import { Skeleton } from 'primereact/skeleton'; // <-- 2. Impor Skeleton
 
 // --- Tipe Data Bohongan (Mock) ---
 interface RingkasanStats {
   totalHadir: number;
-  totalTidakHadir: number; // Mengganti nama variabel agar lebih jelas
+  totalTidakHadir: number;
   sisaCuti: number;
 }
 
@@ -28,25 +31,83 @@ interface PengajuanPending {
 // --- Data Bohongan (Mock) ---
 const mockStats: RingkasanStats = {
   totalHadir: 20,
-  totalTidakHadir: 2, // Mengganti nama variabel
+  totalTidakHadir: 2,
   sisaCuti: 8,
 };
 
-// Filter data mock agar hanya menampilkan yang pending di state awal
 const mockPending: PengajuanPending[] = [
   { id: 'C-001', jenis: 'Cuti', tanggal: '28 Okt 2025', status: 'Pending' },
-  { id: 'L-002', jenis: 'Lembur', tanggal: '25 Okt 2025', status: 'Approved' }, // Contoh data approved
-  { id: 'C-004', jenis: 'Cuti', tanggal: '29 Okt 2025', status: 'Pending' }, // Contoh data pending lain
+  { id: 'L-002', jenis: 'Lembur', tanggal: '25 Okt 2025', status: 'Approved' }, 
+  { id: 'C-004', jenis: 'Cuti', tanggal: '29 Okt 2025', status: 'Pending' }, 
 ];
 
+// --- 3. TEMPAT UNTUK API BACKEND ---
+const API_URLS = {
+  stats: '/api/karyawan/dashboard/stats',
+  pending: '/api/karyawan/dashboard/pending-requests'
+};
+// ---------------------------------
+
 export default function DashboardRingkasanPage() {
-  const [stats] = useState(mockStats);
-  // Filter daftar pengajuan yang statusnya 'Pending'
-  const [pendingList] = useState(mockPending.filter(p => p.status === 'Pending'));
+  const toast = useRef<Toast>(null); // <-- Ref untuk Toast
+
+  // --- 4. Ubah State agar diisi oleh useEffect ---
+  const [stats, setStats] = useState<RingkasanStats | null>(null);
+  const [pendingList, setPendingList] = useState<PengajuanPending[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // <-- State loading
+
+  // --- 5. useEffect untuk memuat data dari API ---
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      setIsLoading(true);
+      try {
+        //
+        // --- TEMPAT ANDA MEMASUKKAN BACKEND ---
+        // (Hilangkan komentar ini saat backend siap)
+        //
+        // const [statsResponse, pendingResponse] = await Promise.all([
+        //   fetch(API_URLS.stats),
+        //   fetch(API_URLS.pending)
+        // ]);
+        //
+        // if (!statsResponse.ok || !pendingResponse.ok) {
+        //   throw new Error('Gagal memuat data dashboard');
+        // }
+        //
+        // const statsData: RingkasanStats = await statsResponse.json();
+        // const pendingData: PengajuanPending[] = await pendingResponse.json();
+        //
+        // setStats(statsData);
+        // setPendingList(pendingData.filter(p => p.status === 'Pending'));
+        //
+        // --- Batas Tempat Backend ---
+
+
+        // --- Simulasi (HAPUS INI SAAT BACKEND SIAP) ---
+        await new Promise(resolve => setTimeout(resolve, 1200)); // Simulasi loading
+        setStats(mockStats);
+        setPendingList(mockPending.filter(p => p.status === 'Pending'));
+        // --- Batas Simulasi ---
+        
+      } catch (error) {
+        console.error(error);
+        toast.current?.show({ 
+          severity: 'error', 
+          summary: 'Error', 
+          detail: (error as Error).message || 'Gagal memuat data', 
+          life: 3000 
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []); // [] = Dijalankan sekali saat halaman dimuat
 
   // Helper untuk styling status di tabel
   const statusBodyTemplate = (rowData: PengajuanPending) => {
-    // Map untuk menentukan warna Tag berdasarkan status
+    // ... (kode ini tidak berubah) ...
     const severityMap: { [key: string]: 'warning' | 'success' | 'danger' } = {
       Pending: 'warning',
       Approved: 'success',
@@ -55,22 +116,104 @@ export default function DashboardRingkasanPage() {
     return <Tag value={rowData.status} severity={severityMap[rowData.status]} />;
   };
 
+  // --- 6. Tampilan Loading (Skeleton) ---
+  if (isLoading) {
+    return (
+      <div>
+        {/* Skeleton untuk Header */}
+        <div className="mb-4">
+          <Skeleton width="20rem" height="2.5rem" className="mb-2"></Skeleton>
+          <Skeleton width="15rem" height="1.5rem"></Skeleton>
+        </div>
+        <Divider className="mb-4" />
+
+        {/* Skeleton untuk Kartu Statistik */}
+        <div className="grid">
+          <div className="col-12 md:col-4">
+            <Card className="shadow-1 h-full">
+              <div className="flex align-items-center">
+                <Skeleton shape="circle" size="3rem" className="mr-3"></Skeleton>
+                <div>
+                  <Skeleton width="10rem" height="1rem" className="mb-2"></Skeleton>
+                  <Skeleton width="5rem" height="1.5rem"></Skeleton>
+                </div>
+              </div>
+            </Card>
+          </div>
+          <div className="col-12 md:col-4">
+             <Card className="shadow-1 h-full">
+              <div className="flex align-items-center">
+                <Skeleton shape="circle" size="3rem" className="mr-3"></Skeleton>
+                <div>
+                  <Skeleton width="10rem" height="1rem" className="mb-2"></Skeleton>
+                  <Skeleton width="5rem" height="1.5rem"></Skeleton>
+                </div>
+              </div>
+            </Card>
+          </div>
+          <div className="col-12 md:col-4">
+             <Card className="shadow-1 h-full">
+              <div className="flex align-items-center">
+                <Skeleton shape="circle" size="3rem" className="mr-3"></Skeleton>
+                <div>
+                  <Skeleton width="10rem" height="1rem" className="mb-2"></Skeleton>
+                  <Skeleton width="5rem" height="1.5rem"></Skeleton>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* Skeleton untuk Panel */}
+        <div className="grid mt-3">
+          <div className="col-12 lg:col-8">
+            <Panel header="Memuat Pengajuan...">
+              <Skeleton height="150px"></Skeleton>
+            </Panel>
+          </div>
+          <div className="col-12 lg:col-4">
+            <Panel header="Memuat Akses Cepat...">
+              <Skeleton height="150px"></Skeleton>
+            </Panel>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- 7. Tampilan Utama (Jika data gagal dimuat, stats akan null) ---
+  if (!stats) {
+    return (
+      <div>
+        <Toast ref={toast} />
+        <Card title="Gagal Memuat Data">
+          <p>Terjadi kesalahan saat mengambil data dashboard. Silakan coba muat ulang halaman.</p>
+        </Card>
+      </div>
+    );
+  }
+
+  // --- Tampilan Utama (Jika data sukses dimuat) ---
   return (
     <div>
+      <Toast ref={toast} />
+      
       {/* --- 1. Header Sambutan --- */}
       <div className="mb-4">
-        <h2 className="m-0">Dashboard</h2>
-        <h3 className="m-0">Karyawan</h3>
-        <p className="text-color-secondary">
-          Ringkasan aktivitas dan status Anda bulan ini.
+        <h2 className="m-0 text-4xl font-bold text-900">Selamat Datang, Lugas!</h2>
+        <p className="text-color-secondary text-lg">
+          Berikut adalah ringkasan aktivitas Anda hari ini.
         </p>
       </div>
+      <Divider className="mb-4" /> 
 
       {/* --- 2. Ringkasan Absensi (Statistik) --- */}
       <div className="grid">
         {/* Card Total Hadir */}
         <div className="col-12 md:col-4">
-          <Card className="shadow-1 h-full"> {/* Tambah h-full agar tinggi sama */}
+          <Card 
+            className="shadow-1 h-full hover:shadow-4 transition-duration-200 transition-ease-in-out cursor-pointer"
+          >
             <div className="flex align-items-center">
               <i className="pi pi-check-circle text-3xl text-green-500 mr-3"></i>
               <div>
@@ -82,7 +225,9 @@ export default function DashboardRingkasanPage() {
         </div>
         {/* Card Total Tidak Hadir */}
         <div className="col-12 md:col-4">
-          <Card className="shadow-1 h-full"> {/* Tambah h-full */}
+          <Card 
+            className="shadow-1 h-full hover:shadow-4 transition-duration-200 transition-ease-in-out cursor-pointer"
+          >
             <div className="flex align-items-center">
               <i className="pi pi-exclamation-triangle text-3xl text-orange-500 mr-3"></i>
               <div>
@@ -94,7 +239,9 @@ export default function DashboardRingkasanPage() {
         </div>
         {/* Card Sisa Cuti */}
         <div className="col-12 md:col-4">
-          <Card className="shadow-1 h-full"> {/* Tambah h-full */}
+          <Card 
+            className="shadow-1 h-full hover:shadow-4 transition-duration-200 transition-ease-in-out cursor-pointer"
+          >
             <div className="flex align-items-center">
               <i className="pi pi-calendar text-3xl text-blue-500 mr-3"></i>
               <div>
@@ -113,7 +260,12 @@ export default function DashboardRingkasanPage() {
         <div className="col-12 lg:col-8">
           <Panel header="Ringkasan Pengajuan (Tertunda)">
             {pendingList.length > 0 ? (
-              <DataTable value={pendingList} responsiveLayout="scroll" size="small"> {/* Tambah size small */}
+              <DataTable 
+                value={pendingList} 
+                responsiveLayout="stack" 
+                className="compact-datatable-mobile" 
+                size="small"
+              >
                 <Column field="jenis" header="Jenis Pengajuan"></Column>
                 <Column field="tanggal" header="Tanggal Diajukan"></Column>
                 <Column header="Status" body={statusBodyTemplate}></Column>
@@ -128,12 +280,11 @@ export default function DashboardRingkasanPage() {
         <div className="col-12 lg:col-4">
           <Panel header="Akses Cepat">
             <div className="flex flex-column gap-3">
-              {/* --- LINK SUDAH DIPERBAIKI --- */}
               <Link href="/karyawan/Absensi" passHref> 
                 <Button 
                   label="Lakukan Absensi" 
                   icon="pi pi-clock" 
-                  className="w-full p-button-success" 
+                  className="w-full p-button-success p-button-raised" 
                 />
               </Link>
               <Link href="/karyawan/Pengajuan/cuti" passHref>
@@ -144,7 +295,7 @@ export default function DashboardRingkasanPage() {
                   outlined 
                 />
               </Link>
-              <Link href="/karyawan/profil" passHref>
+              <Link href="/karyawan/Profil" passHref>
                 <Button 
                   label="Lihat Profil Saya" 
                   icon="pi pi-user" 
@@ -152,7 +303,6 @@ export default function DashboardRingkasanPage() {
                   outlined 
                 />
               </Link>
-              {/* ----------------------------- */}
             </div>
           </Panel>
         </div>
@@ -161,3 +311,4 @@ export default function DashboardRingkasanPage() {
     </div>
   );
 }
+
