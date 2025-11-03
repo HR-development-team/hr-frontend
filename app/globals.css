@@ -31,6 +31,8 @@ html {
 }
 
 h1,
+h2,
+h3,
 span,
 p {
 	margin: 0;
@@ -51,6 +53,19 @@ body {
 			rgb(var(--background-end-rgb))
 		)
 		rgb(var(--background-start-rgb));
+}
+
+/* Tinggi Default (Mobile) */
+.h-sidebar-calc {
+	height: calc(100vh - 4.5rem);
+}
+
+/* Tinggi Desktop (Menimpa di breakpoint md PrimeFlex: 992px) */
+@media screen and (min-width: 992px) {
+	.h-sidebar-calc {
+		height: calc(100vh - 5rem) !important;
+		/* Gunakan !important jika class lain di PrimeFlex memiliki prioritas lebih tinggi */
+	}
 }
 
 /* 1. Untuk hover link sidebar (padanan hover:bg-gray-100) */

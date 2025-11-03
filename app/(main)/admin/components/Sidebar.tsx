@@ -3,6 +3,7 @@
 import {
 	Building2,
 	FileText,
+	LayoutDashboard,
 	MonitorCheck,
 	Users,
 } from "lucide-react";
@@ -29,7 +30,7 @@ const menuItems: MenuItems[] = [
 	{
 		id: "dashboard",
 		label: "Dashboard",
-		icon: <Users />,
+		icon: <LayoutDashboard />,
 		href: "/admin/dashboard",
 	},
 	{
@@ -47,7 +48,7 @@ const menuItems: MenuItems[] = [
 			},
 			{
 				label: "Master Karyawan",
-				href: "#",
+				href: "/admin/master/employees",
 			},
 			{
 				label: "Master User",
@@ -62,11 +63,11 @@ const menuItems: MenuItems[] = [
 		children: [
 			{
 				label: "Monitoring Kehadiran",
-				href: "#",
+				href: "/admin/attendance",
 			},
 			{
 				label: "Pengajuan Cuti",
-				href: "#",
+				href: "/admin/leave",
 			},
 		],
 	},
@@ -141,7 +142,7 @@ export default function SidebarPopup({
 									}`}
 								>
 									{/* <span>{child.icon}</span> */}
-									<span className="text-500 font-medium py-1 ml-3">
+									<span className="font-medium py-1 ml-3">
 										{child.label}
 									</span>
 								</Link>
@@ -175,12 +176,17 @@ export default function SidebarPopup({
 	};
 
 	return (
-		<aside className={`fixed left-0 top-0 md:relative z-4 h-screen min-w-min md:w-2 bg-white shadow-1 px-3 transition-transform animation-duration-300 animation-ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+		<aside
+			className={`h-sidebar-calc fixed left-0 top-auto bottom-0 md:relative z-4 w-16rem bg-white shadow-2 px-3 transition-transform animation-duration-300 animation-ease-in-out md:translate-x-0 ${
+				sidebarOpen ? "translate-x-0" : "-translate-x-100"
+			}`}
+		>
 			<div
-				style={{ marginTop: "7rem", marginBottom: "7rem" }}
+				style={{ marginTop: "2rem", marginBottom: "7rem" }}
 				className="bg-white px-2 border-round-xl"
 			>
 				<nav>{menuItems.map(renderNavItem)}</nav>
+				{sidebarOpen && <div>Sidebar Terbuka</div>}
 			</div>
 		</aside>
 	);
