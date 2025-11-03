@@ -1,63 +1,20 @@
-"use client";
-
-import { User, Users } from "lucide-react";
+import { Building } from "lucide-react";
 import { Card } from "primereact/card";
-import DataTableEmployees from "./components/DataTableEmployees";
+import DataTableEmployees from "./components/DataTableDepartment";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
-import EmployeeDialogForm from "./components/EmployeeDialogForm";
-import { useRef, useState } from "react";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-import { Dialog } from "primereact/dialog";
-import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 
 export default function Employees() {
-	const toastRef = useRef<any>(null);
-	const isInitialLoad = useRef<boolean>(true);
-
-	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
-	const [selectedEmployee, setSelectedEmployee] =
-		useState<EmployeeFormData | null>(null);
-
-	const handleHideDialog = () => {
-		setIsDialogVisible(false);
-		setSelectedEmployee(null);
-		setDialogMode(null);
-	};
-
-	const handleEdit = () => {
-		setDialogMode("edit");
-		setIsDialogVisible(true);
-	};
-
-	const handleDelete = () => {
-		confirmDialog({
-			message: `Yakin ingin menghapus karyawan`,
-		});
-	};
-
-	const handleFormSubmit = (formData: EmployeeFormData) => {
-		if (dialogMode === "edit") {
-			console.log("LOGIKA EDIT:", formData);
-			// Panggil API update Anda di sini
-		} else {
-			console.log("LOGIKA TAMBAH:", formData);
-			// Panggil API tambah Anda di sini
-		}
-		handleHideDialog();
-	};
-
 	return (
 		<div>
 			<div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
 				<div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
-					<Users className="w-2rem h-2rem" />
+					<Building className="w-2rem h-2rem" />
 				</div>
 				<div>
 					<h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-						Data Karyawan
+						Data Departemen
 					</h1>
 					<p className="text-sm md:text-md text-gray-500">
 						Kelola data diri dan informasi karyawan
@@ -68,8 +25,8 @@ export default function Employees() {
 			<Card>
 				<div className="flex flex-column gap-4">
 					<div className="flex gap-2 align-items-center">
-						<User className="h-2" />
-						<h2 className="text-base text-800">Master Data Karyawan</h2>
+						<Building className="h-2" />
+						<h2 className="text-base text-800">Master Data Departemen</h2>
 					</div>
 
 					{/* filters */}
@@ -94,7 +51,7 @@ export default function Employees() {
 							<div className="flex flex-column gap-2">
 								<span>Terapkan</span>
 								<div className="flex align-items-center gap-3">
-									<Button icon="pi pi-check" type="submit" severity="info" />
+									<Button icon="pi pi-check" type="submit" />
 
 									<Button icon="pi pi-times" severity="secondary" />
 								</div>
@@ -115,13 +72,8 @@ export default function Employees() {
 								<Button
 									icon="pi pi-plus"
 									label="Tambah"
-									severity="info"
 									pt={{
 										icon: { className: "mr-2" },
-									}}
-									onClick={() => {
-										setDialogMode("add");
-										setIsDialogVisible(true);
 									}}
 								/>
 							</div>
@@ -129,23 +81,8 @@ export default function Employees() {
 					</div>
 
 					{/* data table */}
-					<DataTableEmployees onEdit={handleEdit} onDelete={handleDelete} />
+					<DataTableEmployees />
 				</div>
-
-				<ConfirmDialog />
-
-				<Dialog
-					header={selectedEmployee ? "Edit Karyawan" : "Tambah Karyawan"}
-					visible={isDialogVisible}
-					onHide={handleHideDialog}
-					modal
-					style={{ width: "450px" }}
-				>
-					<EmployeeDialogForm
-						employeeData={selectedEmployee}
-						// onSubmit={}
-					/>
-				</Dialog>
 			</Card>
 		</div>
 	);

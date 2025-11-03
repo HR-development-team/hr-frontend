@@ -40,7 +40,7 @@ const menuItems: MenuItems[] = [
 		children: [
 			{
 				label: "Master Departemen",
-				href: "#",
+				href: "/admin/master/departments",
 			},
 			{
 				label: "Master Divisi",
@@ -52,6 +52,10 @@ const menuItems: MenuItems[] = [
 			},
 			{
 				label: "Master User",
+				href: "#",
+			},
+			{
+				label: "Master Tipe Cuti",
 				href: "#",
 			},
 		],
@@ -142,9 +146,7 @@ export default function SidebarPopup({
 									}`}
 								>
 									{/* <span>{child.icon}</span> */}
-									<span className="font-medium py-1 ml-3">
-										{child.label}
-									</span>
+									<span className="font-medium py-1 ml-3">{child.label}</span>
 								</Link>
 							))}
 						</AccordionTab>

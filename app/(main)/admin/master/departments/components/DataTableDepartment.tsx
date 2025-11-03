@@ -1,74 +1,56 @@
 "use client";
 
+import { Divide } from "lucide-react";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
-import { DataTable, DataTablePageEvent } from "primereact/datatable";
+import { DataTable } from "primereact/datatable";
 import { Tag } from "primereact/tag";
-import React, { useState } from "react";
-import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
+import React from "react";
 
-const employees: EmployeeFormData[] = [
+const employees = [
 	{
-		// id: 1,
+		id: 1,
 		first_name: "Budi",
 		last_name: "Santoso",
 		contact_phone: "000000",
 		address: "Jatim",
-		join_date: new Date(),
+		join_date: "2025-10-25",
 		position_id: 9,
 		status: "Aktif",
 	},
 	{
-		// id: 2,
+		id: 2,
 		first_name: "Siti",
 		last_name: "Rahayu",
 		contact_phone: "000000",
 		address: "Jabar",
-		join_date: new Date(),
+		join_date: "2025-10-26",
 		position_id: 9,
 		status: "Aktif",
 	},
 	{
-		// id: 3,
+		id: 3,
 		first_name: "Ahmad",
 		last_name: "Fauzi",
 		contact_phone: "000000",
 		address: "Jateng",
-		join_date: new Date(),
+		join_date: "2025-10-27",
 		position_id: 9,
 		status: "Aktif",
 	},
 	{
-		// id: 4,
+		id: 4,
 		first_name: "Dewi",
 		last_name: "Lestari",
 		contact_phone: "000000",
 		address: "Jaksel",
-		join_date: new Date(),
+		join_date: "2025-10-28",
 		position_id: 9,
-		status: "Non-Aktif",
+		status: "Keluar",
 	},
 ];
 
-interface DataTableEmployeesProp {
-	// users: EmployeeFormData;
-	// isLoading: boolean;
-	// lazyParams: { first: number; rows: number; page: number };
-	// totalItems: number;
-	// onPageChange: (event: DataTablePageEvent) => void;
-	onEdit: (employee: EmployeeFormData) => void;
-	onDelete: (employee: EmployeeFormData) => void;
-}
-
-export default function DataTableEmployees({
-	// users,
-	// isLoading,
-	// lazyParams,
-	// totalItems,
-	// onPageChange,
-	onEdit,
-	onDelete,
-}: DataTableEmployeesProp) {
+export default function DataTableEmployees() {
 	const newLocal =
 		"border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
@@ -77,18 +59,6 @@ export default function DataTableEmployees({
 
 		return <Tag value={rowData.status} severity={severity} />;
 	};
-
-	const joinDateBodyTemplate = (rowData: EmployeeFormData) => {
-		if (
-			rowData.join_date &&
-			typeof rowData.join_date.toLocaleString === "function"
-		) {
-			return rowData.join_date.toLocaleDateString("id-ID");
-		}
-
-		return null;
-	};
-
 	return (
 		<DataTable
 			value={employees}
@@ -105,18 +75,9 @@ export default function DataTableEmployees({
 				header="Nama Belakang"
 				style={{ width: "25%" }}
 			/>
-			<Column
-				field="contact_phone"
-				header="Nomor Telepon"
-				style={{ width: "25%" }}
-			/>
+			<Column field="contact_phone" header="Nomor Telepon" style={{ width: "25%" }} />
 			<Column field="address" header="Alamat" style={{ width: "25%" }} />
-			<Column
-				field="join_date"
-				header="Tanggal Masuk"
-				body={joinDateBodyTemplate}
-				style={{ width: "25%" }}
-			/>
+			<Column field="join_date" header="Tanggal Masuk" style={{ width: "25%" }} />
 			<Column field="position_id" header="Jabatan" style={{ width: "25%" }} />
 			<Column
 				field="status"
@@ -126,25 +87,15 @@ export default function DataTableEmployees({
 			/>
 			<Column
 				header="Aksi"
-				body={(row: EmployeeFormData) => (
+				body={(row) => (
 					<div className="flex gap-2">
 						<Button
 							icon="pi pi-pencil text-sm"
 							size="small"
 							severity="warning"
-							onClick={() => {
-								onEdit(row);
-							}}
 						/>
 
-						<Button
-							icon="pi pi-trash text-sm"
-							size="small"
-							severity="danger"
-							onClick={() => {
-								onDelete(row);
-							}}
-						/>
+						<Button icon="pi pi-trash text-sm" size="small" severity="danger" />
 					</div>
 				)}
 				style={{ width: "25%" }}
