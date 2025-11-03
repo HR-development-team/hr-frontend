@@ -1,0 +1,374 @@
+/* /app/globals.css */
+
+/* --- 1. DEFINISI WARNA (VARIABEL) --- */
+:root {
+    /* Tema Terang (Light Mode) - Sesuai style Anda */
+    --surface-ground: #f8f9fa;
+    --surface-card: #ffffff;
+    --surface-border: #dee2e6;
+    --text-color: #334155;
+    --text-color-secondary: #64748b;
+    
+    --topbar-bg: var(--surface-card);
+    --topbar-color: var(--text-color);
+    --topbar-border: var(--surface-border);
+    
+    --hover-bg: #f1f5f9;
+    --active-bg: #f1f5f9;
+    --active-color: #334155;
+    
+    --logo-sub-color: #a4b8ce; /* Warna biru untuk "Karyawan" */
+    --logout-color: #EF4444; /* Merah untuk logout */
+}
+
+html.dark {
+    /* Tema Gelap (Dark Mode) - Menimpa variabel di atas */
+    --surface-ground: #0f172a; /* Latar belakang (Biru Gelap Pekat) */
+    --surface-card: #1e293b; /* Warna kartu (Biru Gelap) */
+    --surface-border: #334155; /* Warna border */
+    --text-color: #f1f5f9; /* Teks (Putih keabuan) */
+    --text-color-secondary: #94a3b8; /* Teks sekunder (Abu-abu) */
+    
+    --topbar-bg: var(--surface-card);
+    --topbar-border: var(--surface-border);
+
+    --hover-bg: #334155;
+    --active-bg: #475569;
+    --active-color: #ffffff;
+
+    --logo-sub-color: #a4b8ce; /* Biru muda untuk "Karyawan" */
+    
+    /* Perbaikan agar PrimeReact tahu ini dark mode */
+    color-scheme: dark;
+}
+
+
+/* --- 2. STYLE DASAR (MENGGUNAKAN VARIABEL) --- */
+body {
+    overflow-y: hidden; 
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    color: var(--text-color); /* Diubah */
+    background-color: var(--surface-ground); /* Diubah */
+}
+
+/* Ukuran dasar (Dari file Anda) */
+:root {
+    --topbar-height: 5rem;
+    --sidebar-width: 18rem;
+    --sidebar-mobile-width: 16rem;
+    --content-padding: 2rem;
+    --content-mobile-padding: 1rem;
+}
+
+/* Wrapper Utama (Dari file Anda) */
+.layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: margin-left 0.3s;
+}
+
+/* --- 3. KOMPONEN LAYOUT (MENGGUNAKAN VARIABEL) --- */
+
+/* 1. Topbar (Dari file Anda, diubah ke var) */
+.layout-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--topbar-height);
+    background-color: var(--topbar-bg); /* Diubah */
+    border-bottom: 1px solid var(--topbar-border); /* Diubah */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    z-index: 1000;
+}
+
+.layout-topbar-left {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; /* Tambahan agar tidak 'shrink' */
+}
+
+.layout-menu-button,
+.layout-user-button {
+    font-size: 1.5rem;
+    color: var(--topbar-color); /* Diubah */
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 0.75rem;
+    transition: background-color 0.2s;
+    flex-shrink: 0; /* Tambahan */
+}
+.layout-menu-button:hover,
+.layout-user-button:hover {
+    background-color: var(--hover-bg); /* Diubah */
+}
+
+.layout-topbar-logo {
+    display: flex;
+    align-items: center;
+    color: var(--topbar-color); /* Diubah */
+    text-decoration: none;
+    margin-left: 1rem;
+    flex-shrink: 0; /* Tambahan */
+}
+.logo-text-main {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color); /* Diubah */
+    line-height: 1.2; /* Merapikan teks Marstech */
+}
+.logo-text-sub {
+    font-size: 0.8rem;
+    color: var(--logo-sub-color); /* Diubah ke var biru */
+}
+
+.layout-topbar-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; /* Tambahan */
+}
+
+.layout-user-button {
+    display: flex;
+    align-items: center;
+}
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-color); /* Diubah */
+}
+.user-id, .email { /* Menggabungkan .email */
+    font-size: 0.75rem;
+    color: var(--text-color-secondary); /* Diubah */
+    font-weight: normal; 
+}
+
+/* 2. Sidebar (Dari file Anda, diubah ke var) */
+.layout-sidebar {
+    position: fixed;
+    top: var(--topbar-height); 
+    left: 0;
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--topbar-height));
+    background-color: var(--surface-card); /* Diubah */
+    border-right: 1px solid var(--surface-border); /* Diubah */
+    overflow-y: auto;
+    transition: transform 0.3s ease-in-out;
+    z-index: 999;
+}
+
+/* 3. Konten Utama (Dari file Anda, diubah ke var) */
+.layout-main-container {
+    padding-top: var(--topbar-height);
+    padding-left: var(--sidebar-width);
+    transition: padding-left 0.3s ease-in-out;
+    flex: 1;
+}
+
+.layout-main {
+    padding: var(--content-padding);
+    background-color: var(--surface-ground); /* Diubah */
+    min-height: calc(100vh - var(--topbar-height));
+    overflow-y: auto;
+    height: calc(100vh - var(--topbar-height)); 
+}
+
+/* Logika Buka/Tutup Sidebar (Dari file Anda) */
+.layout-wrapper.layout-static-inactive .layout-sidebar {
+    transform: translateX(-100%);
+}
+.layout-wrapper.layout-static-inactive .layout-main-container {
+    padding-left: 0;
+}
+
+/* 4. Gaya Menu (Dari file Anda, diubah ke var) */
+.layout-menu {
+    list-style-type: none;
+    padding: 1rem;
+    margin: 0;
+}
+.layout-menu li {
+    margin-bottom: 0.5rem;
+}
+.layout-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    color: var(--text-color-secondary); /* Diubah */
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+.layout-menu li a:hover {
+    background-color: var(--hover-bg); /* Diubah */
+}
+
+.layout-menu li.active-menuitem a {
+    background-color: var(--active-bg); /* Diubah */
+    color: var(--active-color); /* Diubah */
+    font-weight: 600; /* Tambahan */
+}
+.layout-menuitem-icon {
+    margin-right: 0.85rem;
+    font-size: 1.25rem;
+}
+
+/* Style Submenu (Dari file Anda, diubah ke var) */
+.layout-submenu-toggler {
+    font-size: 0.8rem;
+    margin-left: auto;
+    transition: transform 0.2s;
+}
+.active-menuitem > a > .layout-submenu-toggler {
+    transform: rotate(-180deg);
+}
+.layout-submenu {
+    list-style-type: none;
+    padding: 0 0 0 1.75rem;
+    margin: 0.5rem 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+}
+.layout-submenu.layout-submenu-active {
+    max-height: 1000px;
+    transition: max-height 0.5s ease-in-out;
+}
+.layout-submenu li a {
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+    padding-left: 0.75rem;
+}
+.layout-submenu li.active-menuitem a {
+    background-color: transparent;
+    color: var(--active-color); /* Diubah */
+    font-weight: 700;
+}
+
+/* --- 5. STYLE CUSTOM (MENGGUNAKAN VARIABEL) --- */
+
+/* Kustomisasi Avatar (Dari file Anda) */
+.p-avatar.p-avatar-info {
+    background-color: #e5e7eb;
+    color: #4b5563;
+}
+/* Override Avatar untuk dark mode */
+html.dark .p-avatar.p-avatar-info {
+    background-color: #60a5fa;
+    color: #1e293b;
+}
+
+/* Kustomisasi Logout (Dari file Anda) */
+.p-menu .p-menuitem.logout-menu-item > .p-menuitem-link .p-menuitem-text,
+.p-menu .p-menuitem.logout-menu-item > .p-menuitem-link .p-menuitem-icon {
+    color: var(--logout-color); /* Diubah */
+    font-weight: 600;
+}
+/* Override Logout untuk dark mode (opsional, agar lebih cerah) */
+html.dark .p-menu .p-menuitem.logout-menu-item > .p-menuitem-link .p-menuitem-text,
+html.dark .p-menu .p-menuitem.logout-menu-item > .p-menuitem-link .p-menuitem-icon {
+    color: #f87171; 
+}
+
+
+/* --- 6. STYLE RESPONSIVE (Dari file Anda) --- */
+
+/* Style untuk 'mask' (Dari file Anda) */
+.layout-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 998;
+    display: none;
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0;
+}
+.layout-wrapper:not(.layout-static-inactive) .layout-mask {
+    display: block;
+    opacity: 1;
+}
+
+/* Tampilan untuk layar di bawah 992px (Dari file Anda) */
+@media (max-width: 991px) {
+
+    .layout-sidebar {
+        transform: translateX(-100%);
+        z-index: 999;
+        top: var(--topbar-height); 
+        height: calc(100vh - var(--topbar-height)); 
+        overflow-y: auto; 
+        width: var(--sidebar-mobile-width);
+        border-right: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    /* Style shadow untuk dark mode */
+    html.dark .layout-sidebar {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
+    }
+
+    .layout-main-container {
+        padding-left: 0 !important;
+    }
+    .layout-main {
+        padding: var(--content-mobile-padding);
+    }
+
+    .layout-wrapper:not(.layout-static-inactive) .layout-sidebar {
+         transform: translateX(0);
+    }
+
+    .layout-topbar .user-name,
+    .layout-topbar .user-id,
+    .layout-topbar .email {
+        display: none;
+    }
+    .layout-topbar-logo {
+        margin-left: 0.5rem;
+    }
+    .layout-topbar {
+        padding: 0 0.75rem;
+    }
+    
+    /* Sembunyikan 'Sistem Informasi' di logo saat mobile */
+    .layout-topbar-logo .logo-text-main:nth-child(2) {
+        display: none;
+    }
+    .layout-topbar-logo .logo-text-main:nth-child(1) {
+        font-size: 1.1rem; /* Perkecil 'Marstech' */
+    }
+    
+    .layout-menu li a {
+        padding: 1rem 1.25rem;
+    }
+    .layout-submenu {
+        padding-left: 2rem;
+    }
+     .layout-submenu li a {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+    
+    /* Style tabel mobile (Dari file Anda) */
+    .compact-datatable-mobile .p-datatable-tbody > tr > td {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+    .compact-datatable-mobile .p-datatable-tbody > tr > td .p-column-title {
+        padding: 0.25rem 0;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: block;
+    }
+}
+
