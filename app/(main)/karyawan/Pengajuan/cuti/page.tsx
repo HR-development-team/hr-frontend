@@ -39,23 +39,24 @@ const JATAH_CUTI_TAHUNAN = 12;
 const mockHistory: LeaveRequest[] = [
   { id: 'C-001', jenisCuti: 'Cuti Tahunan', tanggalMulai: '25 Okt 2025', tanggalSelesai: '25 Okt 2025', status: 'Approved', alasan: 'Acara keluarga' },
   { id: 'C-002', jenisCuti: 'Sakit', tanggalMulai: '15 Okt 2025', tanggalSelesai: '16 Okt 2025', status: 'Approved', alasan: 'Demam' },
-  { id: 'C-003', jenisCuti: 'Cuti Tahunan', tanggalMulai: '01 Nov 2025', tanggalSelesai: '02 Nov 2025', status: 'Pending', alasan: 'Liburan' },
+  { id: 'C-003', jenisCuti: 'Cuti Melahirkan', tanggalMulai: '01 Nov 2025', tanggalSelesai: '02 Nov 2025', status: 'Pending', alasan: 'Persiapan' },
   { id: 'C-004', jenisCuti: 'Cuti Tahunan', tanggalMulai: '05 Sep 2025', tanggalSelesai: '05 Sep 2025', status: 'Approved', alasan: '-' },
-  { id: 'C-005', jenisCuti: 'Sakit', tanggalMulai: '01 Sep 2025', tanggalSelesai: '01 Sep 2025', status: 'Approved', alasan: 'Flu' },
-  { id: 'C-006', jenisCuti: 'Cuti Melahirkan', tanggalMulai: '20 Aug 2025', tanggalSelesai: '20 Aug 2025', status: 'Approved', alasan: 'Keluarga' },
+  { id: 'C-006', jenisCuti: 'Cuti Penting', tanggalMulai: '20 Aug 2025', tanggalSelesai: '20 Aug 2025', status: 'Approved', alasan: 'Keluarga' },
+  { id: 'C-007', jenisCuti: 'Cuti Tahunan', tanggalMulai: '20 Aug 2025', tanggalSelesai: '20 Aug 2025', status: 'Approved', alasan: 'Keluarga' },
 ];
 
 const mockLeaveTypes: LeaveType[] = [
   { name: 'Cuti Tahunan', code: 'CT' },
   { name: 'Cuti Sakit', code: 'CS' },
   { name: 'Cuti Melahirkan', code: 'CM' },
-  { name: 'Cuti Lainya', code: 'CL' },
-  { name: 'Cuti Melahirkan', code: 'CP' },
+  { name: 'Cuti Penting', code: 'CP' }, 
 ];
 
-// --- Konstanta API ---
+// --- Konstanta API (Tempat menaruh URL Backend) ---
 const API_URLS = {
+  // GET: /api/karyawan/cuti/data (Harapannya mengembalikan { history: [], leaveTypes: [], jatahCuti: 12 })
   data: '/api/karyawan/cuti/data',
+  // POST: /api/karyawan/cuti/submit (Mengirim data form baru)
   submit: '/api/karyawan/cuti/submit'
 };
 
@@ -86,6 +87,20 @@ export default function PengajuanCutiPage() {
     const loadPageData = async () => {
       setIsLoadingData(true);
       try {
+        //
+        // --- TEMPAT BACKEND (GET DATA) ---
+        // (Hilangkan komentar ini saat backend siap)
+        //
+        // const response = await fetch(API_URLS.data);
+        // if (!response.ok) throw new Error('Gagal memuat data cuti');
+        // const data = await response.json(); 
+        // 
+        // const { history, leaveTypes, jatahCuti } = data;
+        // setHistory(history);
+        // setLeaveTypes(leaveTypes);
+        //
+        // --- Batas Tempat Backend ---
+
         // --- Simulasi (HAPUS INI SAAT BACKEND SIAP) ---
         await new Promise(resolve => setTimeout(resolve, 1000));
         const history = mockHistory;
@@ -102,32 +117,35 @@ export default function PengajuanCutiPage() {
         history
           .filter((req: LeaveRequest) => req.status === 'Approved')
           .forEach((req: LeaveRequest) => {
+            // Logika ini menghitung SEMUA jenis cuti (untuk data donat)
             cutiTerpakai[req.jenisCuti] = (cutiTerpakai[req.jenisCuti] || 0) + 1;
+            
+            // Logika ini HANYA menghitung Cuti Tahunan (untuk angka Sisa Cuti)
             if (req.jenisCuti === 'Cuti Tahunan') { 
               totalTerpakai++;
             }
           });
         
         const sisa = jatahCuti - totalTerpakai;
-        setSisaCuti(sisa);
+        setSisaCuti(sisa); // Ini akan berisi Sisa Cuti Tahunan
 
         // Siapkan data untuk Doughnut Chart
+        // Chart ini akan menampilkan SEMUA jenis cuti
         const chartJSData = {
           labels: Object.keys(cutiTerpakai),
           datasets: [
             {
               data: Object.values(cutiTerpakai),
-              backgroundColor: ['#42A5F5', '#FFCA28', '#66BB6A', '#FF7043'],
-              hoverBackgroundColor: ['#64B5F6', '#FFD54F', '#81C784', '#FF8A65']
+              backgroundColor: ['#42A5F5', '#FFCA28', '#66BB6A', '#FF7043', '#AB47BC'],
+              hoverBackgroundColor: ['#64B5F6', '#FFD54F', '#81C784', '#FF8A65', '#BA68C8']
             }
           ]
         };
         
-        // --- PERBAIKAN 2: Opsi Chart ---
         const chartJSOptions = {
           cutout: '60%',
           responsive: true,
-          maintainAspectRatio: false, // <-- Tambahkan ini
+          maintainAspectRatio: false, 
           plugins: {
             legend: {
               position: 'bottom' as const,
@@ -176,15 +194,36 @@ export default function PengajuanCutiPage() {
 
     setIsSubmitting(true);
     
-    // Siapkan data untuk dikirim
+    // Siapkan data untuk dikirim ke backend
+    // Sesuai dengan skema DB Anda (leave_requests)
     const submissionData = {
-      leave_type_code: jenisCuti.code, // Kirim 'code' (ID) ke backend
-      start_date: tanggal[0].toISOString().split('T')[0], // Format YYYY-MM-DD
-      end_date: tanggal[1].toISOString().split('T')[0], // Format YYYY-MM-DD
-      reason: alasan
+      leave_type_id: jenisCuti.code, // (FK) Kirim 'code' (ID) ke backend
+      start_date: tanggal[0].toISOString().split('T')[0], // (date) Format YYYY-MM-DD
+      end_date: tanggal[1].toISOString().split('T')[0], // (date) Format YYYY-MM-DD
+      reason: alasan, // (text)
+      // 'employee_id' dan 'status' (pending) akan di-handle oleh backend
     };
 
     try {
+      //
+      // --- TEMPAT BACKEND (POST DATA) ---
+      // (Hilangkan komentar ini saat backend siap)
+      //
+      // console.log("Mengirim data:", JSON.stringify(submissionData));
+      // const response = await fetch(API_URLS.submit, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(submissionData)
+      // });
+      //
+      // if (!response.ok) {
+      //   throw new Error('Gagal mengirim pengajuan ke server');
+      // }
+      //
+      // const newRequest: LeaveRequest = await response.json(); // Data baru dari server
+      //
+      // --- Batas Tempat Backend ---
+      
       // --- Simulasi (HAPUS INI SAAT BACKEND SIAP) ---
       await new Promise(resolve => setTimeout(resolve, 1500));
       // Buat data palsu seolah-olah dari backend
@@ -352,9 +391,8 @@ export default function PengajuanCutiPage() {
             <Skeleton height="300px" />
           ) : (
             // Chart Sebenarnya
-            // --- PERBAIKAN 1: Pindahkan 'height' ke <Chart> ---
             <div className="relative">
-              {/* --- PERBAIKAN 3: CSS Teks Tengah --- */}
+              {/* Teks Tengah */}
               <div className="absolute flex align-items-center justify-content-center w-full" 
                    style={{ 
                      top: '50%', 

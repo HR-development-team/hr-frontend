@@ -223,7 +223,7 @@ export default function DashboardRingkasanPage() {
             </div>
           </Card>
         </div>
-        {/* Card Total Tidak Hadir */}
+        {/* Card Total Telat Hadir */}
         <div className="col-12 md:col-4">
           <Card 
             className="shadow-1 h-full hover:shadow-4 transition-duration-200 transition-ease-in-out cursor-pointer"
@@ -231,7 +231,7 @@ export default function DashboardRingkasanPage() {
             <div className="flex align-items-center">
               <i className="pi pi-exclamation-triangle text-3xl text-orange-500 mr-3"></i>
               <div>
-                <span className="text-color-secondary">Total Tidak Hadir</span>
+                <span className="text-color-secondary">Total Telat Hadir</span>
                 <h3 className="m-0 mt-1">{stats.totalTidakHadir} Hari</h3>
               </div>
             </div>
