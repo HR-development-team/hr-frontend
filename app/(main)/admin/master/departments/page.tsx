@@ -1,11 +1,56 @@
+"use client";
+
 import { Building } from "lucide-react";
 import { Card } from "primereact/card";
-import DataTableEmployees from "./components/DataTableDepartment";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
+import { useRef, useState } from "react";
+import { DepartementFormData } from "@/lib/schemas/departmentFormSchema";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import DataTableDepartment from "./components/DataTableDepartment";
+import { Dialog } from "primereact/dialog";
+import DepartmentDialogForm from "./components/DepartmentDialogForm";
 
-export default function Employees() {
+export default function Department() {
+	const toastRef = useRef<any>(null);
+	const isInitialLoad = useRef<boolean>(true);
+
+	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
+	const [selectedDepartment, setSelectedDepartment] =
+		useState<DepartementFormData | null>(null);
+
+	const handleHideDialog = () => {
+		setIsDialogVisible(false);
+		setSelectedDepartment(null);
+		setDialogMode(null);
+	};
+
+	const handleEdit = (department: DepartementFormData) => {
+		setDialogMode("edit");
+		setIsDialogVisible(true);
+		setSelectedDepartment(department);
+	};
+
+	const handleDelete = (department: DepartementFormData) => {
+		confirmDialog({
+			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
+			header: "Konfirmasi Hapus",
+			message: `Yakin ingin menghapus departemen ${department.name}`,
+		});
+	};
+
+	const handleFormSubmit = (formData: DepartementFormData) => {
+		if (dialogMode === "edit") {
+			console.log("LOGIKA EDIT:", formData);
+			// Panggil API update Anda di sini
+		} else {
+			console.log("LOGIKA TAMBAH:", formData);
+			// Panggil API tambah Anda di sini
+		}
+		handleHideDialog();
+	};
 	return (
 		<div>
 			<div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
@@ -14,10 +59,10 @@ export default function Employees() {
 				</div>
 				<div>
 					<h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-						Data Departemen
+						Master Data Departemen
 					</h1>
 					<p className="text-sm md:text-md text-gray-500">
-						Kelola data diri dan informasi karyawan
+						Kelola data departemen perusahaan
 					</p>
 				</div>
 			</div>
@@ -63,7 +108,7 @@ export default function Employees() {
 							{/* search */}
 							<InputTextComponent
 								icon="pi pi-search"
-								placeholder="Cari berdasarkan ID atau nama"
+								placeholder="Cari berdasarkan Kode atau nama"
 								className="w-full"
 							/>
 
@@ -75,14 +120,33 @@ export default function Employees() {
 									pt={{
 										icon: { className: "mr-2" },
 									}}
+									onClick={() => {
+										setDialogMode("add");
+										setIsDialogVisible(true);
+									}}
 								/>
 							</div>
 						</div>
 					</div>
 
 					{/* data table */}
-					<DataTableEmployees />
+					<DataTableDepartment onEdit={handleEdit} onDelete={handleDelete} />
 				</div>
+
+				<ConfirmDialog />
+
+				<Dialog
+					header={selectedDepartment ? "Edit Departemen" : "Tambah Departemen"}
+					visible={isDialogVisible}
+					onHide={handleHideDialog}
+					modal
+					style={{ width: "50%" }}
+				>
+					<DepartmentDialogForm
+						departmentData={selectedDepartment}
+						// onSubmit={}
+					/>
+				</Dialog>
 			</Card>
 		</div>
 	);

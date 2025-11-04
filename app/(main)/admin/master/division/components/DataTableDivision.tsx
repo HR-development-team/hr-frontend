@@ -5,47 +5,46 @@ import { Column } from "primereact/column";
 import { DataTable, DataTablePageEvent } from "primereact/datatable";
 import { Tag } from "primereact/tag";
 import React, { useState } from "react";
-import { DepartementFormData } from "@/lib/schemas/departmentFormSchema";
+import { DivisionFormData } from "@/lib/schemas/divisionFormSchema";
 
-const department: DepartementFormData[] = [
+const division: DivisionFormData[] = [
 	{
 		// id: 1,
 		code: "DR401",
 		name: "R&D",
-		created_at: new Date() 
+		department_id: 1,
 	},
 	{
 		// id: 2,
 		code: "DO403",
 		name: "Operasi",
-		created_at: new Date() 
+		department_id: 2,
 	},
 	{
 		// id: 3,
 		code: "DP404",
 		name: "Penjualan",
-		created_at: new Date() 
+		department_id: 3,
 	},
 	{
 		// id: 4,
 		code: "DP405",
 		name: "Pemasaran",
-		created_at: new Date() 
+		department_id: 4,
 	},
 ];
 
-
-interface DataTableDepartmentProp {
+interface DataTableDivisionProp {
 	// users: EmployeeFormData;
 	// isLoading: boolean;
 	// lazyParams: { first: number; rows: number; page: number };
 	// totalItems: number;
 	// onPageChange: (event: DataTablePageEvent) => void;
-	onEdit: (department: DepartementFormData) => void;
-	onDelete: (department: DepartementFormData) => void;
+	onEdit: (division: DivisionFormData) => void;
+	onDelete: (division: DivisionFormData) => void;
 }
 
-export default function DataTableDepartment({
+export default function DataTableDivision({
 	// users,
 	// isLoading,
 	// lazyParams,
@@ -53,7 +52,7 @@ export default function DataTableDepartment({
 	// onPageChange,
 	onEdit,
 	onDelete,
-}: DataTableDepartmentProp) {
+}: DataTableDivisionProp) {
 	const newLocal =
 		"border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
@@ -63,20 +62,9 @@ export default function DataTableDepartment({
 		return <Tag value={rowData.status} severity={severity} />;
 	};
 
-	const joinDateBodyTemplate = (rowData: DepartementFormData) => {
-		if (
-			rowData.created_at &&
-			typeof rowData.created_at.toLocaleString === "function"
-		) {
-			return rowData.created_at.toLocaleDateString("id-ID");
-		}
-
-		return null;
-	};
-
 	return (
 		<DataTable
-			value={department}
+			value={division}
 			paginator
 			rows={5}
 			rowsPerPageOptions={[5, 10, 25, 50]}
@@ -84,16 +72,11 @@ export default function DataTableDepartment({
 			// style={{ minWidth: "50rem" }}
 		>
 			<Column field="code" header="Kode" style={{ width: "25%" }} />
-			<Column field="name" header="Nama Departemen" style={{ width: "25%" }} />
-			<Column
-				field="created_at"
-				header="Tanggal Dibuat"
-				body={joinDateBodyTemplate}
-				style={{ width: "25%" }}
-			/>
+			<Column field="name" header="Nama Divisi" style={{ width: "25%" }} />
+			<Column field="department_id" header="Berasal Dari Departemen" style={{ width: "25%" }} />
 			<Column
 				header="Aksi"
-				body={(row: DepartementFormData) => (
+				body={(row: DivisionFormData) => (
 					<div className="flex gap-2">
 						<Button
 							icon="pi pi-pencil text-sm"

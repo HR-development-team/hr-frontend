@@ -44,7 +44,7 @@ const menuItems: MenuItems[] = [
 			},
 			{
 				label: "Master Divisi",
-				href: "#",
+				href: "/admin/master/division",
 			},
 			{
 				label: "Master Karyawan",
