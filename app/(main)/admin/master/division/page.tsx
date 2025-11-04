@@ -1,47 +1,47 @@
 "use client";
 
-import { User, Users } from "lucide-react";
+import { Building, GitFork } from "lucide-react";
 import { Card } from "primereact/card";
-import DataTableEmployees from "./components/DataTableEmployees";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
-import EmployeeDialogForm from "./components/EmployeeDialogForm";
 import { useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
+import { DivisionFormData } from "@/lib/schemas/divisionFormSchema";
+import DataTableDivision from "./components/DataTableDivision";
+import DivisionDialogForm from "./components/DivisionDialogForm";
 
-export default function Employees() {
+export default function Division() {
 	const toastRef = useRef<any>(null);
 	const isInitialLoad = useRef<boolean>(true);
 
 	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
 	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
-	const [selectedEmployee, setSelectedEmployee] =
-		useState<EmployeeFormData | null>(null);
+	const [selectedDepartment, setSelectedDepartment] =
+		useState<DivisionFormData| null>(null);
 
 	const handleHideDialog = () => {
 		setIsDialogVisible(false);
-		setSelectedEmployee(null);
+		setSelectedDepartment(null);
 		setDialogMode(null);
 	};
 
-	const handleEdit = (employee: EmployeeFormData) => {
+	const handleEdit = (division: DivisionFormData) => {
 		setDialogMode("edit");
 		setIsDialogVisible(true);
-		setSelectedEmployee(employee);
+		setSelectedDepartment(division);
 	};
 
-	const handleDelete = (employee: EmployeeFormData) => {
+	const handleDelete = (division: DivisionFormData) => {
 		confirmDialog({
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
-			message: `Yakin ingin menghapus karyawan ${employee.first_name}`,
+			message: `Yakin ingin menghapus divisi ${division.name}`,
 		});
 	};
 
-	const handleFormSubmit = (formData: EmployeeFormData) => {
+	const handleFormSubmit = (formData: DivisionFormData) => {
 		if (dialogMode === "edit") {
 			console.log("LOGIKA EDIT:", formData);
 			// Panggil API update Anda di sini
@@ -51,19 +51,18 @@ export default function Employees() {
 		}
 		handleHideDialog();
 	};
-
 	return (
 		<div>
 			<div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
 				<div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
-					<Users className="w-2rem h-2rem" />
+					<GitFork className="w-2rem h-2rem" />
 				</div>
 				<div>
 					<h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-						Master Data Karyawan
+						Master Data Divisi
 					</h1>
 					<p className="text-sm md:text-md text-gray-500">
-						Kelola data diri dan informasi karyawan
+						Kelola data divisi atau jabatan
 					</p>
 				</div>
 			</div>
@@ -71,8 +70,8 @@ export default function Employees() {
 			<Card>
 				<div className="flex flex-column gap-4">
 					<div className="flex gap-2 align-items-center">
-						<User className="h-2" />
-						<h2 className="text-base text-800">Master Data Karyawan</h2>
+						<GitFork className="h-2" />
+						<h2 className="text-base text-800">Master Data Divisi</h2>
 					</div>
 
 					{/* filters */}
@@ -97,7 +96,7 @@ export default function Employees() {
 							<div className="flex flex-column gap-2">
 								<span>Terapkan</span>
 								<div className="flex align-items-center gap-3">
-									<Button icon="pi pi-check" type="submit" severity="info" />
+									<Button icon="pi pi-check" type="submit" />
 
 									<Button icon="pi pi-times" severity="secondary" />
 								</div>
@@ -109,7 +108,7 @@ export default function Employees() {
 							{/* search */}
 							<InputTextComponent
 								icon="pi pi-search"
-								placeholder="Cari berdasarkan ID atau nama"
+								placeholder="Cari berdasarkan Kode atau nama"
 								className="w-full"
 							/>
 
@@ -118,7 +117,6 @@ export default function Employees() {
 								<Button
 									icon="pi pi-plus"
 									label="Tambah"
-									severity="info"
 									pt={{
 										icon: { className: "mr-2" },
 									}}
@@ -132,20 +130,20 @@ export default function Employees() {
 					</div>
 
 					{/* data table */}
-					<DataTableEmployees onEdit={handleEdit} onDelete={handleDelete} />
+					<DataTableDivision onEdit={handleEdit} onDelete={handleDelete} />
 				</div>
 
 				<ConfirmDialog />
 
 				<Dialog
-					header={selectedEmployee ? "Edit Karyawan" : "Tambah Karyawan"}
+					header={selectedDepartment ? "Edit Divisi" : "Tambah Divisi"}
 					visible={isDialogVisible}
 					onHide={handleHideDialog}
 					modal
-					style={{ width: "75%" }}
+					style={{ width: "50%" }}
 				>
-					<EmployeeDialogForm
-						employeeData={selectedEmployee}
+					<DivisionDialogForm
+						divisionData={selectedDepartment}
 						// onSubmit={}
 					/>
 				</Dialog>
