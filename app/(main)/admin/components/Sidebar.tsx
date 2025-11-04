@@ -52,11 +52,11 @@ const menuItems: MenuItems[] = [
 			},
 			{
 				label: "Master User",
-				href: "#",
+				href: "/admin/master/user",
 			},
 			{
 				label: "Master Tipe Cuti",
-				href: "#",
+				href: "/admin/master/leave-type",
 			},
 		],
 	},
