@@ -2,8 +2,7 @@
 
 import DashboardStats from "./components/DashboardStats";
 import QuickActions from "./components/QuickActions";
-import { InputText } from "primereact/inputtext";
-import { Calendar, CalendarDays, LayoutDashboard } from "lucide-react";
+import { CalendarDays, LayoutDashboard } from "lucide-react";
 import { Card } from "primereact/card";
 import React, { useEffect, useState } from "react";
 

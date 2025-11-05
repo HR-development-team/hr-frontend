@@ -11,15 +11,19 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import DataTableDepartment from "./components/DataTableDepartment";
 import { Dialog } from "primereact/dialog";
 import DepartmentDialogForm from "./components/DepartmentDialogForm";
+import { Toast } from "primereact/toast";
 
 export default function Department() {
-	const toastRef = useRef<any>(null);
+	const toastRef = useRef<Toast>(null);
 	const isInitialLoad = useRef<boolean>(true);
+
+	const [department, setDepartment] = useState<DepartementFormData[]>([]);
 
 	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
 	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
 	const [selectedDepartment, setSelectedDepartment] =
 		useState<DepartementFormData | null>(null);
+	const [errorMessages, setErrorMessages] = useState(null);
 
 	const handleHideDialog = () => {
 		setIsDialogVisible(false);
