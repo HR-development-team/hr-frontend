@@ -6,7 +6,8 @@ export const API_ENDPOINTS = {
 	GETUSER: `${API_URL}/auth/me`,
 
 	ADDDEPARTMENT: `${API_URL}/master-departments`,
-	EDITDEPARTMENT: (id: number) => `${API_URL}/master-departments/${id}`,
-	DELETEDEPARTMENT: (id: number) => `${API_URL}/master-departments/${id}`,
-    GETALLDEPARTMENT: `${API_URL}/master-departments`
+	EDITDEPARTMENT: (id: string) => `${API_URL}/master-departments/${id}`,
+	DELETEDEPARTMENT: (id: string) => `${API_URL}/master-departments/${id}`,
+	GETALLDEPARTMENT: `${API_URL}/master-departments`,
+	GETDEPARTMENTBYID: (id: string) => `${API_URL}/master-departments/${id}`,
 };
