@@ -1,9 +1,8 @@
 "use client";
 
 import DashboardStats from "./components/DashboardStats";
-import QuickActions from "../components/QuickActions";
-import { InputText } from "primereact/inputtext";
-import { Calendar, CalendarDays, LayoutDashboard } from "lucide-react";
+import QuickActions from "./components/QuickActions";
+import { CalendarDays, LayoutDashboard } from "lucide-react";
 import { Card } from "primereact/card";
 import React, { useEffect, useState } from "react";
 
@@ -61,9 +60,7 @@ export default function Dashboard() {
 								<span className="text-sm font-semibold text-800">Kalender</span>
 							</div>
 							<div className="text-center p-4 bg-blue-50 border-round-lg">
-								<p className="text-lg font-bold text-800">
-									{todayDate}
-								</p>
+								<p className="text-lg font-bold text-800">{todayDate}</p>
 								<p className="text-500 text-md">Tidak ada hari libur</p>
 							</div>
 						</div>

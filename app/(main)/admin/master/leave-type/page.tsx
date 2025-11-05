@@ -1,51 +1,47 @@
 "use client";
 
-import { Building } from "lucide-react";
+import { TicketsPlane, User, Users } from "lucide-react";
 import { Card } from "primereact/card";
+import DataTableEmployees from "./components/DataTableEmployees";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
+import EmployeeDialogForm from "./components/EmployeeDialogForm";
 import { useRef, useState } from "react";
-import { DepartementFormData } from "@/lib/schemas/departmentFormSchema";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-import DataTableDepartment from "./components/DataTableDepartment";
 import { Dialog } from "primereact/dialog";
-import DepartmentDialogForm from "./components/DepartmentDialogForm";
-import { Toast } from "primereact/toast";
+import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 
-export default function Department() {
-	const toastRef = useRef<Toast>(null);
+export default function LeaveType() {
+	const toastRef = useRef<any>(null);
 	const isInitialLoad = useRef<boolean>(true);
-
-	const [department, setDepartment] = useState<DepartementFormData[]>([]);
 
 	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
 	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
-	const [selectedDepartment, setSelectedDepartment] =
-		useState<DepartementFormData | null>(null);
-	const [errorMessages, setErrorMessages] = useState(null);
+	const [selectedEmployee, setSelectedEmployee] =
+		useState<EmployeeFormData | null>(null);
 
 	const handleHideDialog = () => {
 		setIsDialogVisible(false);
-		setSelectedDepartment(null);
+		setSelectedEmployee(null);
 		setDialogMode(null);
 	};
 
-	const handleEdit = (department: DepartementFormData) => {
+	const handleEdit = (employee: EmployeeFormData) => {
 		setDialogMode("edit");
 		setIsDialogVisible(true);
-		setSelectedDepartment(department);
+		setSelectedEmployee(employee);
 	};
 
-	const handleDelete = (department: DepartementFormData) => {
+	const handleDelete = (employee: EmployeeFormData) => {
 		confirmDialog({
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
-			message: `Yakin ingin menghapus departemen ${department.name}`,
+			message: `Yakin ingin menghapus karyawan ${employee.first_name}`,
 		});
 	};
 
-	const handleFormSubmit = (formData: DepartementFormData) => {
+	const handleFormSubmit = (formData: EmployeeFormData) => {
 		if (dialogMode === "edit") {
 			console.log("LOGIKA EDIT:", formData);
 			// Panggil API update Anda di sini
@@ -55,18 +51,19 @@ export default function Department() {
 		}
 		handleHideDialog();
 	};
+
 	return (
 		<div>
 			<div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
 				<div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
-					<Building className="w-2rem h-2rem" />
+					<TicketsPlane className="w-2rem h-2rem" />
 				</div>
 				<div>
 					<h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-						Master Data Departemen
+						Master Data Tipe Cuti
 					</h1>
 					<p className="text-sm md:text-md text-gray-500">
-						Kelola data departemen perusahaan
+						Kelola tipe cuti beserta saldo setiap cuti
 					</p>
 				</div>
 			</div>
@@ -74,8 +71,8 @@ export default function Department() {
 			<Card>
 				<div className="flex flex-column gap-4">
 					<div className="flex gap-2 align-items-center">
-						<Building className="h-2" />
-						<h2 className="text-base text-800">Master Data Departemen</h2>
+						<TicketsPlane className="h-2" />
+						<h2 className="text-base text-800">Master Data Karyawan</h2>
 					</div>
 
 					{/* filters */}
@@ -100,7 +97,7 @@ export default function Department() {
 							<div className="flex flex-column gap-2">
 								<span>Terapkan</span>
 								<div className="flex align-items-center gap-3">
-									<Button icon="pi pi-check" type="submit" />
+									<Button icon="pi pi-check" type="submit" severity="info" />
 
 									<Button icon="pi pi-times" severity="secondary" />
 								</div>
@@ -112,7 +109,7 @@ export default function Department() {
 							{/* search */}
 							<InputTextComponent
 								icon="pi pi-search"
-								placeholder="Cari berdasarkan Kode atau nama"
+								placeholder="Cari berdasarkan ID atau nama"
 								className="w-full"
 							/>
 
@@ -121,6 +118,7 @@ export default function Department() {
 								<Button
 									icon="pi pi-plus"
 									label="Tambah"
+									severity="info"
 									pt={{
 										icon: { className: "mr-2" },
 									}}
@@ -134,20 +132,20 @@ export default function Department() {
 					</div>
 
 					{/* data table */}
-					<DataTableDepartment onEdit={handleEdit} onDelete={handleDelete} />
+					<DataTableEmployees onEdit={handleEdit} onDelete={handleDelete} />
 				</div>
 
 				<ConfirmDialog />
 
 				<Dialog
-					header={selectedDepartment ? "Edit Departemen" : "Tambah Departemen"}
+					header={selectedEmployee ? "Edit Karyawan" : "Tambah Karyawan"}
 					visible={isDialogVisible}
 					onHide={handleHideDialog}
 					modal
-					style={{ width: "50%" }}
+					style={{ width: "75%" }}
 				>
-					<DepartmentDialogForm
-						departmentData={selectedDepartment}
+					<EmployeeDialogForm
+						employeeData={selectedEmployee}
 						// onSubmit={}
 					/>
 				</Dialog>
