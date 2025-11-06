@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
-import { ProgressBar } from "primereact/progressbar";
 import { Toast } from "primereact/toast";
 import { useRef, useState } from "react";
 
@@ -16,11 +15,6 @@ const defaultValues: LoginFormData = {
 };
 
 export default function Home() {
-	// const [email, setEmail] = useState<string>("");
-	// const [password, setPassword] = useState<string>("");
-	// const [error, setError] = useState<string>("");
-	// const [isLoading, setIsloading] = useState<boolean>(false);
-
 	const toast = useRef<Toast>(null);
 
 	const router = useRouter();
@@ -81,9 +75,11 @@ export default function Home() {
 
 				console.log("Login success", responseData.message);
 
-				setTimeout(() => {
-					router.push("/admin/dashboard");
-				}, 1500);
+				router.push("/admin/dashboard");
+
+				// setTimeout(() => {
+				// 	router.push("/admin/dashboard");
+				// }, 1500);
 			} catch (error: any) {
 				setStatus(error.message);
 
@@ -99,48 +95,10 @@ export default function Home() {
 		enableReinitialize: true,
 	});
 
-	// const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-	// 	e.preventDefault();
-	// 	setError("");
-
-	// 	// temporary validation before using zod
-	// 	if (password.length < 8) {
-	// 		setError("Password minimal harus 8 karakter");
-	// 		return;
-	// 	}
-
-	// 	setIsloading(true);
-
-	// 	try {
-	// 		const res = await fetch("/api/auth/login", {
-	// 			method: "POST",
-	// 			headers: {
-	// 				"Content-Type": "application/json",
-	// 			},
-	// 			body: JSON.stringify({ email, password }),
-	// 		});
-
-	// 		const responseData = await res.json();
-
-	// 		if (!res.ok) throw new Error(responseData.message || "Terjadi kesalahan");
-
-	// 		console.log("Login success", responseData.data);
-
-	// 		router.push("/admin/dashboard");
-	// 	} catch (error: any) {
-	// 		setError(error.message);
-	// 	} finally {
-	// 		setIsloading(false);
-	// 	}
-	// };
-
 	return (
 		<main className="relative min-h-screen">
 			<Toast ref={toast} />
 
-			{formik.isSubmitting && (
-				<ProgressBar mode="indeterminate" className="page-top-loader" />
-			)}
 			<div className="absolute h-full w-full bg-login-pattern" />
 
 			<div className="absolute inset-0 h-full w-full bg-black/10" />

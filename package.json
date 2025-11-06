@@ -17,6 +17,7 @@
     "formik": "^2.4.6",
     "lucide-react": "^0.548.0",
     "next": "13.4.8",
+    "nextjs-toploader": "^3.9.17",
     "primeflex": "^3.3.1",
     "primeicons": "^6.0.1",
     "primereact": "^10.2.1",

@@ -79,11 +79,9 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 				life: 3000,
 			});
 
-			// router.refresh();
+			router.refresh();
 
-			setTimeout(() => {
-				router.push("/login");
-			}, 1500);
+			router.push("/login");
 		} catch (error: any) {
 			console.error("Gagal untuk logout", error);
 
@@ -101,9 +99,6 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 	return (
 		<header className="fixed top-0 z-5 w-full bg-white shadow-1 border-b py-2">
 			<Toast ref={toast} />
-			{isLoading && (
-				<ProgressBar mode="indeterminate" className="page-top-loader" />
-			)}
 			<div className="px-4 md:px-6">
 				<div className="flex justify-content-between align-items-center h-16">
 					<div className="flex gap-2 md:gap-4 align-items-center">

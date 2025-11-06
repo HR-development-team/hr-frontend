@@ -46,6 +46,7 @@ p {
 }
 
 .page-top-loader {
+	color: "red";
 	position: fixed !important;
 	top: 0;
 	left: 0;
