@@ -1,45 +1,32 @@
-"use client";
-import {
+"use client"; import {
 	DivisionFormData,
 	divisionFormSchema,
 } from "@/lib/schemas/divisionFormSchema";
-import {
-	EmployeeFormData,
-	employeeFormSchema,
-} from "@/lib/schemas/employeeFormSchema";
+import { DepartmentData } from "@/lib/types/department";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
-import { Calendar } from "primereact/calendar";
-import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
-import z, { any } from "zod";
-
-// dummy dropdown
-const departmentOptions = [
-	{ label: "Pilih Posisi", value: 0 },
-	{ label: "R&D", value: 1 },
-	{ label: "Penjualan", value: 2 },
-	{ label: "Pemasaran", value: 3 },
-	{ label: "Operasi", value: 4 },
-];
-
-type FormErrors = z.ZodFlattenedError<DivisionFormData>["fieldErrors"];
 
 interface DivisionFormProps {
 	divisionData: DivisionFormData | null;
-	// onSubmit: (formData: EmployeeFormData) => void;
+	onSubmit: (formData: DivisionFormData) => void;
+	departmentOptions: DepartmentData[];
+	isSubmitting: boolean;
 }
 
 const defaultValues: DivisionFormData = {
-	code: "",
+	position_code: "",
 	name: "",
 	department_id: 0,
 };
 
 export default function DivisionDialogForm({
 	divisionData,
-}: // onSubmit,
+	onSubmit,
+	departmentOptions,
+	isSubmitting
+}: 
 DivisionFormProps) {
 	// const [formData, setFormData] = useState<EmployeeFormData>(defaultValues);
 	// const [errors, setErrors] = useState<FormErrors>({});
@@ -64,7 +51,7 @@ DivisionFormProps) {
 		},
 
 		onSubmit: (values) => {
-			// onSubmit(values);
+			onSubmit(values);
 		},
 
 		enableReinitialize: true,
@@ -82,17 +69,17 @@ DivisionFormProps) {
 	return (
 		<form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
 			<div className="w-full flex flex-column gap-2">
-				<label htmlFor="code">Kode Divisi</label>
+				<label htmlFor="position_code">Kode Divisi</label>
 				<InputText
-					id="code"
-					name="code"
-					value={formik.values.code}
+					id="position_code"
+					name="position_code"
+					value={formik.values.position_code}
 					onChange={formik.handleChange}
 					onBlur={formik.handleBlur}
-					className={` ${isFieldInvalid("code") ? "p-invalid" : ""}`}
+					className={` ${isFieldInvalid("position_code") ? "p-invalid" : ""}`}
 				/>
-				{getFieldError("code") && (
-					<small className="p-error">{getFieldError("code")}</small>
+				{getFieldError("position_code") && (
+					<small className="p-error">{getFieldError("position_code")}</small>
 				)}
 			</div>
 
@@ -119,8 +106,12 @@ DivisionFormProps) {
 					name="department_id"
 					value={formik.values.department_id}
 					options={departmentOptions}
+					optionLabel="name"
+					optionValue="id"
 					onChange={formik.handleChange}
 					onBlur={formik.handleBlur}
+					filter
+					filterDelay={400}
 					className={isFieldInvalid("department_id") ? "p-invalid" : ""}
 				/>
 
@@ -135,6 +126,7 @@ DivisionFormProps) {
 					label="Simpan"
 					icon="pi pi-save"
 					severity="success"
+					loading={isSubmitting}
 					disabled={formik.isSubmitting}
 					pt={{
 						icon: {

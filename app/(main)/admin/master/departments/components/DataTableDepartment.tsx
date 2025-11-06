@@ -6,48 +6,22 @@ import { DataTable, DataTablePageEvent } from "primereact/datatable";
 import { Tag } from "primereact/tag";
 import React, { useState } from "react";
 import { DepartementFormData } from "@/lib/schemas/departmentFormSchema";
-
-const department: DepartementFormData[] = [
-	{
-		// id: 1,
-		code: "DR401",
-		name: "R&D",
-		created_at: new Date() 
-	},
-	{
-		// id: 2,
-		code: "DO403",
-		name: "Operasi",
-		created_at: new Date() 
-	},
-	{
-		// id: 3,
-		code: "DP404",
-		name: "Penjualan",
-		created_at: new Date() 
-	},
-	{
-		// id: 4,
-		code: "DP405",
-		name: "Pemasaran",
-		created_at: new Date() 
-	},
-];
-
+import { any } from "zod";
+import { DepartmentData } from "@/lib/types/department";
 
 interface DataTableDepartmentProp {
-	// users: EmployeeFormData;
-	// isLoading: boolean;
+	department: DepartmentData[];
+	isLoading: boolean;
 	// lazyParams: { first: number; rows: number; page: number };
 	// totalItems: number;
 	// onPageChange: (event: DataTablePageEvent) => void;
-	onEdit: (department: DepartementFormData) => void;
-	onDelete: (department: DepartementFormData) => void;
+	onEdit: (department: DepartmentData) => void;
+	onDelete: (department: DepartmentData) => void;
 }
 
 export default function DataTableDepartment({
-	// users,
-	// isLoading,
+	department,
+	isLoading,
 	// lazyParams,
 	// totalItems,
 	// onPageChange,
@@ -63,27 +37,26 @@ export default function DataTableDepartment({
 		return <Tag value={rowData.status} severity={severity} />;
 	};
 
-	const joinDateBodyTemplate = (rowData: DepartementFormData) => {
-		if (
-			rowData.created_at &&
-			typeof rowData.created_at.toLocaleString === "function"
-		) {
-			return rowData.created_at.toLocaleDateString("id-ID");
-		}
-
-		return null;
+	const joinDateBodyTemplate = (rowData: DepartmentData) => {
+		const dateObject = new Date(rowData.created_at);
+		return dateObject.toLocaleDateString("id-ID", {
+			day: "2-digit",
+			month: "long",
+			year: "numeric",
+		});
 	};
 
 	return (
 		<DataTable
 			value={department}
+			loading={isLoading}
 			paginator
 			rows={5}
 			rowsPerPageOptions={[5, 10, 25, 50]}
 			className={newLocal}
 			// style={{ minWidth: "50rem" }}
 		>
-			<Column field="code" header="Kode" style={{ width: "25%" }} />
+			<Column field="department_code" header="Kode" style={{ width: "25%" }} />
 			<Column field="name" header="Nama Departemen" style={{ width: "25%" }} />
 			<Column
 				field="created_at"
@@ -93,7 +66,7 @@ export default function DataTableDepartment({
 			/>
 			<Column
 				header="Aksi"
-				body={(row: DepartementFormData) => (
+				body={(row: DepartmentData) => (
 					<div className="flex gap-2">
 						<Button
 							icon="pi pi-pencil text-sm"

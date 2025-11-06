@@ -1,58 +1,239 @@
 "use client";
 
-import { Building, GitFork } from "lucide-react";
+import { GitFork } from "lucide-react";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
 import { DivisionFormData } from "@/lib/schemas/divisionFormSchema";
 import DataTableDivision from "./components/DataTableDivision";
 import DivisionDialogForm from "./components/DivisionDialogForm";
+import { DivisionData } from "@/lib/types/division";
+import { Toast } from "primereact/toast";
+import { DepartmentData } from "@/lib/types/department";
+
+interface CombinedDivisionData extends DivisionData {
+	department_name: string;
+}
 
 export default function Division() {
-	const toastRef = useRef<any>(null);
+	const toastRef = useRef<Toast>(null);
 	const isInitialLoad = useRef<boolean>(true);
 
-	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
-	const [selectedDepartment, setSelectedDepartment] =
-		useState<DivisionFormData| null>(null);
+	const [department, setDepartment] = useState<DepartmentData[]>([]);
+	const [division, setDivision] = useState<DivisionData[]>([]);
 
-	const handleHideDialog = () => {
-		setIsDialogVisible(false);
-		setSelectedDepartment(null);
-		setDialogMode(null);
+	const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
+
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+	const [isSaving, setIsSaving] = useState<boolean>(false);
+
+	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
+	const [selectedDivision, setSelectedDivision] =
+		useState<DivisionFormData | null>(null);
+
+	const fetchAllData = async () => {
+		setIsLoading(true);
+		try {
+			const [divisionRes, departmentRes] = await Promise.all([
+				fetch("/api/master/division"),
+				fetch("/api/master/department"),
+			]);
+
+			if (!divisionRes.ok || !departmentRes.ok)
+				throw new Error("Gagal mengambil data dari server");
+
+			const divisionData = await divisionRes.json();
+			const departmentData = await departmentRes.json();
+
+			console.log(divisionData.message);
+
+			if (
+				divisionData &&
+				departmentData &&
+				divisionData.status === "00" &&
+				departmentData.status === "00"
+			) {
+				if (isInitialLoad.current) {
+					toastRef.current?.show({
+						severity: "success",
+						summary: "Sukses",
+						detail: divisionData.message,
+						life: 3000,
+					});
+
+					isInitialLoad.current = false;
+				}
+
+				setDivision(divisionData.master_positions || []);
+				setDepartment(departmentData.master_departments || []);
+			} else {
+				toastRef.current?.show({
+					severity: "error",
+					summary: "Gagal",
+					detail: divisionData.message,
+					life: 3000,
+				});
+
+				setDivision([]);
+				setDepartment([]);
+			}
+		} catch (error: any) {
+			setDivision([]);
+			setDepartment([]);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
-	const handleEdit = (division: DivisionFormData) => {
+	const handleSubmit = async (formData: DivisionFormData) => {
+		setIsSaving(true);
+		setIsLoading(true);
+
+		const url =
+			dialogMode === "edit"
+				? `/api/master/division/${currentEditedId}`
+				: "/api/master/division";
+
+		const method = dialogMode === "edit" ? "PUT" : "POST";
+
+		try {
+			const res = await fetch(url, {
+				method: method,
+				body: JSON.stringify(formData),
+			});
+
+			const response = await res.json();
+
+			if (response && response.status === "00") {
+				toastRef.current?.show({
+					severity: "success",
+					summary: "Sukses",
+					detail: response.message,
+					life: 3000,
+				});
+				fetchAllData();
+			} else {
+				toastRef.current?.show({
+					severity: "error",
+					summary: "Gagal",
+					detail: response.message || "Gagal menyimpan data divisi",
+					life: 3000,
+				});
+			}
+
+			fetchAllData();
+			setSelectedDivision(null);
+			setDialogMode(null);
+			setIsDialogVisible(false);
+			setCurrentEditedId(null);
+		} catch (error: any) {
+			toastRef.current?.show({
+				severity: "error",
+				summary: "Error",
+				detail: "Terjadi kesalahan koneksi",
+				life: 3000,
+			});
+		} finally {
+			setIsSaving(false);
+			setIsLoading(false);
+		}
+	};
+
+	const handleEdit = (division: DivisionData) => {
 		setDialogMode("edit");
 		setIsDialogVisible(true);
-		setSelectedDepartment(division);
+		setSelectedDivision({
+			position_code: division.position_code,
+			name: division.name,
+			department_id: division.department_id,
+		});
+		setCurrentEditedId(division.id);
 	};
 
-	const handleDelete = (division: DivisionFormData) => {
+	const handleDelete = (division: DivisionData) => {
 		confirmDialog({
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
 			message: `Yakin ingin menghapus divisi ${division.name}`,
+			acceptLabel: "Hapus",
+			rejectLabel: "Batal",
+			acceptClassName: "p-button-danger",
+			accept: async () => {
+				try {
+					const res = await fetch(`/api/master/division/${division.id}`, {
+						method: "DELETE",
+					});
+
+					const responseData = await res.json();
+
+					if (!res.ok)
+						throw new Error(
+							responseData.message || "Terjadi kesalahan koneksi"
+						);
+
+					toastRef.current?.show({
+						severity: "success",
+						summary: "Sukses",
+						detail: responseData.message || "Data berhasil dihapus",
+						life: 3000,
+					});
+
+					fetchAllData();
+					setSelectedDivision(null);
+				} catch (error: any) {
+					toastRef.current?.show({
+						severity: "success",
+						summary: "Sukses",
+						detail: error.message,
+						life: 3000,
+					});
+				} finally {
+					setCurrentEditedId(null);
+				}
+			},
 		});
 	};
 
-	const handleFormSubmit = (formData: DivisionFormData) => {
-		if (dialogMode === "edit") {
-			console.log("LOGIKA EDIT:", formData);
-			// Panggil API update Anda di sini
-		} else {
-			console.log("LOGIKA TAMBAH:", formData);
-			// Panggil API tambah Anda di sini
-		}
-		handleHideDialog();
-	};
+	useEffect(() => {
+		fetchAllData();
+	}, []);
+
+	// useEffect(() => {
+	// 	fetchDivision();
+	// }, []);
+
+	// useEffect(() => {
+	// 	fetchDepartment();
+	// }, []);
+
+	const departmentMap = useMemo(() => {
+		const map = new Map<number, string>();
+		department.forEach((depth) => {
+			map.set(depth.id, depth.name);
+		});
+		return map;
+	}, [department]);
+
+	const combinedDivisionData: CombinedDivisionData[] = useMemo(() => {
+		return division.map((division) => {
+			const departmentName =
+				departmentMap.get(division.department_id) || "Tidak diketahui";
+
+			return {
+				...division,
+				department_name: departmentName,
+			};
+		});
+	}, [division, departmentMap]);
+
 	return (
 		<div>
+			<Toast ref={toastRef} />
 			<div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
 				<div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
 					<GitFork className="w-2rem h-2rem" />
@@ -123,6 +304,8 @@ export default function Division() {
 									onClick={() => {
 										setDialogMode("add");
 										setIsDialogVisible(true);
+										setSelectedDivision(null);
+										setCurrentEditedId(null);
 									}}
 								/>
 							</div>
@@ -130,21 +313,28 @@ export default function Division() {
 					</div>
 
 					{/* data table */}
-					<DataTableDivision onEdit={handleEdit} onDelete={handleDelete} />
+					<DataTableDivision
+						division={combinedDivisionData}
+						isLoading={isLoading}
+						onEdit={handleEdit}
+						onDelete={handleDelete}
+					/>
 				</div>
 
 				<ConfirmDialog />
 
 				<Dialog
-					header={selectedDepartment ? "Edit Divisi" : "Tambah Divisi"}
+					header={dialogMode === "edit" ? "Edit Divisi" : "Tambah Divisi"}
 					visible={isDialogVisible}
-					onHide={handleHideDialog}
+					onHide={() => setIsDialogVisible(false)}
 					modal
 					style={{ width: "50%" }}
 				>
 					<DivisionDialogForm
-						divisionData={selectedDepartment}
-						// onSubmit={}
+						divisionData={selectedDivision}
+						onSubmit={handleSubmit}
+						departmentOptions={department}
+						isSubmitting={isSaving}
 					/>
 				</Dialog>
 			</Card>
