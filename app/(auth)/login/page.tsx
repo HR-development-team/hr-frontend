@@ -62,6 +62,7 @@ export default function Home() {
 				});
 
 				const responseData = await res.json();
+				const role = responseData.auth?.user?.role;
 
 				if (!res.ok)
 					throw new Error(responseData.message || "Terjadi kesalahan");
@@ -75,7 +76,11 @@ export default function Home() {
 
 				console.log("Login success", responseData.message);
 
-				router.push("/admin/dashboard");
+				if (role === "admin") {
+					router.push("/admin/dashboard");
+				} else if (role === "employee") {
+					router.push("karyawan");
+				}
 
 				// setTimeout(() => {
 				// 	router.push("/admin/dashboard");
