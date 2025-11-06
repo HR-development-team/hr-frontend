@@ -9,6 +9,10 @@ export const divisionFormSchema = z.object({
 		.string()
 		.nonempty("Nama divisi wajib diisi")
 		.min(3, "Nama divisi minimal 3 karakter"),
+	base_salary: z.coerce
+		.number()
+		.min(1, "Gaji pokok wajib diisi")
+		.positive("Gaji pokok harus berupa angka positif"),
 
 	// temporary
 	department_id: z.number().min(0, "Harus memilih departemen"),

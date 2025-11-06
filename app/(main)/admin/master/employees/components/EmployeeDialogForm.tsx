@@ -4,6 +4,7 @@ import {
 	EmployeeFormData,
 	employeeFormSchema,
 } from "@/lib/schemas/employeeFormSchema";
+import { DivisionData } from "@/lib/types/division";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
@@ -26,11 +27,11 @@ const statusOptions = [
 	{ label: "Non-Aktif", value: "Non-Aktif" },
 ];
 
-type FormErrors = z.ZodFlattenedError<EmployeeFormData>["fieldErrors"];
-
 interface EmployeeFormProps {
 	employeeData: EmployeeFormData | null;
-	// onSubmit: (formData: EmployeeFormData) => void;
+	onSubmit: (formData: EmployeeFormData) => void;
+	divisionOptions: DivisionData[];
+	isSubmitting: boolean;
 }
 
 const defaultValues: EmployeeFormData = {
@@ -40,16 +41,15 @@ const defaultValues: EmployeeFormData = {
 	address: "",
 	join_date: null as any,
 	position_id: 0,
-	status: "Non-Aktif",
+	// status: "Non-Aktif",
 };
 
 export default function EmployeeDialogForm({
 	employeeData,
-}: // onSubmit,
-EmployeeFormProps) {
-	// const [formData, setFormData] = useState<EmployeeFormData>(defaultValues);
-	// const [errors, setErrors] = useState<FormErrors>({});
-
+	onSubmit,
+	divisionOptions,
+	isSubmitting,
+}: EmployeeFormProps) {
 	const formik = useFormik({
 		initialValues: employeeData || defaultValues,
 		validate: (values) => {
@@ -70,7 +70,7 @@ EmployeeFormProps) {
 		},
 
 		onSubmit: (values) => {
-			// onSubmit(values);
+			onSubmit(values);
 		},
 
 		enableReinitialize: true,
@@ -121,7 +121,9 @@ EmployeeFormProps) {
 			</div>
 
 			<div className="flex flex-column gap-2">
-				<label htmlFor="contact_phone">No. Telepon</label>
+				<label htmlFor="contact_phone">
+					No. Telepon <span className="text-xs font-light">(optional)</span>{" "}
+				</label>
 				<InputText
 					keyfilter="int"
 					id="contact_phone"
@@ -161,7 +163,9 @@ EmployeeFormProps) {
 					id="join_date"
 					name="join_date"
 					value={formik.values.join_date}
-					onChange={formik.handleChange}
+					onChange={(e: any) => {
+						formik.setFieldValue("join_date", e.value);
+					}}
 					onBlur={formik.handleBlur}
 					className={isFieldInvalid("join_date") ? "p-invalid" : ""}
 					showIcon
@@ -179,9 +183,13 @@ EmployeeFormProps) {
 						id="position_id"
 						name="position_id"
 						value={formik.values.position_id}
-						options={positionOptions}
+						options={divisionOptions}
+						optionLabel="name"
+						optionValue="id"
 						onChange={formik.handleChange}
 						onBlur={formik.handleBlur}
+						filter
+						filterDelay={400}
 						className={isFieldInvalid("position_id") ? "p-invalid" : ""}
 					/>
 
@@ -190,8 +198,8 @@ EmployeeFormProps) {
 					)}
 				</div>
 
-				<div className="w-full flex flex-column gap-2">
-					<label htmlFor="status">Status</label>
+				{/* <div className="w-full flex flex-column gap-2"> */}
+				{/* <label htmlFor="status">Status</label>
 					<Dropdown
 						id="status"
 						name="status"
@@ -200,12 +208,12 @@ EmployeeFormProps) {
 						onChange={formik.handleChange}
 						onBlur={formik.handleBlur}
 						className={isFieldInvalid("status") ? "p-invalid" : ""}
-					/>
+					/> */}
 
-					{getFieldError("status") && (
+				{/* {getFieldError("status") && (
 						<small className="p-error">{getFieldError("status")}</small>
-					)}
-				</div>
+					)} */}
+				{/* </div> */}
 			</div>
 
 			<div className="flex justify-content-end mt-4">

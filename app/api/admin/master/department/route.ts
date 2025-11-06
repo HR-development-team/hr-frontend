@@ -1,10 +1,11 @@
-import { getAuthToken } from "@/lib/utils/authUtils";
 import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "../../api";
-import { elements } from "chart.js";
+import { getAuthToken } from "@/lib/utils/authUtils";
+import { API_ENDPOINTS } from "@/app/api/api";
 
-const tokenAvailable = (token: string | null) => {
+export const GET = async (request: NextRequest) => {
+	const token = getAuthToken();
+
 	if (!token) {
 		return NextResponse.json(
 			{ message: "Akses ditolak: Tidak terauntetikasi" },
@@ -12,19 +13,8 @@ const tokenAvailable = (token: string | null) => {
 		);
 	}
 
-	return null;
-};
-
-export const GET = async (request: NextRequest) => {
-	const token = getAuthToken();
-
-	const unauthorizedResponse = tokenAvailable(token);
-	if (unauthorizedResponse) {
-		return unauthorizedResponse;
-	}
-
 	try {
-		const response = await Axios.get(API_ENDPOINTS.GETALLDIVISION, {
+		const response = await Axios.get(API_ENDPOINTS.GETALLDEPARTMENT, {
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
@@ -35,13 +25,13 @@ export const GET = async (request: NextRequest) => {
 	} catch (error: any) {
 		if (error.response) {
 			return NextResponse.json(
-				{ message: "Tidak ada data master divisi" },
+				{ message: "Tidak ada data master departemen" },
 				{ status: 404 }
 			);
 		}
 
 		return NextResponse.json(
-			{ message: "Gagal mendapatkan data master divisi" },
+			{ message: "Gagal mendapatkan data master departemen" },
 			{ status: 500 }
 		);
 	}
@@ -50,20 +40,21 @@ export const GET = async (request: NextRequest) => {
 export const POST = async (request: NextRequest) => {
 	const token = getAuthToken();
 
-	const unauthorizedResponse = tokenAvailable(token);
-	if (unauthorizedResponse) {
-		return unauthorizedResponse;
+	if (!token) {
+		return NextResponse.json(
+			{ message: "Akses ditolak: Tidak terauntetikasi" },
+			{ status: 401 }
+		);
 	}
 
 	try {
 		const body = await request.json();
-
-		const response = await Axios.post(API_ENDPOINTS.ADDDIVISION, body, {
+const response = await Axios.post(API_ENDPOINTS.ADDDEPARTMENT, body, {
 			headers: {
-				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
 			},
 		});
+		
 
 		return NextResponse.json(response.data);
 	} catch (error: any) {
@@ -73,7 +64,7 @@ export const POST = async (request: NextRequest) => {
 			});
 		} else {
 			return NextResponse.json(
-				{ message: "Gagal menambahkan data master divisi" },
+				{ message: "Gagal menambahkan data master departemen" },
 				{ status: 500 }
 			);
 		}

@@ -6,63 +6,21 @@ import { DataTable, DataTablePageEvent } from "primereact/datatable";
 import { Tag } from "primereact/tag";
 import React, { useState } from "react";
 import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
-
-const employees: EmployeeFormData[] = [
-	{
-		// id: 1,
-		first_name: "Budi",
-		last_name: "Santoso",
-		contact_phone: "000000",
-		address: "Jatim",
-		join_date: new Date(),
-		position_id: 9,
-		status: "Aktif",
-	},
-	{
-		// id: 2,
-		first_name: "Siti",
-		last_name: "Rahayu",
-		contact_phone: "000000",
-		address: "Jabar",
-		join_date: new Date(),
-		position_id: 9,
-		status: "Aktif",
-	},
-	{
-		// id: 3,
-		first_name: "Ahmad",
-		last_name: "Fauzi",
-		contact_phone: "000000",
-		address: "Jateng",
-		join_date: new Date(),
-		position_id: 9,
-		status: "Aktif",
-	},
-	{
-		// id: 4,
-		first_name: "Dewi",
-		last_name: "Lestari",
-		contact_phone: "000000",
-		address: "Jaksel",
-		join_date: new Date(),
-		position_id: 9,
-		status: "Non-Aktif",
-	},
-];
+import { EmployeeData } from "@/lib/types/employee";
 
 interface DataTableEmployeesProp {
-	// users: EmployeeFormData;
-	// isLoading: boolean;
+	employees: EmployeeData[];
+	isLoading: boolean;
 	// lazyParams: { first: number; rows: number; page: number };
 	// totalItems: number;
 	// onPageChange: (event: DataTablePageEvent) => void;
-	onEdit: (employee: EmployeeFormData) => void;
-	onDelete: (employee: EmployeeFormData) => void;
+	onEdit: (employee: EmployeeData) => void;
+	onDelete: (employee: EmployeeData) => void;
 }
 
 export default function DataTableEmployees({
-	// users,
-	// isLoading,
+	employees,
+	isLoading,
 	// lazyParams,
 	// totalItems,
 	// onPageChange,
@@ -78,27 +36,25 @@ export default function DataTableEmployees({
 		return <Tag value={rowData.status} severity={severity} />;
 	};
 
-	const joinDateBodyTemplate = (rowData: EmployeeFormData) => {
-		if (
-			rowData.join_date &&
-			typeof rowData.join_date.toLocaleString === "function"
-		) {
-			return rowData.join_date.toLocaleDateString("id-ID");
-		}
-
-		return null;
+	const joinDateBodyTemplate = (rowData: EmployeeData) => {
+		const dateObject = new Date(rowData.created_at);
+		return dateObject.toLocaleDateString("id-ID", {
+			day: "2-digit",
+			month: "long",
+			year: "numeric",
+		});
 	};
 
 	return (
 		<DataTable
 			value={employees}
+			loading={isLoading}
 			paginator
 			rows={5}
 			rowsPerPageOptions={[5, 10, 25, 50]}
 			className={newLocal}
 			// style={{ minWidth: "50rem" }}
 		>
-			<Column field="id" header="ID" style={{ width: "25%" }} />
 			<Column field="first_name" header="Nama Depan" style={{ width: "25%" }} />
 			<Column
 				field="last_name"
@@ -117,7 +73,7 @@ export default function DataTableEmployees({
 				body={joinDateBodyTemplate}
 				style={{ width: "25%" }}
 			/>
-			<Column field="position_id" header="Jabatan" style={{ width: "25%" }} />
+			<Column field="division_name" header="Jabatan" style={{ width: "25%" }} />
 			<Column
 				field="status"
 				header="Status"
@@ -126,7 +82,7 @@ export default function DataTableEmployees({
 			/>
 			<Column
 				header="Aksi"
-				body={(row: EmployeeFormData) => (
+				body={(row: EmployeeData) => (
 					<div className="flex gap-2">
 						<Button
 							icon="pi pi-pencil text-sm"

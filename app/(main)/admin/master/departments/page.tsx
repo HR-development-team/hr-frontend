@@ -32,7 +32,7 @@ export default function Department() {
 		setIsLoading(true);
 
 		try {
-			const res = await fetch("/api/master/department");
+			const res = await fetch("/api/admin/master/department");
 			const response = await res.json();
 
 			if (response && response.status === "00") {
@@ -70,8 +70,8 @@ export default function Department() {
 
 			const url =
 				dialogMode === "add"
-					? "/api/master/department"
-					: `/api/master/department/${currentEditedId}`;
+					? "/api/admin/master/department"
+					: `/api/admin/master/department/${currentEditedId}`;
 
 			const res = await fetch(url, {
 				method: method,
@@ -128,7 +128,7 @@ export default function Department() {
 			acceptClassName: "p-button-danger",
 			accept: async () => {
 				try {
-					const res = await fetch(`/api/master/department/${department.id}`, {
+					const res = await fetch(`/api/admin/master/department/${department.id}`, {
 						method: "DELETE",
 					});
 

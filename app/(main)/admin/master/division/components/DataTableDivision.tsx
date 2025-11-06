@@ -5,6 +5,8 @@ import { Column } from "primereact/column";
 import { DataTable, DataTablePageEvent } from "primereact/datatable";
 import React, { useState } from "react";
 import { DivisionData } from "@/lib/types/division";
+import { Row } from "primereact/row";
+import { formatRupiah } from "@/lib/utils/formatRupiah";
 
 interface DataTableDivisionProp {
 	division: DivisionData[];
@@ -54,7 +56,12 @@ export default function DataTableDivision({
 				header="Departemen"
 				style={{ width: "25%" }}
 			/>
-
+			<Column
+				field="base_salary"
+				header="Gaji Pokok"
+				body={(row: DivisionData) => formatRupiah(row.base_salary)}
+				style={{ width: "25%" }}
+			/>
 			<Column
 				field="created_at"
 				header="Dibuat pada"

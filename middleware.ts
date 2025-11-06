@@ -1,25 +1,5 @@
-import { jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
-
-async function getSecreteKey() {
-	const secret = process.env.JWT_SECRET_KEY;
-	if (!secret) {
-		throw new Error("JWT_SECRET_KEY tidak ditemukan di environment variables");
-	}
-
-	return new TextEncoder().encode(secret);
-}
-
-async function verifyToken(token: string) {
-	try {
-		const secretKey = await getSecreteKey();
-		const { payload } = await jwtVerify(token, secretKey);
-		return payload;
-	} catch (error: any) {
-		console.error("Verifikasi JWT Gagal", error);
-		return null;
-	}
-}
+import { verifyToken } from "./lib/utils/verifyToken";
 
 export async function middleware(request: NextRequest) {
 	const token = request.cookies.get("token")?.value;
