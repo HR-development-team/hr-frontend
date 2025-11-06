@@ -1,21 +1,41 @@
-import next from "next";
-import { Ruthie } from "next/font/google";
+import { jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
+async function getSecreteKey() {
+	const secret = process.env.JWT_SECRET_KEY;
+	if (!secret) {
+		throw new Error("JWT_SECRET_KEY tidak ditemukan di environment variables");
+	}
+
+	return new TextEncoder().encode(secret);
+}
+
+async function verifyToken(token: string) {
+	try {
+		const secretKey = await getSecreteKey();
+		const { payload } = await jwtVerify(token, secretKey);
+		return payload;
+	} catch (error: any) {
+		console.error("Verifikasi JWT Gagal", error);
+		return null;
+	}
+}
+
+export async function middleware(request: NextRequest) {
 	const token = request.cookies.get("token")?.value;
-	const role = request.cookies.get("role")?.value;
+	// const role = request.cookies.get("role")?.value;
 
 	const { pathname } = request.nextUrl;
-
 	const publicPath: string = "/login";
 	const isPublicPath: boolean = publicPath.includes(pathname);
 
-	if (!token && !isPublicPath) {
-		return NextResponse.redirect(new URL("/login", request.url));
+	let payload: any = null;
+	if (token) {
+		payload = await verifyToken(token);
 	}
 
-	if (token && isPublicPath) {
+	if (payload && isPublicPath) {
+		const role = payload.role;
 		if (role === "admin") {
 			return NextResponse.redirect(new URL("/admin/dashboard", request.url));
 		} else if (role === "employee") {
@@ -23,17 +43,18 @@ export function middleware(request: NextRequest) {
 		}
 	}
 
-	// 4. Logika OTORISASI (jika sudah login dan di halaman terproteksi)
-	if (token && !isPublicPath) {
-		// Contoh: Proteksi route /admin
+	if (!payload && !isPublicPath) {
+		return NextResponse.redirect(new URL("/login", request.url));
+	}
+
+	// otorization
+	if (payload && !isPublicPath) {
+		const role = payload.role;
 		if (pathname.startsWith("/admin") && role !== "admin") {
-			// Jika bukan admin coba akses /admin, lempar ke dashboard user
 			return NextResponse.redirect(new URL("/karyawan", request.url));
 		}
 
-		// Contoh: Proteksi route /dashboard (hanya untuk user)
 		if (pathname.startsWith("/karyawan") && role !== "employee") {
-			// Jika bukan user (misal: admin) coba akses /dashboard, lempar ke dashboard admin
 			return NextResponse.redirect(new URL("/admin/dashboard", request.url));
 		}
 	}
