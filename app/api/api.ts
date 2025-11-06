@@ -1,3 +1,5 @@
+import { id } from "zod/v4/locales";
+
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const API_ENDPOINTS = {
@@ -16,4 +18,10 @@ export const API_ENDPOINTS = {
 	EDITDIVISION: (id: string) => `${API_URL}/master-positions/${id}`,
 	DELETEDIVISION: (id: string) => `${API_URL}/master-positions/${id}`,
 	GETDIVISIONBYID: (id: string) => `${API_URL}/master-positions/${id}`,
+
+	ADDEMPLOYEE: `${API_URL}/master-employees`,
+	GETALLEMPLOYEE: `${API_URL}/master-employees`,
+	EDITEMPLOYEE: (id: string) => `${API_URL}/master-employees/${id}`,
+	DELETEEMPLOYEE: (id: string) => `${API_URL}/master-employees/${id}`,
+	GETEMPLOYEEBYID: (id: string) => `${API_URL}/master-employees/${id}`,
 };

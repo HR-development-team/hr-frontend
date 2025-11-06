@@ -40,8 +40,8 @@ export default function Division() {
 		setIsLoading(true);
 		try {
 			const [divisionRes, departmentRes] = await Promise.all([
-				fetch("/api/master/division"),
-				fetch("/api/master/department"),
+				fetch("/api/admin/master/division"),
+				fetch("/api/admin/master/department"),
 			]);
 
 			if (!divisionRes.ok || !departmentRes.ok)
@@ -96,8 +96,8 @@ export default function Division() {
 
 		const url =
 			dialogMode === "edit"
-				? `/api/master/division/${currentEditedId}`
-				: "/api/master/division";
+				? `/api/admin/master/division/${currentEditedId}`
+				: "/api/admin/master/division";
 
 		const method = dialogMode === "edit" ? "PUT" : "POST";
 
@@ -121,7 +121,7 @@ export default function Division() {
 				toastRef.current?.show({
 					severity: "error",
 					summary: "Gagal",
-					detail: response.message || "Gagal menyimpan data divisi",
+					detail: response.error[0].message || "Gagal menyimpan data divisi",
 					life: 3000,
 				});
 			}
@@ -151,6 +151,7 @@ export default function Division() {
 			position_code: division.position_code,
 			name: division.name,
 			department_id: division.department_id,
+			base_salary: parseInt(division.base_salary, 10),
 		});
 		setCurrentEditedId(division.id);
 	};
@@ -165,7 +166,7 @@ export default function Division() {
 			acceptClassName: "p-button-danger",
 			accept: async () => {
 				try {
-					const res = await fetch(`/api/master/division/${division.id}`, {
+					const res = await fetch(`/api/admin/master/division/${division.id}`, {
 						method: "DELETE",
 					});
 
@@ -202,14 +203,6 @@ export default function Division() {
 	useEffect(() => {
 		fetchAllData();
 	}, []);
-
-	// useEffect(() => {
-	// 	fetchDivision();
-	// }, []);
-
-	// useEffect(() => {
-	// 	fetchDepartment();
-	// }, []);
 
 	const departmentMap = useMemo(() => {
 		const map = new Map<number, string>();

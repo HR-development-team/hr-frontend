@@ -1,11 +1,9 @@
+import { API_ENDPOINTS } from "@/app/api/api";
+import { getAuthToken } from "@/lib/utils/authUtils";
 import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "../../api";
-import { getAuthToken } from "@/lib/utils/authUtils";
 
-export const GET = async (request: NextRequest) => {
-	const token = getAuthToken();
-
+const tokenAvailable = (token: string | null) => {
 	if (!token) {
 		return NextResponse.json(
 			{ message: "Akses ditolak: Tidak terauntetikasi" },
@@ -13,8 +11,53 @@ export const GET = async (request: NextRequest) => {
 		);
 	}
 
+	return null;
+};
+
+export const GET = async (request: NextRequest) => {
+	const token = getAuthToken();
+
+	const unauthorizedResponse = tokenAvailable(token);
+	if (unauthorizedResponse) {
+		return unauthorizedResponse;
+	}
+
 	try {
-		const response = await Axios.get(API_ENDPOINTS.GETALLDEPARTMENT, {
+		const response = await Axios.get(API_ENDPOINTS.GETALLEMPLOYEE, {
+			headers: {
+				"Content-Type": "application.json",
+				Authorization: `Bearer ${token}`,
+			},
+		});
+
+		return NextResponse.json(response.data);
+	} catch (error: any) {
+		if (error.response) {
+			return NextResponse.json(
+				{ message: "Tidak ada data master karyawan" },
+				{ status: 404 }
+			);
+		}
+
+		return NextResponse.json(
+			{ message: "Gagal mendapatkan data master karyawan" },
+			{ status: 500 }
+		);
+	}
+};
+
+export const POST = async (request: NextRequest) => {
+	const token = getAuthToken();
+
+	const unauthorizedResponse = tokenAvailable(token);
+	if (unauthorizedResponse) {
+		return unauthorizedResponse;
+	}
+
+	try {
+		const body = await request.json();
+
+		const response = await Axios.post(API_ENDPOINTS.ADDEMPLOYEE, body, {
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
@@ -24,47 +67,12 @@ export const GET = async (request: NextRequest) => {
 		return NextResponse.json(response.data);
 	} catch (error: any) {
 		if (error.response) {
-			return NextResponse.json(
-				{ message: "Tidak ada data master departemen" },
-				{ status: 404 }
-			);
-		}
-
-		return NextResponse.json(
-			{ message: "Gagal mendapatkan data master departemen" },
-			{ status: 500 }
-		);
-	}
-};
-
-export const POST = async (request: NextRequest) => {
-	const token = getAuthToken();
-
-	if (!token) {
-		return NextResponse.json(
-			{ message: "Akses ditolak: Tidak terauntetikasi" },
-			{ status: 401 }
-		);
-	}
-
-	try {
-		const body = await request.json();
-const response = await Axios.post(API_ENDPOINTS.ADDDEPARTMENT, body, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		});
-		
-
-		return NextResponse.json(response.data);
-	} catch (error: any) {
-		if (error.response) {
 			return NextResponse.json(error.response.data, {
 				status: error.response.status,
 			});
 		} else {
 			return NextResponse.json(
-				{ message: "Gagal menambahkan data master departemen" },
+				{ message: "Gagal menambahkan data master karyawan" },
 				{ status: 500 }
 			);
 		}

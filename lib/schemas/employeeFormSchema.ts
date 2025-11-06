@@ -35,7 +35,7 @@ export const employeeFormSchema = z.object({
 				: "Format tanggal tidak valid",
 	}),
 	position_id: z.number().min(1, "Posisi wajib dipilih"), // temporary purpose
-	status: z.enum(["Aktif", "Non-Aktif"], "Status wajib diisi"),
+	// status: z.enum(["Aktif", "Non-Aktif"], "Status wajib diisi"),
 });
 
 export type EmployeeFormData = z.infer<typeof employeeFormSchema>;

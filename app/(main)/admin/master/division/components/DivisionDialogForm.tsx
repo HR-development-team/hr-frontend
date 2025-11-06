@@ -1,4 +1,5 @@
-"use client"; import {
+"use client";
+import {
 	DivisionFormData,
 	divisionFormSchema,
 } from "@/lib/schemas/divisionFormSchema";
@@ -6,6 +7,10 @@ import { DepartmentData } from "@/lib/types/department";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
+import {
+	InputNumber,
+	InputNumberValueChangeEvent,
+} from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 
 interface DivisionFormProps {
@@ -18,6 +23,7 @@ interface DivisionFormProps {
 const defaultValues: DivisionFormData = {
 	position_code: "",
 	name: "",
+	base_salary: 0,
 	department_id: 0,
 };
 
@@ -25,11 +31,8 @@ export default function DivisionDialogForm({
 	divisionData,
 	onSubmit,
 	departmentOptions,
-	isSubmitting
-}: 
-DivisionFormProps) {
-	// const [formData, setFormData] = useState<EmployeeFormData>(defaultValues);
-	// const [errors, setErrors] = useState<FormErrors>({});
+	isSubmitting,
+}: DivisionFormProps) {
 
 	const formik = useFormik({
 		initialValues: divisionData || defaultValues,
@@ -117,6 +120,25 @@ DivisionFormProps) {
 
 				{getFieldError("department_id") && (
 					<small className="p-error">{getFieldError("department_id")}</small>
+				)}
+			</div>
+
+			<div className="w-full flex flex-column gap-2">
+				<label htmlFor="base_salary">Gaji Pokok</label>
+				<InputNumber
+					id="base_salary"
+					name="base_salary"
+					value={formik.values.base_salary}
+					onValueChange={(e: InputNumberValueChangeEvent) => {
+						formik.setFieldValue("base_salary", e.value);
+					}}
+					// onChange={formik.handleChange}
+					onBlur={formik.handleBlur}
+					className={isFieldInvalid("base_salary") ? "p-invalid" : ""}
+				/>
+
+				{getFieldError("base_salary") && (
+					<small className="p-error">{getFieldError("base_salary")}</small>
 				)}
 			</div>
 
