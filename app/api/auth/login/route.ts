@@ -23,12 +23,12 @@ export const POST = async (request: NextRequest) => {
 				maxAge: 60 * 60 * 24,
 			});
 
-			responseToBrowser.cookies.set("role", role, {
-				httpOnly: true,
-				secure: false, // only in development
-				sameSite: "lax",
-				maxAge: 60 * 60 * 24,
-			});
+			// responseToBrowser.cookies.set("role", role, {
+			// 	httpOnly: true,
+			// 	secure: false, // only in development
+			// 	sameSite: "lax",
+			// 	maxAge: 60 * 60 * 24,
+			// });
 		}
 
 		return responseToBrowser;
