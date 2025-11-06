@@ -6,10 +6,7 @@ import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
 import { useEffect, useRef, useState } from "react";
-import {
-	DepartementFormData,
-	departmentFormSchema,
-} from "@/lib/schemas/departmentFormSchema";
+import { DepartementFormData } from "@/lib/schemas/departmentFormSchema";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import DataTableDepartment from "./components/DataTableDepartment";
 import { Dialog } from "primereact/dialog";
@@ -22,9 +19,7 @@ export default function Department() {
 	const isInitialLoad = useRef<boolean>(true);
 
 	const [department, setDepartment] = useState<DepartmentData[]>([]);
-	const [currentSelectedId, setCurrentSelectedId] = useState<number | null>(
-		null
-	);
+	const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -32,7 +27,6 @@ export default function Department() {
 	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
 	const [selectedDepartment, setSelectedDepartment] =
 		useState<DepartementFormData | null>(null);
-	const [errorMessages, setErrorMessages] = useState(null);
 
 	const fetchDepartment = async () => {
 		setIsLoading(true);
@@ -77,7 +71,7 @@ export default function Department() {
 			const url =
 				dialogMode === "add"
 					? "/api/master/department"
-					: `/api/master/department/${currentSelectedId}`;
+					: `/api/master/department/${currentEditedId}`;
 
 			const res = await fetch(url, {
 				method: method,
@@ -101,7 +95,7 @@ export default function Department() {
 			setSelectedDepartment(null);
 			setDialogMode(null);
 			setIsDialogVisible(false);
-			setCurrentSelectedId(null);
+			setCurrentEditedId(null);
 		} catch (error: any) {
 			toastRef.current?.show({
 				severity: "error",
@@ -121,7 +115,7 @@ export default function Department() {
 			department_code: department.department_code,
 		});
 
-		setCurrentSelectedId(department.id);
+		setCurrentEditedId(department.id);
 	};
 
 	const handleDelete = (department: DepartmentData) => {
@@ -129,19 +123,19 @@ export default function Department() {
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
 			message: `Yakin ingin menghapus departemen ${department.name}`,
+			acceptLabel: "Hapus",
+			rejectLabel: "Batal",
+			acceptClassName: "p-button-danger",
 			accept: async () => {
 				try {
-					const res = await fetch(
-						`/api/master/department/${department.id}`,
-						{
-							method: "DELETE",
-						}
-					);
+					const res = await fetch(`/api/master/department/${department.id}`, {
+						method: "DELETE",
+					});
 
 					const responseData = await res.json();
 
 					if (!res.ok) {
-						throw new Error(responseData.message || "Terjadi kesalahan");
+						throw new Error(responseData.message || "Terjadi kesalahan koneksi");
 					}
 
 					toastRef.current?.show({
@@ -161,7 +155,7 @@ export default function Department() {
 						life: 3000,
 					});
 				} finally {
-					setCurrentSelectedId(null);
+					setCurrentEditedId(null);
 				}
 			},
 		});
@@ -244,7 +238,7 @@ export default function Department() {
 									onClick={() => {
 										setDialogMode("add");
 										setSelectedDepartment(null);
-										setCurrentSelectedId(null);
+										setCurrentEditedId(null);
 										setIsDialogVisible(true);
 									}}
 								/>

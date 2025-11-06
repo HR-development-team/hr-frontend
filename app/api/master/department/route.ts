@@ -49,12 +49,12 @@ export const POST = async (request: NextRequest) => {
 
 	try {
 		const body = await request.json();
-
-		const response = await Axios.post(API_ENDPOINTS.ADDDEPARTMENT, body, {
+const response = await Axios.post(API_ENDPOINTS.ADDDEPARTMENT, body, {
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},
 		});
+		
 
 		return NextResponse.json(response.data);
 	} catch (error: any) {
