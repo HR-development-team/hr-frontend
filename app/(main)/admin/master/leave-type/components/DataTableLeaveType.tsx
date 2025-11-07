@@ -6,43 +6,22 @@ import { DataTable, DataTablePageEvent } from "primereact/datatable";
 import { Tag } from "primereact/tag";
 import React, { useState } from "react";
 import { LeaveTypeFormData } from "@/lib/schemas/leaveTypeFormSchema";
-
-const leaveType: LeaveTypeFormData[] = [
-	{
-		// id: 1,
-		name: "Cuti Tahunan",
-		description: "Cuti tahunan 12 hari",
-	},
-	{
-		// id: 2,
-		name: "Cuti Bulanan",
-		description: "",
-	},
-	{
-		// id: 3,
-		name: "Cuti Mingguan",
-		description: "",
-	},
-	{
-		// id: 4,
-		name: "Cuti Hari Raya",
-		description: "Cuti selama hari besar keagamaan",
-	},
-];
+import { LeaveTypeData } from "@/lib/types/leaveType";
+import { formatRupiah } from "@/lib/utils/formatRupiah";
 
 interface DataTableLeaveTypeProp {
-	// users: EmployeeFormData;
-	// isLoading: boolean;
+	leaveType: LeaveTypeData[];
+	isLoading: boolean;
 	// lazyParams: { first: number; rows: number; page: number };
 	// totalItems: number;
 	// onPageChange: (event: DataTablePageEvent) => void;
-	onEdit: (leaveType: LeaveTypeFormData) => void;
-	onDelete: (leaveType: LeaveTypeFormData) => void;
+	onEdit: (leaveType: LeaveTypeData) => void;
+	onDelete: (leaveType: LeaveTypeData) => void;
 }
 
 export default function DataTableLeaveType({
-	// users,
-	// isLoading,
+	leaveType,
+	isLoading,
 	// lazyParams,
 	// totalItems,
 	// onPageChange,
@@ -80,6 +59,13 @@ export default function DataTableLeaveType({
 		>
 			{/* <Column field="id" header="ID" style={{ width: "25%" }} /> */}
 			<Column field="name" header="Tipe Cuti" style={{ width: "25%" }} />
+
+			<Column
+				field="deduction"
+				header="Pengurangan Gaji"
+				body={(row: LeaveTypeData) => formatRupiah(row.deduction)}
+				style={{ width: "25%" }}
+			/>
 			<Column
 				field="description"
 				header="Deskripsi Cuti"
@@ -87,7 +73,7 @@ export default function DataTableLeaveType({
 			/>
 			<Column
 				header="Aksi"
-				body={(row: LeaveTypeFormData) => (
+				body={(row: LeaveTypeData) => (
 					<div className="flex gap-2">
 						<Button
 							icon="pi pi-pencil text-sm"

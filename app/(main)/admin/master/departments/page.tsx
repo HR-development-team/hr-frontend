@@ -128,14 +128,19 @@ export default function Department() {
 			acceptClassName: "p-button-danger",
 			accept: async () => {
 				try {
-					const res = await fetch(`/api/admin/master/department/${department.id}`, {
-						method: "DELETE",
-					});
+					const res = await fetch(
+						`/api/admin/master/department/${department.id}`,
+						{
+							method: "DELETE",
+						}
+					);
 
 					const responseData = await res.json();
 
 					if (!res.ok) {
-						throw new Error(responseData.message || "Terjadi kesalahan koneksi");
+						throw new Error(
+							responseData.message || "Terjadi kesalahan koneksi"
+						);
 					}
 
 					toastRef.current?.show({

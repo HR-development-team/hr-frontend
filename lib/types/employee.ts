@@ -6,6 +6,6 @@ export interface EmployeeData {
 	address: string;
 	join_date: any;
 	position_id: number;
-	created_at: any;
-	updated_at: any;
+	created_at: string;
+	updated_at: string;
 }

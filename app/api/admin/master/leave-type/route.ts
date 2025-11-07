@@ -1,11 +1,9 @@
+import { API_ENDPOINTS } from "@/app/api/api";
+import { getAuthToken } from "@/lib/utils/authUtils";
 import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthToken } from "@/lib/utils/authUtils";
-import { API_ENDPOINTS } from "@/app/api/api";
 
-export const GET = async (request: NextRequest) => {
-	const token = getAuthToken();
-
+const tokenAvailable = (token: string | null) => {
 	if (!token) {
 		return NextResponse.json(
 			{ message: "Akses ditolak: Tidak terauntetikasi" },
@@ -13,8 +11,20 @@ export const GET = async (request: NextRequest) => {
 		);
 	}
 
+	return null;
+};
+
+export const GET = async () => {
+	const token = getAuthToken();
+
+	const unauthorizedResponse = tokenAvailable(token);
+
+	if (unauthorizedResponse) {
+		return unauthorizedResponse;
+	}
+
 	try {
-		const response = await Axios.get(API_ENDPOINTS.GETALLDEPARTMENT, {
+		const response = await Axios.get(API_ENDPOINTS.GETALLLEAVETYPE, {
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
@@ -31,7 +41,7 @@ export const GET = async (request: NextRequest) => {
 		}
 
 		return NextResponse.json(
-			{ message: "Gagal mendapatkan data master departemen" },
+			{ message: "Gagal mendapatkan data master divisi" },
 			{ status: 500 }
 		);
 	}
@@ -40,17 +50,18 @@ export const GET = async (request: NextRequest) => {
 export const POST = async (request: NextRequest) => {
 	const token = getAuthToken();
 
-	if (!token) {
-		return NextResponse.json(
-			{ message: "Akses ditolak: Tidak terauntetikasi" },
-			{ status: 401 }
-		);
+	const unauthorizedResponse = tokenAvailable(token);
+
+	if (unauthorizedResponse) {
+		return unauthorizedResponse;
 	}
 
 	try {
 		const body = await request.json();
-		const response = await Axios.post(API_ENDPOINTS.ADDDEPARTMENT, body, {
+
+		const response = await Axios.post(API_ENDPOINTS.ADDLEAVETYPE, body, {
 			headers: {
+				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
 			},
 		});
@@ -63,7 +74,7 @@ export const POST = async (request: NextRequest) => {
 			});
 		} else {
 			return NextResponse.json(
-				{ message: "Gagal menambahkan data master departemen" },
+				{ message: "Gagal mengedit data master divisi" },
 				{ status: 500 }
 			);
 		}

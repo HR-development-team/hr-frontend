@@ -188,8 +188,8 @@ export default function Division() {
 					setSelectedDivision(null);
 				} catch (error: any) {
 					toastRef.current?.show({
-						severity: "success",
-						summary: "Sukses",
+						severity: "error",
+						summary: "Gagal",
 						detail: error.message,
 						life: 3000,
 					});

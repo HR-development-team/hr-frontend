@@ -37,7 +37,7 @@ export default function DataTableEmployees({
 	};
 
 	const joinDateBodyTemplate = (rowData: EmployeeData) => {
-		const dateObject = new Date(rowData.created_at);
+		const dateObject = new Date(rowData.join_date);
 		return dateObject.toLocaleDateString("id-ID", {
 			day: "2-digit",
 			month: "long",
@@ -69,17 +69,17 @@ export default function DataTableEmployees({
 			<Column field="address" header="Alamat" style={{ width: "25%" }} />
 			<Column
 				field="join_date"
-				header="Tanggal Masuk"
+				header="Bergabung Pada"
 				body={joinDateBodyTemplate}
 				style={{ width: "25%" }}
 			/>
-			<Column field="division_name" header="Jabatan" style={{ width: "25%" }} />
-			<Column
+			<Column field="division_name" header="Posisi" style={{ width: "25%" }} />
+			{/* <Column
 				field="status"
 				header="Status"
 				body={statusBodyTemplate}
 				style={{ width: "25%" }}
-			/>
+			/> */}
 			<Column
 				header="Aksi"
 				body={(row: EmployeeData) => (
