@@ -93,11 +93,18 @@ export default function Employees() {
 		setIsSaving(true);
 		setIsLoading(true);
 
-		const dataToSend = { ...formData };
+		const { join_date, ...restOfValues } = formData;
 
-		const payload = {
-			...formData,
-			join_date: formData.join_date ? formData.join_date.toISOString().split('T')[0] : null
+		const payload: any = {
+			...restOfValues,
+
+			contact_phone:
+				formData.contact_phone === "" ? null : formData.contact_phone,
+			address: formData.address === "" ? null : formData.address,
+		};
+
+		if (dialogMode !== "edit") {
+			payload.join_date = join_date.toISOString().split("T")[0];
 		}
 
 		const url =
@@ -157,11 +164,12 @@ export default function Employees() {
 		setSelectedEmployee({
 			first_name: employee.first_name,
 			last_name: employee.last_name,
-			join_date: employee.join_date,
+			join_date: new Date(`${employee.join_date.split("T")[0]}T00:00:00`),
 			position_id: employee.position_id,
 			contact_phone: employee.contact_phone,
 			address: employee.address,
 		});
+		setCurrentEditedId(employee.id);
 	};
 
 	const handleDelete = (employee: EmployeeData) => {
@@ -169,6 +177,42 @@ export default function Employees() {
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
 			message: `Yakin ingin menghapus karyawan ${employee.first_name}`,
+			acceptLabel: "Hapus",
+			rejectLabel: "Batal",
+			acceptClassName: "p-button-danger",
+			accept: async () => {
+				try {
+					const res = await fetch(`/api/admin/master/employee/${employee.id}`, {
+						method: "DELETE",
+					});
+
+					const responseData = await res.json();
+
+					if (!res.ok)
+						throw new Error(
+							responseData.message || "Terjadi kesalahan koneksi"
+						);
+
+					toastRef.current?.show({
+						severity: "success",
+						summary: "Sukses",
+						detail: responseData.message || "Data berhasil dihapus",
+						life: 3000,
+					});
+
+					fetchAllData();
+					setSelectedEmployee(null);
+				} catch (error: any) {
+					toastRef.current?.show({
+						severity: "error",
+						summary: "Gagal",
+						detail: error.message,
+						life: 3000,
+					});
+				} finally {
+					setCurrentEditedId(null);
+				}
+			},
 		});
 	};
 
@@ -298,6 +342,7 @@ export default function Employees() {
 				>
 					<EmployeeDialogForm
 						employeeData={selectedEmployee}
+						dialogMode={dialogMode}
 						onSubmit={handleSubmit}
 						divisionOptions={division}
 						isSubmitting={isSaving}

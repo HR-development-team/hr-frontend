@@ -41,7 +41,7 @@ export const GET = async (request: NextRequest, { params }: paramsProp) => {
 	} catch (error: any) {
 		if (error.response) {
 			return NextResponse.json(
-				{ message: "Tidak ada data master divisi dengan id tersebut" },
+				{ message: error.response.data.message },
 				{ status: 404 }
 			);
 		}
@@ -79,7 +79,7 @@ export const PUT = async (request: NextRequest, { params }: paramsProp) => {
 		return NextResponse.json(response.data);
 	} catch (error: any) {
 		if (error.response) {
-			return NextResponse.json(error.response.data, {
+			return NextResponse.json(error.response.data.message, {
 				status: error.response.status,
 			});
 		} else {
@@ -91,8 +91,7 @@ export const PUT = async (request: NextRequest, { params }: paramsProp) => {
 	}
 };
 
-export const DELETE = async (request: NextRequest, { params }: paramsProp) => {
-	const token = getAuthToken();
+export const DELETE = async (request: NextRequest, { params }: paramsProp) => { const token = getAuthToken();
 
 	const unauthorizedResponse = tokenAvailable(token);
 
@@ -115,7 +114,7 @@ export const DELETE = async (request: NextRequest, { params }: paramsProp) => {
 	} catch (error: any) {
 		if (error.response) {
 			return NextResponse.json(
-				{ message: "Data master divisi dengan id tersebut gagal dihapus" },
+				{ message: error.response.data.message },
 				{ status: 404 }
 			);
 		}

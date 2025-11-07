@@ -34,7 +34,7 @@ export const GET = async (request: NextRequest) => {
 	} catch (error: any) {
 		if (error.response) {
 			return NextResponse.json(
-				{ message: "Tidak ada data master karyawan" },
+				{ message: error.response.data.message },
 				{ status: 404 }
 			);
 		}
@@ -67,7 +67,7 @@ export const POST = async (request: NextRequest) => {
 		return NextResponse.json(response.data);
 	} catch (error: any) {
 		if (error.response) {
-			return NextResponse.json(error.response.data, {
+			return NextResponse.json(error.response.data.message, {
 				status: error.response.status,
 			});
 		} else {

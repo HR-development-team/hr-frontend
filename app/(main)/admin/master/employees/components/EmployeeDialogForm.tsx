@@ -14,22 +14,10 @@ import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import z, { any } from "zod";
 
-// dummy dropdown
-const positionOptions = [
-	{ label: "Pilih Posisi", value: 0 },
-	{ label: "Software Engineer", value: 1 },
-	{ label: "UI/UX Designer", value: 2 },
-];
-
-// dummy status
-const statusOptions = [
-	{ label: "Aktif", value: "Aktif" },
-	{ label: "Non-Aktif", value: "Non-Aktif" },
-];
-
 interface EmployeeFormProps {
 	employeeData: EmployeeFormData | null;
 	onSubmit: (formData: EmployeeFormData) => void;
+	dialogMode: "add" | "edit" | null;
 	divisionOptions: DivisionData[];
 	isSubmitting: boolean;
 }
@@ -47,6 +35,7 @@ const defaultValues: EmployeeFormData = {
 export default function EmployeeDialogForm({
 	employeeData,
 	onSubmit,
+	dialogMode,
 	divisionOptions,
 	isSubmitting,
 }: EmployeeFormProps) {
@@ -75,6 +64,8 @@ export default function EmployeeDialogForm({
 
 		enableReinitialize: true,
 	});
+
+	const isOnEditMode: boolean = dialogMode === "edit" ? true : false;
 
 	const isFieldInvalid = (fieldName: keyof EmployeeFormData) =>
 		!!(formik.touched[fieldName] && formik.errors[fieldName]);
@@ -168,6 +159,8 @@ export default function EmployeeDialogForm({
 					}}
 					onBlur={formik.handleBlur}
 					className={isFieldInvalid("join_date") ? "p-invalid" : ""}
+					dateFormat="dd/mm/yy"
+					disabled={isOnEditMode}
 					showIcon
 				/>
 
@@ -221,6 +214,7 @@ export default function EmployeeDialogForm({
 					type="submit"
 					label="Simpan"
 					icon="pi pi-save"
+					loading={isSubmitting}
 					severity="success"
 					disabled={formik.isSubmitting}
 					pt={{
