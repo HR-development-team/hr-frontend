@@ -37,7 +37,6 @@ export const API_ENDPOINTS = {
 	GETLEAVETYPEBYID: (id: string) => `${API_URL}/master-leave-types/${id}`,
 
 	GETUSERPROFILE: `${API_URL}/profiles`,
-	GETALLUSER: `${API_URL}/users`,
-	UPDATEUSERPROFILE: `${API_URL}/profiles`
-  GETALLEMPLOYEE: `${API_URL}/master-employees`,
+	UPDATEUSERPROFILE: `${API_URL}/profiles`,
+    GETALLEMPLOYEE: `${API_URL}/master-employees`,
 };
