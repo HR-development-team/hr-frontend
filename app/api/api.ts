@@ -19,4 +19,5 @@ export const API_ENDPOINTS = {
 
 	GETUSERPROFILE: `${API_URL}/profiles`,
 	GETALLUSER: `${API_URL}/users`,
+	UPDATEUSERPROFILE: `${API_URL}/profiles`
 };
