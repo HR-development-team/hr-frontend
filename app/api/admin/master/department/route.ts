@@ -1,7 +1,7 @@
 import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "../../api";
 import { getAuthToken } from "@/lib/utils/authUtils";
+import { API_ENDPOINTS } from "@/app/api/api";
 
 export const GET = async (request: NextRequest) => {
 	const token = getAuthToken();
@@ -25,7 +25,7 @@ export const GET = async (request: NextRequest) => {
 	} catch (error: any) {
 		if (error.response) {
 			return NextResponse.json(
-				{ message: "Tidak ada data master departemen" },
+				{ message: error.response.data.message },
 				{ status: 404 }
 			);
 		}
@@ -49,17 +49,16 @@ export const POST = async (request: NextRequest) => {
 
 	try {
 		const body = await request.json();
-const response = await Axios.post(API_ENDPOINTS.ADDDEPARTMENT, body, {
+		const response = await Axios.post(API_ENDPOINTS.ADDDEPARTMENT, body, {
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},
 		});
-		
 
 		return NextResponse.json(response.data);
 	} catch (error: any) {
 		if (error.response) {
-			return NextResponse.json(error.response.data, {
+			return NextResponse.json(error.response.data.message, {
 				status: error.response.status,
 			});
 		} else {

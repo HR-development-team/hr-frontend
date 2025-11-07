@@ -7,53 +7,242 @@ import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
 import EmployeeDialogForm from "./components/EmployeeDialogForm";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
 import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
+import { EmployeeData } from "@/lib/types/employee";
+import { DivisionData } from "@/lib/types/division";
+import { Toast } from "primereact/toast";
+
+interface CombinedEmployeeData extends EmployeeData {
+	division_name: string;
+}
 
 export default function Employees() {
-	const toastRef = useRef<any>(null);
+	const toastRef = useRef<Toast>(null);
 	const isInitialLoad = useRef<boolean>(true);
 
+	const [division, setDivision] = useState<DivisionData[]>([]);
+	const [employee, setEmployee] = useState<EmployeeData[]>([]);
+
+	const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
+
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+	const [isSaving, setIsSaving] = useState<boolean>(false);
+
 	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
 	const [selectedEmployee, setSelectedEmployee] =
 		useState<EmployeeFormData | null>(null);
 
-	const handleHideDialog = () => {
-		setIsDialogVisible(false);
-		setSelectedEmployee(null);
-		setDialogMode(null);
+	const fetchAllData = async () => {
+		setIsLoading(true);
+		try {
+			const [divisionRes, employeeRes] = await Promise.all([
+				fetch("/api/admin/master/division"),
+				fetch("/api/admin/master/employee"),
+			]);
+
+			if (!divisionRes.ok || !employeeRes.ok)
+				throw new Error("Gagal mendapatkan data dari server");
+
+			const divisionData = await divisionRes.json();
+			const employeeData = await employeeRes.json();
+
+			console.log(employeeData.message);
+
+			if (
+				divisionData &&
+				employeeData &&
+				divisionData.status === "00" &&
+				employeeData.status === "00"
+			) {
+				if (isInitialLoad.current) {
+					toastRef.current?.show({
+						severity: "success",
+						summary: "Sukses",
+						detail: employeeData.message,
+						life: 3000,
+					});
+
+					isInitialLoad.current = false;
+				}
+				setDivision(divisionData.master_positions || []);
+				setEmployee(employeeData.master_employees || []);
+			} else {
+				toastRef.current?.show({
+					severity: "error",
+					summary: "Gagal",
+					detail: employeeData.message,
+					life: 3000,
+				});
+
+				setDivision([]);
+				setEmployee([]);
+			}
+		} catch (error: any) {
+			setDivision([]);
+			setEmployee([]);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
-	const handleEdit = (employee: EmployeeFormData) => {
+	const handleSubmit = async (formData: EmployeeFormData) => {
+		setIsSaving(true);
+		setIsLoading(true);
+
+		const { join_date, ...restOfValues } = formData;
+
+		const payload: any = {
+			...restOfValues,
+
+			contact_phone:
+				formData.contact_phone === "" ? null : formData.contact_phone,
+			address: formData.address === "" ? null : formData.address,
+		};
+
+		if (dialogMode !== "edit") {
+			payload.join_date = join_date.toISOString().split("T")[0];
+		}
+
+		const url =
+			dialogMode === "edit"
+				? `/api/admin/master/employee/${currentEditedId}`
+				: "/api/admin/master/employee";
+
+		const method = dialogMode === "edit" ? "PUT" : "POST";
+
+		try {
+			const res = await fetch(url, {
+				method: method,
+				body: JSON.stringify(payload),
+			});
+
+			const response = await res.json();
+
+			if (response && response.status === "00") {
+				toastRef.current?.show({
+					severity: "success",
+					summary: "Sukses",
+					detail: response.message,
+					life: 3000,
+				});
+				fetchAllData();
+			} else {
+				toastRef.current?.show({
+					severity: "error",
+					summary: "Gagal",
+					detail:
+						response?.errors?.[0]?.message || "Gagal menyimpan data karyawan",
+					life: 3000,
+				});
+			}
+
+			fetchAllData();
+			setSelectedEmployee(null);
+			setDialogMode(null);
+			setIsDialogVisible(false);
+			setCurrentEditedId(null);
+		} catch (error: any) {
+			toastRef.current?.show({
+				severity: "error",
+				summary: "Error",
+				detail: error,
+				life: 3000,
+			});
+		} finally {
+			setIsSaving(false);
+			setIsLoading(false);
+		}
+	};
+
+	const handleEdit = (employee: EmployeeData) => {
 		setDialogMode("edit");
 		setIsDialogVisible(true);
-		setSelectedEmployee(employee);
+		setSelectedEmployee({
+			first_name: employee.first_name,
+			last_name: employee.last_name,
+			join_date: new Date(`${employee.join_date.split("T")[0]}T00:00:00`),
+			position_id: employee.position_id,
+			contact_phone: employee.contact_phone,
+			address: employee.address,
+		});
+		setCurrentEditedId(employee.id);
 	};
 
-	const handleDelete = (employee: EmployeeFormData) => {
+	const handleDelete = (employee: EmployeeData) => {
 		confirmDialog({
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
 			message: `Yakin ingin menghapus karyawan ${employee.first_name}`,
+			acceptLabel: "Hapus",
+			rejectLabel: "Batal",
+			acceptClassName: "p-button-danger",
+			accept: async () => {
+				try {
+					const res = await fetch(`/api/admin/master/employee/${employee.id}`, {
+						method: "DELETE",
+					});
+
+					const responseData = await res.json();
+
+					if (!res.ok)
+						throw new Error(
+							responseData.message || "Terjadi kesalahan koneksi"
+						);
+
+					toastRef.current?.show({
+						severity: "success",
+						summary: "Sukses",
+						detail: responseData.message || "Data berhasil dihapus",
+						life: 3000,
+					});
+
+					fetchAllData();
+					setSelectedEmployee(null);
+				} catch (error: any) {
+					toastRef.current?.show({
+						severity: "error",
+						summary: "Gagal",
+						detail: error.message,
+						life: 3000,
+					});
+				} finally {
+					setCurrentEditedId(null);
+				}
+			},
 		});
 	};
 
-	const handleFormSubmit = (formData: EmployeeFormData) => {
-		if (dialogMode === "edit") {
-			console.log("LOGIKA EDIT:", formData);
-			// Panggil API update Anda di sini
-		} else {
-			console.log("LOGIKA TAMBAH:", formData);
-			// Panggil API tambah Anda di sini
-		}
-		handleHideDialog();
-	};
+	useEffect(() => {
+		fetchAllData();
+	}, []);
+
+	const divisionMap = useMemo(() => {
+		const map = new Map<number, string>();
+		division.forEach((depth) => {
+			map.set(depth.id, depth.name);
+		});
+		return map;
+	}, [division]);
+
+	const combinedEmployeeData: CombinedEmployeeData[] = useMemo(() => {
+		return employee.map((employee) => {
+			const divisionName =
+				divisionMap.get(employee.position_id) || "Tidak diketahui";
+
+			return {
+				...employee,
+				division_name: divisionName,
+			};
+		});
+	}, [employee, divisionMap]);
 
 	return (
 		<div>
+			<Toast ref={toastRef} />
 			<div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
 				<div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
 					<Users className="w-2rem h-2rem" />
@@ -125,6 +314,8 @@ export default function Employees() {
 									onClick={() => {
 										setDialogMode("add");
 										setIsDialogVisible(true);
+										setSelectedEmployee(null);
+										setCurrentEditedId(null);
 									}}
 								/>
 							</div>
@@ -132,21 +323,29 @@ export default function Employees() {
 					</div>
 
 					{/* data table */}
-					<DataTableEmployees onEdit={handleEdit} onDelete={handleDelete} />
+					<DataTableEmployees
+						employees={combinedEmployeeData}
+						isLoading={isLoading}
+						onEdit={handleEdit}
+						onDelete={handleDelete}
+					/>
 				</div>
 
 				<ConfirmDialog />
 
 				<Dialog
-					header={selectedEmployee ? "Edit Karyawan" : "Tambah Karyawan"}
+					header={dialogMode === "edit" ? "Edit Karyawan" : "Tambah Karyawan"}
 					visible={isDialogVisible}
-					onHide={handleHideDialog}
+					onHide={() => setIsDialogVisible(false)}
 					modal
 					style={{ width: "75%" }}
 				>
 					<EmployeeDialogForm
 						employeeData={selectedEmployee}
-						// onSubmit={}
+						dialogMode={dialogMode}
+						onSubmit={handleSubmit}
+						divisionOptions={division}
+						isSubmitting={isSaving}
 					/>
 				</Dialog>
 			</Card>

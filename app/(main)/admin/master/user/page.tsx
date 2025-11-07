@@ -5,55 +5,227 @@ import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
-import { useRef, useState } from "react";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
 import UserDialogForm from "./components/UserDialogForm";
 import { UserFormData } from "@/lib/schemas/userFormSchema";
 import DataTableUser from "./components/DataTableUser";
+import { Toast } from "primereact/toast";
+import { UserData } from "@/lib/types/user";
+import { EmployeeData } from "@/lib/types/employee";
+
+interface CombinedUserData extends UserData {
+	employee_first_name: string;
+}
 
 export default function UserPage() {
-	const toastRef = useRef<any>(null);
+	const toastRef = useRef<Toast>(null);
 	const isInitialLoad = useRef<boolean>(true);
 
-	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
-	const [selectedEmployee, setSelectedEmployee] =
-		useState<UserFormData | null>(null);
+	const [employee, setEmployee] = useState<EmployeeData[]>([]);
+	const [user, setUser] = useState<UserData[]>([]);
 
-	const handleHideDialog = () => {
-		setIsDialogVisible(false);
-		setSelectedEmployee(null);
-		setDialogMode(null);
+	const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
+
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+	const [isSaving, setIsSaving] = useState<boolean>(false);
+
+	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
+	const [selecteduser, setSelectedUser] = useState<UserFormData | null>(null);
+
+	const fetchAllData = async () => {
+		setIsLoading(true);
+		try {
+			const [employeeRes, userRes] = await Promise.all([
+				fetch("/api/admin/master/employee"),
+				fetch("/api/admin/master/user"),
+			]);
+
+			if (!employeeRes.ok || !userRes.ok)
+				throw new Error("Gagal mendapatkan data dari server");
+
+			const employeeData = await employeeRes.json();
+			const userData = await userRes.json();
+
+			console.log(userData.message);
+
+			if (
+				employeeData &&
+				userData &&
+				employeeData.status === "00" &&
+				userData.status === "00"
+			) {
+				if (isInitialLoad.current) {
+					toastRef.current?.show({
+						severity: "success",
+						summary: "Sukses",
+						detail: userData.message,
+						life: 3000,
+					});
+
+					isInitialLoad.current = false;
+				}
+				setEmployee(employeeData.master_employees || []);
+				setUser(userData.users || []);
+			} else {
+				toastRef.current?.show({
+					severity: "error",
+					summary: "Gagal",
+					detail: userData.message,
+					life: 3000,
+				});
+
+				setEmployee([]);
+				setUser([]);
+			}
+		} catch (error: any) {
+			setEmployee([]);
+			setUser([]);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
-	const handleEdit = (user: UserFormData) => {
+	const handleSubmit = async (formData: UserFormData) => {
+		setIsSaving(true);
+		setIsLoading(true);
+
+		const url =
+			dialogMode === "edit"
+				? `/api/admin/master/user/${currentEditedId}`
+				: "/api/admin/master/user";
+
+		const method = dialogMode === "edit" ? "PUT" : "POST";
+
+		try {
+			const res = await fetch(url, {
+				method: method,
+				body: JSON.stringify(formData),
+			});
+
+			const response = await res.json();
+
+			if (response && response.status === "00") {
+				toastRef.current?.show({
+					severity: "success",
+					summary: "Sukses",
+					detail: response.message,
+					life: 3000,
+				});
+				fetchAllData();
+			} else {
+				toastRef.current?.show({
+					severity: "error",
+					summary: "Gagal",
+					detail: response?.errors?.[0]?.message || "Gagal menyimpan data user",
+					life: 3000,
+				});
+			}
+
+			fetchAllData();
+			setSelectedUser(null);
+			setDialogMode(null);
+			setIsDialogVisible(false);
+			setCurrentEditedId(null);
+		} catch (error: any) {
+			toastRef.current?.show({
+				severity: "error",
+				summary: "Error",
+				detail: error,
+				life: 3000,
+			});
+		} finally {
+			setIsSaving(false);
+			setIsLoading(false);
+		}
+	};
+
+	const handleEdit = (user: UserData) => {
 		setDialogMode("edit");
 		setIsDialogVisible(true);
-		setSelectedEmployee(user);
+		setSelectedUser({
+			email: user.email,
+			password: user.password,
+			role: user.role,
+			employee_id: user.employee_id,
+		});
+
+		setCurrentEditedId(user.id);
 	};
 
-	const handleDelete = (user: UserFormData) => {
+	const handleDelete = (user: UserData) => {
 		confirmDialog({
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
-			message: `Yakin ingin menghapus karyawan ${user.email}`,
+			message: `Yakin ingin menghapus user ${user.email}`,
+			acceptLabel: "Hapus",
+			rejectLabel: "Batal",
+			acceptClassName: "p-button-danger",
+			accept: async () => {
+				try {
+					const res = await fetch(`/api/admin/master/user/${user.id}`, {
+						method: "DELETE",
+					});
+
+					const responseData = await res.json();
+
+					if (!res.ok)
+						throw new Error(
+							responseData.message || "Terjadi kesalahan koneksi"
+						);
+
+					toastRef.current?.show({
+						severity: "success",
+						summary: "Sukses",
+						detail: responseData.message || "Data berhasil dihapus",
+						life: 3000,
+					});
+
+					fetchAllData();
+					setSelectedUser(null);
+				} catch (error: any) {
+					toastRef.current?.show({
+						severity: "error",
+						summary: "Gagal",
+						detail: error.message,
+						life: 3000,
+					});
+				} finally {
+					setCurrentEditedId(null);
+				}
+			},
 		});
 	};
 
-	const handleFormSubmit = (formData: UserFormData) => {
-		if (dialogMode === "edit") {
-			console.log("LOGIKA EDIT:", formData);
-			// Panggil API update Anda di sini
-		} else {
-			console.log("LOGIKA TAMBAH:", formData);
-			// Panggil API tambah Anda di sini
-		}
-		handleHideDialog();
-	};
+	useEffect(() => {
+		fetchAllData();
+	}, []);
+
+	const employeeMap = useMemo(() => {
+		const map = new Map<number, string>();
+		employee.forEach((depth) => {
+			map.set(depth.id, depth.first_name);
+		});
+		return map;
+	}, [employee]);
+
+	const combinedUserData: CombinedUserData[] = useMemo(() => {
+		return user.map((user) => {
+			const employeeFirstName =
+				employeeMap.get(user.employee_id) || "Tidak diketahui";
+
+			return {
+				...user,
+				employee_first_name: employeeFirstName,
+			};
+		});
+	}, [user, employeeMap]);
 
 	return (
 		<div>
+			<Toast ref={toastRef} />
 			<div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
 				<div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
 					<User className="w-2rem h-2rem" />
@@ -132,21 +304,29 @@ export default function UserPage() {
 					</div>
 
 					{/* data table */}
-					<DataTableUser onEdit={handleEdit} onDelete={handleDelete} />
+					<DataTableUser
+						user={combinedUserData}
+						isLoading={isLoading}
+						onEdit={handleEdit}
+						onDelete={handleDelete}
+					/>
 				</div>
 
 				<ConfirmDialog />
 
 				<Dialog
-					header={selectedEmployee ? "Edit Karyawan" : "Tambah Karyawan"}
+					header={dialogMode === "edit" ? "Edit User" : "Tambah User"}
 					visible={isDialogVisible}
-					onHide={handleHideDialog}
+					onHide={() => setIsDialogVisible(false)}
 					modal
 					style={{ width: "75%" }}
 				>
 					<UserDialogForm
-						userData={selectedEmployee}
-						// onSubmit={}
+						userData={selecteduser}
+						onSubmit={handleSubmit}
+						dialogMode={dialogMode}
+						employeeOptions={employee}
+						isSubmitting={isSaving}
 					/>
 				</Dialog>
 			</Card>

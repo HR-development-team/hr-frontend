@@ -30,27 +30,24 @@ export const GET = async (request: NextRequest, { params }: paramsProp) => {
 	}
 
 	try {
-		const response = await Axios.get(
-			API_ENDPOINTS.GETDEPARTMENTBYID(params.id),
-			{
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
+		const response = await Axios.get(API_ENDPOINTS.GETEMPLOYEEBYID(params.id), {
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		});
 
 		return NextResponse.json(response.data);
 	} catch (error: any) {
 		if (error.response) {
 			return NextResponse.json(
-				{ message: "Tidak ada data master departemen dengan id tersebut" },
+				{ message: error.response.data.message },
 				{ status: 404 }
 			);
 		}
 
 		return NextResponse.json(
-			{ message: "Gagal mendapatkan data master departemen" },
+			{ message: "Gagal mendapatkan data master karyawan" },
 			{ status: 500 }
 		);
 	}
@@ -60,6 +57,7 @@ export const PUT = async (request: NextRequest, { params }: paramsProp) => {
 	const token = getAuthToken();
 
 	const unauthorizedResponse = tokenAvailable(token);
+
 	if (unauthorizedResponse) {
 		return unauthorizedResponse;
 	}
@@ -68,7 +66,7 @@ export const PUT = async (request: NextRequest, { params }: paramsProp) => {
 		const body = await request.json();
 
 		const response = await Axios.put(
-			API_ENDPOINTS.EDITDEPARTMENT(params.id),
+			API_ENDPOINTS.EDITEMPLOYEE(params.id),
 			body,
 			{
 				headers: {
@@ -81,12 +79,12 @@ export const PUT = async (request: NextRequest, { params }: paramsProp) => {
 		return NextResponse.json(response.data);
 	} catch (error: any) {
 		if (error.response) {
-			return NextResponse.json(error.response.data, {
+			return NextResponse.json(error.response.data.message, {
 				status: error.response.status,
 			});
 		} else {
 			return NextResponse.json(
-				{ message: "Gagal mengedit data master departemen" },
+				{ message: "Gagal mengedit data master karyawan" },
 				{ status: 500 }
 			);
 		}
@@ -104,7 +102,7 @@ export const DELETE = async (request: NextRequest, { params }: paramsProp) => {
 
 	try {
 		const response = await Axios.delete(
-			API_ENDPOINTS.DELETEDEPARTMENT(params.id),
+			API_ENDPOINTS.DELETEEMPLOYEE(params.id),
 			{
 				headers: {
 					"Content-Type": "application/json",
@@ -117,13 +115,13 @@ export const DELETE = async (request: NextRequest, { params }: paramsProp) => {
 	} catch (error: any) {
 		if (error.response) {
 			return NextResponse.json(
-				{ message: "Data master departemen dengan id tersebut gagal dihapus" },
+				{ message: error.response.data.message },
 				{ status: 404 }
 			);
 		}
 
 		return NextResponse.json(
-			{ message: "Gagal menghapus data master departemen" },
+			{ message: "Gagal menghapus data master karyawan" },
 			{ status: 500 }
 		);
 	}

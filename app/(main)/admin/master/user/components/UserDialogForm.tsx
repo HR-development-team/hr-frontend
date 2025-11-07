@@ -5,6 +5,7 @@ import {
 	employeeFormSchema,
 } from "@/lib/schemas/employeeFormSchema";
 import { UserFormData, userFormSchema } from "@/lib/schemas/userFormSchema";
+import { EmployeeData } from "@/lib/types/employee";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
@@ -16,26 +17,18 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Password } from "primereact/password";
 import z, { any } from "zod";
 
-// dummy dropdown
-const employeeOptions = [
-	{ label: "Pilih Karyawan", value: 0 },
-	{ label: "Budi Setiawan", value: 1 },
-	{ label: "Agus Zarihudin", value: 2 },
-	{ label: "Sir Axelrod", value: 3 },
-	{ label: "Rod Redline", value: 4 },
-];
-
-// dummy status
+// status
 const roleOptions = [
 	{ label: "Admin", value: "admin" },
 	{ label: "Karyawan", value: "employee" },
 ];
 
-type FormErrors = z.ZodFlattenedError<UserFormData>["fieldErrors"];
-
 interface UserFormProps {
 	userData: UserFormData | null;
-	// onSubmit: (formData: EmployeeFormData) => void;
+	onSubmit: (formData: UserFormData) => void;
+	dialogMode: "add" | "edit" | null;
+	employeeOptions: EmployeeData[];
+	isSubmitting: boolean;
 }
 
 const defaultValues: UserFormData = {
@@ -47,11 +40,11 @@ const defaultValues: UserFormData = {
 
 export default function UserDialogForm({
 	userData,
-}: // onSubmit,
-UserFormProps) {
-	// const [formData, setFormData] = useState<EmployeeFormData>(defaultValues);
-	// const [errors, setErrors] = useState<FormErrors>({});
-
+	onSubmit,
+	dialogMode,
+	employeeOptions,
+	isSubmitting,
+}: UserFormProps) {
 	const formik = useFormik({
 		initialValues: userData || defaultValues,
 		validate: (values) => {
@@ -72,7 +65,7 @@ UserFormProps) {
 		},
 
 		onSubmit: (values) => {
-			// onSubmit(values);
+			onSubmit(values);
 		},
 
 		enableReinitialize: true,
@@ -105,7 +98,7 @@ UserFormProps) {
 		<form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
 			<div className="flex flex-column md:flex-row gap-2">
 				<div className="w-full flex flex-column gap-2">
-					<label htmlFor="email">email</label>
+					<label htmlFor="email">Email</label>
 					<InputText
 						id="email"
 						name="email"
@@ -144,10 +137,15 @@ UserFormProps) {
 				<Dropdown
 					id="employee_id"
 					name="employee_id"
+					placeholder="Pilih Karyawan"
 					value={formik.values.employee_id}
 					options={employeeOptions}
+					optionLabel="first_name"
+					optionValue="id"
 					onChange={formik.handleChange}
 					onBlur={formik.handleBlur}
+					filter
+					filterDelay={400}
 					className={isFieldInvalid("employee_id") ? "p-invalid" : ""}
 				/>
 
@@ -179,6 +177,7 @@ UserFormProps) {
 					label="Simpan"
 					icon="pi pi-save"
 					severity="success"
+					loading={isSubmitting}
 					disabled={formik.isSubmitting}
 					pt={{
 						icon: {

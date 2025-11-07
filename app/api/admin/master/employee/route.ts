@@ -1,8 +1,7 @@
+import { API_ENDPOINTS } from "@/app/api/api";
 import { getAuthToken } from "@/lib/utils/authUtils";
 import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "../../api";
-import { elements } from "chart.js";
 
 const tokenAvailable = (token: string | null) => {
 	if (!token) {
@@ -24,9 +23,9 @@ export const GET = async (request: NextRequest) => {
 	}
 
 	try {
-		const response = await Axios.get(API_ENDPOINTS.GETALLDIVISION, {
+		const response = await Axios.get(API_ENDPOINTS.GETALLEMPLOYEE, {
 			headers: {
-				"Content-Type": "application/json",
+				"Content-Type": "application.json",
 				Authorization: `Bearer ${token}`,
 			},
 		});
@@ -35,13 +34,13 @@ export const GET = async (request: NextRequest) => {
 	} catch (error: any) {
 		if (error.response) {
 			return NextResponse.json(
-				{ message: "Tidak ada data master divisi" },
+				{ message: error.response.data.message },
 				{ status: 404 }
 			);
 		}
 
 		return NextResponse.json(
-			{ message: "Gagal mendapatkan data master divisi" },
+			{ message: "Gagal mendapatkan data master karyawan" },
 			{ status: 500 }
 		);
 	}
@@ -58,7 +57,7 @@ export const POST = async (request: NextRequest) => {
 	try {
 		const body = await request.json();
 
-		const response = await Axios.post(API_ENDPOINTS.ADDDIVISION, body, {
+		const response = await Axios.post(API_ENDPOINTS.ADDEMPLOYEE, body, {
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
@@ -68,12 +67,12 @@ export const POST = async (request: NextRequest) => {
 		return NextResponse.json(response.data);
 	} catch (error: any) {
 		if (error.response) {
-			return NextResponse.json(error.response.data, {
+			return NextResponse.json(error.response.data.message, {
 				status: error.response.status,
 			});
 		} else {
 			return NextResponse.json(
-				{ message: "Gagal menambahkan data master divisi" },
+				{ message: "Gagal menambahkan data master karyawan" },
 				{ status: 500 }
 			);
 		}
