@@ -16,4 +16,7 @@ export const API_ENDPOINTS = {
 	EDITDIVISION: (id: string) => `${API_URL}/master-positions/${id}`,
 	DELETEDIVISION: (id: string) => `${API_URL}/master-positions/${id}`,
 	GETDIVISIONBYID: (id: string) => `${API_URL}/master-positions/${id}`,
+
+	GETUSERPROFILE: `${API_URL}/profiles`,
+	GETALLUSER: `${API_URL}/users`,
 };
