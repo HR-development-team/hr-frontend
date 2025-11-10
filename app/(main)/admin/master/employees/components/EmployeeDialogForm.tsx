@@ -8,11 +8,9 @@ import { DivisionData } from "@/lib/types/division";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
-import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import z, { any } from "zod";
 
 interface EmployeeFormProps {
 	employeeData: EmployeeFormData | null;
@@ -88,6 +86,7 @@ export default function EmployeeDialogForm({
 						onChange={formik.handleChange}
 						onBlur={formik.handleBlur}
 						className={` ${isFieldInvalid("first_name") ? "p-invalid" : ""}`}
+						placeholder="Isi Nama Depan"
 					/>
 					{getFieldError("first_name") && (
 						<small className="p-error">{getFieldError("first_name")}</small>
@@ -103,6 +102,7 @@ export default function EmployeeDialogForm({
 						onChange={formik.handleChange}
 						onBlur={formik.handleBlur}
 						className={isFieldInvalid("last_name") ? "p-invalid" : ""}
+						placeholder="Isi Nama Belakang"
 					/>
 
 					{getFieldError("last_name") && (
@@ -162,6 +162,7 @@ export default function EmployeeDialogForm({
 					dateFormat="dd/mm/yy"
 					disabled={isOnEditMode}
 					showIcon
+					placeholder="Isi Tanggal Bergabung"
 				/>
 
 				{getFieldError("join_date") && (
@@ -184,6 +185,7 @@ export default function EmployeeDialogForm({
 						filter
 						filterDelay={400}
 						className={isFieldInvalid("position_id") ? "p-invalid" : ""}
+						placeholder="Pilih Jabatan"
 					/>
 
 					{getFieldError("position_id") && (

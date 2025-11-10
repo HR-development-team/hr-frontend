@@ -1,9 +1,9 @@
 import { jwtVerify } from "jose";
-import { getSecreteKey } from "./getSecretKey";
+import { getSecretKey } from "./getSecretKey";
 
 export async function verifyToken(token: string) {
 	try {
-		const secretKey = await getSecreteKey();
+		const secretKey = await getSecretKey();
 		const { payload } = await jwtVerify(token, secretKey);
 		return payload;
 	} catch (error: any) {

@@ -1,13 +1,13 @@
-import "primereact/resources/primereact.min.css";
-import "primeicons/primeicons.css";
-import "primereact/resources/themes/lara-light-indigo/theme.css";
-import "primeflex/primeflex.css";
+// import "primereact/resources/primereact.min.css";
+// import "primeicons/primeicons.css";
+// import "primereact/resources/themes/lara-light-indigo/theme.css";
+// import "primeflex/primeflex.css";
 
 import "./globals.css";
 import { Inter } from "next/font/google";
-import { PrimeReactProvider } from "primereact/api";
-import NextTopLoader from "nextjs-toploader";
 import { ClientOnlyTopLoader } from "@/components/ClientOnlyTopLoader";
+import { PrimeReactProvider } from "primereact/api";
+import { AuthProvider } from "@/components/AuthContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,8 +23,12 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en">
-			<ClientOnlyTopLoader />
-			<body className={inter.className}>{children}</body>
+			<AuthProvider>
+				<PrimeReactProvider>
+					<ClientOnlyTopLoader />
+					<body className={inter.className}>{children}</body>
+				</PrimeReactProvider>
+			</AuthProvider>
 		</html>
 	);
 }
