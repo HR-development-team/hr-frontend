@@ -18,7 +18,6 @@ export const API_ENDPOINTS = {
 	GETDIVISIONBYID: (id: string) => `${API_URL}/master-positions/${id}`,
 
 	ADDEMPLOYEE: `${API_URL}/master-employees`,
-
 	GETALLEMPLOYEE: `${API_URL}/master-employees`,
 	EDITEMPLOYEE: (id: string) => `${API_URL}/master-employees/${id}`,
 	DELETEEMPLOYEE: (id: string) => `${API_URL}/master-employees/${id}`,
@@ -35,9 +34,13 @@ export const API_ENDPOINTS = {
 	EDITLEAVETYPE: (id: string) => `${API_URL}/master-leave-types/${id}`,
 	DELETELEAVETYPE: (id: string) => `${API_URL}/master-leave-types/${id}`,
 	GETLEAVETYPEBYID: (id: string) => `${API_URL}/master-leave-types/${id}`,
+  
+  GETADMINDASHBOARD: `${API_URL}/admin/dashboard/metrics`,
 
 	GETUSERPROFILE: `${API_URL}/profiles`,
 	UPDATEUSERPROFILE: `${API_URL}/profiles`,
-
-	GETADMINDASHBOARD: `${API_URL}/admin/dashboard/metrics`,
+  GETALLEMPLOYEE: `${API_URL}/master-employees`,
+	POSTREQUEST: `${API_URL}/leave-requests`,
+	GETALLREQUEST: `${API_URL}/leave-requests`,
+	LEAVEREQUEST: `${API_URL}/leave-requests`,
 };
