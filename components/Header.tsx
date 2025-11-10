@@ -139,7 +139,9 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 							{isLoading ? (
 								<Skeleton width="5rem" height="0.8rem" />
 							) : (
-								<p className="text-500 text-xs md:text-sm">{user?.role}</p>
+								<p className="text-500 text-xs md:text-sm">
+									{user?.role === "admin" ? "Admin" : "Karyawan"}
+								</p>
 							)}
 						</div>
 					</div>

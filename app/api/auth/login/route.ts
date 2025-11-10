@@ -18,7 +18,7 @@ export const POST = async (request: NextRequest) => {
 		if (token && role) {
 			responseToBrowser.cookies.set("token", token, {
 				httpOnly: true,
-				secure: false, // only in development
+				secure: true, // only in development
 				sameSite: "lax",
 				maxAge: 60 * 60 * 24,
 			});

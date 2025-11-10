@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/components/AuthContext";
 import { LoginFormData, loginFormSchema } from "@/lib/schemas/loginFormSchema";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
@@ -7,7 +8,7 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Toast } from "primereact/toast";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const defaultValues: LoginFormData = {
 	email: "",
@@ -15,7 +16,11 @@ const defaultValues: LoginFormData = {
 };
 
 export default function Home() {
-	const toast = useRef<Toast>(null);
+	const toastRef = useRef<Toast>(null);
+
+	const { login, user, isLoading } = useAuth();
+
+	const [passowrdVisible, setPasswordVisible] = useState<boolean>(false);
 
 	const router = useRouter();
 
@@ -53,42 +58,25 @@ export default function Home() {
 			setStatus("");
 
 			try {
-				const res = await fetch("/api/auth/login", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify(values),
-				});
+				const loggedInUser = await login(values);
 
-				const responseData = await res.json();
-				const role = responseData.auth?.user?.role;
+				const role = loggedInUser.role;
 
-				if (!res.ok)
-					throw new Error(responseData.message || "Terjadi kesalahan");
+				console.log("Login success", loggedInUser);
 
-				toast.current?.show({
-					severity: "success",
-					summary: "Login Berhasil",
-					detail: responseData.message,
-					life: 3000,
-				});
-
-				console.log("Login success", responseData.message);
+				router.refresh();
 
 				if (role === "admin") {
-					router.push("/admin/dashboard");
+					setTimeout(() => {
+						router.push("/admin/dashboard");
+					}, 1500);
 				} else if (role === "employee") {
 					router.push("karyawan");
 				}
-
-				// setTimeout(() => {
-				// 	router.push("/admin/dashboard");
-				// }, 1500);
 			} catch (error: any) {
 				setStatus(error.message);
 
-				toast.current?.show({
+				toastRef.current?.show({
 					severity: "error",
 					summary: "Login Gagal",
 					detail: error.message,
@@ -100,9 +88,30 @@ export default function Home() {
 		enableReinitialize: true,
 	});
 
+	useEffect(() => {
+		if (!isLoading && user) {
+			toastRef.current?.show({
+				severity: "success",
+				summary: "Sukses",
+				detail: `Mengarahkan ke dashboard ${
+					user.role === "admin" ? "Admin" : "Karyawan"
+				}`,
+				life: 3000,
+			});
+
+			if (user.role === "admin") {
+				setTimeout(() => {
+					router.push("/admin/dashboard");
+				}, 1500);
+			} else if (user.role === "employee") {
+				router.push("karyawan");
+			}
+		}
+	}, [user, isLoading, router]);
+
 	return (
 		<main className="relative min-h-screen">
-			<Toast ref={toast} />
+			<Toast ref={toastRef} />
 
 			<div className="absolute h-full w-full bg-login-pattern" />
 
@@ -181,7 +190,7 @@ export default function Home() {
 									<label htmlFor="password" className="font-semibold">
 										Password
 									</label>
-									<Password
+									{/* <Password
 										id="password"
 										name="password"
 										placeholder="Masukkan password Anda"
@@ -195,7 +204,39 @@ export default function Home() {
 										inputClassName="w-full"
 										feedback={false}
 										toggleMask
-									/>
+										pt={{
+											root: {
+												className: "w-full",
+											},
+											input: {
+												className: "w-full",
+												style: { paddingRight: "2.5rem" },
+											},
+										}}
+									/> */}
+									<div className="p-inputgroup w-full">
+										<InputText
+											id="password"
+											name="password"
+											type={passowrdVisible ? "text" : "password"}
+											placeholder="Masukkan password Anda"
+											value={formik.values.password}
+											onChange={formik.handleChange}
+											onBlur={formik.handleBlur}
+											className={`w-full ${
+												formik.touched.password && formik.errors.password
+													? "p-invalid"
+													: ""
+											}`}
+										/>
+
+										<Button
+											type="button"
+											icon={passowrdVisible ? "pi pi-eye-slash" : "pi pi-eye"}
+											className="p-button-secondary p-button-text p-button-plain border-1 border-gray-400"
+											onClick={() => setPasswordVisible(!passowrdVisible)}
+										/>
+									</div>
 
 									<FormError
 										touched={formik.touched.password}

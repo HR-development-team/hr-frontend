@@ -1,13 +1,55 @@
 "use client";
 
+import { useAuth } from "@/components/AuthContext";
 import DashboardStats from "./components/DashboardStats";
 import QuickActions from "./components/QuickActions";
 import { CalendarDays, LayoutDashboard } from "lucide-react";
 import { Card } from "primereact/card";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
+import { Toast } from "primereact/toast";
+import { StatData } from "@/lib/types/statData";
+
+const metricDefaultValues: StatData = {
+	totalEmployee: 0,
+	totalAttendance: 0,
+	totalLeaveBalance: 0,
+	totalLeaveRequest: 0,
+};
 
 export default function Dashboard() {
+	const toastRef = useRef<Toast>(null);
+	const isInitialLoad = useRef<boolean>(true);
+
+	const [isLoadingMetric, setIsLoadingMetric] = useState<boolean>(false);
+
+	const [metric, setMetric] = useState<StatData>(metricDefaultValues);
+
 	const [todayDate, setTodayDate] = useState<string>("...");
+
+	const { user, isLoading } = useAuth();
+
+	const fetchMetricData = async () => {
+		setIsLoadingMetric(true);
+		try {
+			const res = await fetch("/api/admin/dashboard/metric");
+
+			if (!res.ok) {
+				throw new Error("Gagal mendapatkan data metrik dashboard");
+			}
+
+			const responseData = await res.json();
+
+			if (responseData && responseData.status === "00") {
+				setMetric(responseData.master_employees);
+			} else {
+				setMetric(metricDefaultValues);
+			}
+		} catch (error: any) {
+			console.error(error.message);
+		} finally {
+			setIsLoadingMetric(false);
+		}
+	};
 
 	const dateFormat = (date: Date) => {
 		const options: Intl.DateTimeFormatOptions = {
@@ -18,6 +60,10 @@ export default function Dashboard() {
 		};
 		return date.toLocaleString("id-ID", options);
 	};
+
+	useEffect(() => {
+		fetchMetricData();
+	}, []);
 
 	useEffect(() => {
 		const date = dateFormat(new Date());
@@ -33,7 +79,9 @@ export default function Dashboard() {
 				</div>
 				<div>
 					<h2 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-						Selamat Datang, Agus Zahirudin!
+						{isLoading
+							? "Selamat Datang, "
+							: `Selamat Datang, ${(user?.first_name, user?.last_name)}`}
 					</h2>
 					<p className="text-sm md:text-md text-gray-500">
 						Berikut adalah ringkasan aktivitas HR hari ini.
@@ -42,13 +90,13 @@ export default function Dashboard() {
 			</div>
 
 			{/* Statistics */}
-			<DashboardStats />
+			<DashboardStats data={metric} isLoading={isLoadingMetric} />
 
 			{/* Main Content Grid */}
 			<div className="mt-4 grid">
 				{/* Left Column */}
 				<div className="col-12 md:col-6">
-					<QuickActions />
+					<QuickActions data={metric.totalLeaveRequest} />
 				</div>
 
 				{/* Calendar Widget */}

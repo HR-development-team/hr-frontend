@@ -45,6 +45,7 @@ export default function DataTableUser({
 	return (
 		<DataTable
 			value={user}
+			loading={isLoading}
 			paginator
 			rows={5}
 			rowsPerPageOptions={[5, 10, 25, 50]}

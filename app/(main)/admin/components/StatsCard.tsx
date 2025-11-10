@@ -3,21 +3,18 @@ import { ReactNode } from "react";
 
 interface StatsCardProps {
 	title: string;
-	value: string;
+	value: number | null;
 	description: string;
-	trend?: {
-		value: string;
-		isPositive: boolean;
-	};
 	icon: ReactNode;
+	isLoading: boolean;
 }
 
 export default function StatsCard({
 	title,
 	value,
 	description,
-	trend,
 	icon,
+	isLoading,
 }: StatsCardProps) {
 	return (
 		<Card
@@ -29,22 +26,15 @@ export default function StatsCard({
 		>
 			<div className="flex align-items-center justify-content-between mb-4">
 				<div className="p-3 bg-blue-50 border-round-lg">
-          <span>{icon}</span>
+					<span>{icon}</span>
 				</div>
-				{trend && (
-					<span
-						className={`text-sm font-medium px-2 py-1 border-round ${
-							trend.isPositive
-								? "bg-green-100 text-green-600"
-								: "bg-red-100 text-red-600"
-						}`}
-					>
-						{trend.isPositive ? "↑" : "↓"} {trend.value}
-					</span>
-				)}
 			</div>
 			<h3 className="text-lg font-semibold text-gray-700 mb-2">{title}</h3>
-			<p className="text-2xl font-bold text-gray-900 mb-1">{value}</p>
+			{isLoading ? (
+				<i className="pi pi-spin pi-spinner text-800 text-xl"></i>
+			) : (
+				<p className="text-2xl font-bold text-gray-900 mb-1">{value}</p>
+			)}
 			<p className="text-sm text-gray-500">{description}</p>
 		</Card>
 	);

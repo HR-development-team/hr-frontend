@@ -8,14 +8,9 @@ import { UserFormData, userFormSchema } from "@/lib/schemas/userFormSchema";
 import { EmployeeData } from "@/lib/types/employee";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
-import { Calendar } from "primereact/calendar";
-import { Dialog } from "primereact/dialog";
-import { Divider } from "primereact/divider";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
-import { Password } from "primereact/password";
-import z, { any } from "zod";
+import { useState } from "react";
 
 // status
 const roleOptions = [
@@ -41,10 +36,11 @@ const defaultValues: UserFormData = {
 export default function UserDialogForm({
 	userData,
 	onSubmit,
-	dialogMode,
 	employeeOptions,
 	isSubmitting,
 }: UserFormProps) {
+	const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+
 	const formik = useFormik({
 		initialValues: userData || defaultValues,
 		validate: (values) => {
@@ -80,20 +76,6 @@ export default function UserDialogForm({
 			: undefined;
 	};
 
-	const passwordFooter = (
-		<>
-			<Divider />
-			<p>Password harus berisi</p>
-			<ul className="pl-2 ml-2 mt-0 line-height-3">
-				<li>Setidaknya mengandung 1 huruf kecil</li>
-				<li>Setidaknya mengandung 1 huruf besar</li>
-				<li>Setidaknya mengandung 1 angka</li>
-				<li>Setidaknya mengandung 1 karakter spesial</li>
-				<li>Minimal 8 karakter</li>
-			</ul>
-		</>
-	);
-
 	return (
 		<form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
 			<div className="flex flex-column md:flex-row gap-2">
@@ -106,6 +88,7 @@ export default function UserDialogForm({
 						onChange={formik.handleChange}
 						onBlur={formik.handleBlur}
 						className={` ${isFieldInvalid("email") ? "p-invalid" : ""}`}
+						placeholder="ex: budi@example.com"
 					/>
 					{getFieldError("email") && (
 						<small className="p-error">{getFieldError("email")}</small>
@@ -114,21 +97,42 @@ export default function UserDialogForm({
 
 				<div className="w-full flex flex-column gap-2">
 					<label htmlFor="password">Password</label>
-					<Password
-						id="password"
-						name="password"
-						value={formik.values.password}
-						onChange={formik.handleChange}
-						onBlur={formik.handleBlur}
-						footer={passwordFooter}
-						className={isFieldInvalid("password") ? "p-invalid" : ""}
-						inputClassName="w-full"
-						toggleMask
-					/>
+					<div className="p-inputgroup w-full">
+						<InputText
+							id="password"
+							name="password"
+							type={passwordVisible ? "text" : "password"}
+							value={formik.values.password}
+							onChange={formik.handleChange}
+							onBlur={formik.handleBlur}
+							placeholder="Masukkan Kassword"
+							className={isFieldInvalid("password") ? "p-invalid" : ""}
+						/>
+
+						<Button
+							type="button"
+							icon={passwordVisible ? "pi pi-eye-slash" : "pi pi-eye"}
+							className="p-button-secondary p-button-text p-button-plain border-1 border-gray-400"
+							onClick={() => setPasswordVisible(!passwordVisible)}
+						/>
+					</div>
 
 					{getFieldError("password") && (
 						<small className="p-error">{getFieldError("password")}</small>
 					)}
+
+					<div className="p-3 bg-gray-50 border-round mt-2">
+						<div className="font-bold mb-1 text-sm text-700">
+							Password harus berisi:
+						</div>
+						<ul className="pl-3 mt-1 line-height-3 text-sm text-500">
+							<li>Setidaknya mengandung 1 huruf kecil</li>
+							<li>Setidaknya mengandung 1 huruf besar</li>
+							<li>Setidaknya mengandung 1 angka</li>
+							<li>Setidaknya mengandung 1 karakter spesial</li>
+							<li>Minimal 8 karakter</li>
+						</ul>
+					</div>
 				</div>
 			</div>
 
