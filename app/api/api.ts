@@ -39,4 +39,7 @@ export const API_ENDPOINTS = {
 	GETUSERPROFILE: `${API_URL}/profiles`,
 	UPDATEUSERPROFILE: `${API_URL}/profiles`,
     GETALLEMPLOYEE: `${API_URL}/master-employees`,
+	POSTREQUEST: `${API_URL}/leave-requests`,
+	GETALLREQUEST: `${API_URL}/leave-requests`,
+	LEAVEREQUEST: `${API_URL}/leave-requests`,
 };
