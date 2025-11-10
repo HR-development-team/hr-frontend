@@ -51,6 +51,7 @@ export default function DataTableLeaveType({
 	return (
 		<DataTable
 			value={leaveType}
+			loading={isLoading}
 			paginator
 			rows={5}
 			rowsPerPageOptions={[5, 10, 25, 50]}

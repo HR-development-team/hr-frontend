@@ -204,17 +204,27 @@ export default function LeaveType() {
 					<div className="flex flex-column md:flex-row md:justify-content-between md:align-items-end gap-3">
 						{/* calendar */}
 						<form className="flex flex-column md:flex-row md:align-items-end gap-3">
-							<div className="flex flex-column gap-2">
+							<div className="flex flex-column md:flex-row gap-2">
 								{/* start date */}
 								<div className="flex flex-column gap-2">
 									<label htmlFor="startDate">Dari</label>
-									<Calendar id="startDate" placeholder="Mulai" showIcon />
+									<Calendar
+										id="startDate"
+										placeholder="Mulai"
+										showIcon
+										style={{ width: "10rem" }}
+									/>
 								</div>
 
 								{/* end date */}
 								<div className="flex flex-column gap-2">
 									<label htmlFor="endDate">Sampai</label>
-									<Calendar id="startDate" placeholder="Selesai" showIcon />
+									<Calendar
+										id="startDate"
+										placeholder="Selesai"
+										showIcon
+										style={{ width: "10rem" }}
+									/>
 								</div>
 							</div>
 

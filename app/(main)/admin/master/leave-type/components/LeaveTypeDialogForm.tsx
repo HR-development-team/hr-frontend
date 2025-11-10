@@ -85,6 +85,7 @@ export default function LeaveTypeDialogForm({
 						onChange={formik.handleChange}
 						onBlur={formik.handleBlur}
 						className={` ${isFieldInvalid("name") ? "p-invalid" : ""}`}
+						placeholder="Isi Nama Cuti"
 					/>
 					{getFieldError("name") && (
 						<small className="p-error">{getFieldError("name")}</small>

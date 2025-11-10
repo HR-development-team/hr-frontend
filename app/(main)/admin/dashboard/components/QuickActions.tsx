@@ -10,42 +10,45 @@ import Link from "next/link";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { ReactNode } from "react";
+import { da } from "zod/v4/locales";
 
-export default function QuickActions() {
-	interface QuickMenu {
-		icon: ReactNode;
-		label: string;
-		description: string;
-		href: string;
-	}
+interface QuickMenu {
+	icon: ReactNode;
+	label: string;
+	description: string;
+	href: string;
+}
 
-	const actions: QuickMenu[] = [
-		{
-			icon: <Plus className="w-full h-full" />,
-			label: "Tambah Karyawan",
-			description: "Input data karyawan baru",
-			href: "/admin/master/employees",
-		},
-		{
-			icon: <ClipboardCheck className="w-full h-full" />,
-			label: "Persetujuan Cuti",
-			description: "8 permintaan pending",
-			href: "#",
-		},
-		{
-			icon: <ChartArea className="w-full h-full" />,
-			label: "Laporan Absensi",
-			description: "Generate laporan bulanan",
-			href: "#",
-		},
-		{
-			icon: <Building className="w-full h-full" />,
-			label: "Update Struktur",
-			description: "Edit organisasi",
-			href: "#",
-		},
-	];
+const actions = (data: number): QuickMenu[] => [
+	{
+		icon: <Plus className="w-full h-full" />,
+		label: "Tambah Karyawan",
+		description: "Input data karyawan baru",
+		href: "/admin/master/employees",
+	},
+	{
+		icon: <ClipboardCheck className="w-full h-full" />,
+		label: "Persetujuan Cuti",
+		description: data
+			? `${data} permintaan pending`
+			: "Tidak ada permintaan cuti",
+		href: "#",
+	},
+	{
+		icon: <ChartArea className="w-full h-full" />,
+		label: "Laporan Absensi",
+		description: "Generate laporan bulanan",
+		href: "#",
+	},
+	{
+		icon: <Building className="w-full h-full" />,
+		label: "Update Struktur",
+		description: "Edit organisasi",
+		href: "#",
+	},
+];
 
+export default function QuickActions({ data }: { data: number }) {
 	return (
 		<Card>
 			<div className="flex flex-column gap-4">
@@ -54,7 +57,7 @@ export default function QuickActions() {
 					<span className="font-semibold">Quick Actions</span>
 				</div>
 				<div className="grid">
-					{actions.map((action, index) => (
+					{actions(data).map((action, index) => (
 						<div className="col-12">
 							<Link key={index} href={action.href}>
 								<Button

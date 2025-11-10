@@ -3,7 +3,6 @@ import { verifyToken } from "./lib/utils/verifyToken";
 
 export async function middleware(request: NextRequest) {
 	const token = request.cookies.get("token")?.value;
-	// const role = request.cookies.get("role")?.value;
 
 	const { pathname } = request.nextUrl;
 	const publicPath: string = "/login";

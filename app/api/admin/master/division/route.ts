@@ -34,7 +34,7 @@ export const GET = async (request: NextRequest) => {
 	} catch (error: any) {
 		if (error.response) {
 			return NextResponse.json(
-				{ message: "Tidak ada data master divisi" },
+				{ message: error.response.data.message },
 				{ status: 404 }
 			);
 		}
