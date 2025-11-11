@@ -32,7 +32,7 @@ const actions = (data: number): QuickMenu[] => [
 		description: data
 			? `${data} permintaan pending`
 			: "Tidak ada permintaan cuti",
-		href: "#",
+		href: "/admin/transaction/leave",
 	},
 	{
 		icon: <ChartArea className="w-full h-full" />,

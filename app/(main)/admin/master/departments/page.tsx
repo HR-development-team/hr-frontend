@@ -279,7 +279,7 @@ export default function Department() {
 					visible={isDialogVisible}
 					onHide={() => setIsDialogVisible(false)}
 					modal
-					style={{ width: "50%" }}
+					className="w-full md:w-6"
 				>
 					<DepartmentDialogForm
 						departmentData={selectedDepartment}

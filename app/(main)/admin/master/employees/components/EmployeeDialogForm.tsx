@@ -4,7 +4,6 @@ import {
 	EmployeeFormData,
 	employeeFormSchema,
 } from "@/lib/schemas/employeeFormSchema";
-import { DivisionData } from "@/lib/types/division";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
@@ -15,8 +14,8 @@ import { InputTextarea } from "primereact/inputtextarea";
 interface EmployeeFormProps {
 	employeeData: EmployeeFormData | null;
 	onSubmit: (formData: EmployeeFormData) => void;
-	dialogMode: "add" | "edit" | null;
-	divisionOptions: DivisionData[];
+	dialogMode: "view" | "add" | "edit" | null;
+	// positionOptions: PositionData[];
 	isSubmitting: boolean;
 }
 
@@ -34,7 +33,7 @@ export default function EmployeeDialogForm({
 	employeeData,
 	onSubmit,
 	dialogMode,
-	divisionOptions,
+	// positionOptions,
 	isSubmitting,
 }: EmployeeFormProps) {
 	const formik = useFormik({
@@ -64,6 +63,9 @@ export default function EmployeeDialogForm({
 	});
 
 	const isOnEditMode: boolean = dialogMode === "edit" ? true : false;
+	const isOnViewMode: boolean = dialogMode === "view" ? true : false;
+
+	console.log("Mode dialog view:", isOnViewMode);
 
 	const isFieldInvalid = (fieldName: keyof EmployeeFormData) =>
 		!!(formik.touched[fieldName] && formik.errors[fieldName]);
@@ -75,7 +77,10 @@ export default function EmployeeDialogForm({
 	};
 
 	return (
-		<form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
+		<form
+			onSubmit={formik.handleSubmit}
+			className={` ${isOnViewMode ? "hidden" : "flex flex-column gap-3"}`}
+		>
 			<div className="flex flex-column md:flex-row gap-2">
 				<div className="w-full flex flex-column gap-2">
 					<label htmlFor="first_name">Nama Depan</label>
@@ -148,49 +153,51 @@ export default function EmployeeDialogForm({
 				)}
 			</div>
 
-			<div className="flex flex-column gap-2">
-				<label htmlFor="join_date">Tanggal Bergabung</label>
-				<Calendar
-					id="join_date"
-					name="join_date"
-					value={formik.values.join_date}
-					onChange={(e: any) => {
-						formik.setFieldValue("join_date", e.value);
-					}}
-					onBlur={formik.handleBlur}
-					className={isFieldInvalid("join_date") ? "p-invalid" : ""}
-					dateFormat="dd/mm/yy"
-					disabled={isOnEditMode}
-					showIcon
-					placeholder="Isi Tanggal Bergabung"
-				/>
-
-				{getFieldError("join_date") && (
-					<small className="p-error">{getFieldError("join_date")}</small>
-				)}
-			</div>
-
-			<div className="flex flex-column md:flex-row gap-2">
-				<div className="w-full flex flex-column gap-2">
-					<label htmlFor="position_id">Jabatan</label>
-					<Dropdown
-						id="position_id"
-						name="position_id"
-						value={formik.values.position_id}
-						options={divisionOptions}
-						optionLabel="name"
-						optionValue="id"
-						onChange={formik.handleChange}
+			<div className="flex align-items-center justify-content-between gap-2">
+				<div className="flex flex-column gap-2 w-full">
+					<label htmlFor="join_date">Tanggal Bergabung</label>
+					<Calendar
+						id="join_date"
+						name="join_date"
+						value={formik.values.join_date}
+						onChange={(e: any) => {
+							formik.setFieldValue("join_date", e.value);
+						}}
 						onBlur={formik.handleBlur}
-						filter
-						filterDelay={400}
-						className={isFieldInvalid("position_id") ? "p-invalid" : ""}
-						placeholder="Pilih Jabatan"
+						className={isFieldInvalid("join_date") ? "p-invalid" : ""}
+						dateFormat="dd/mm/yy"
+						disabled={isOnEditMode}
+						showIcon
+						placeholder="Isi Tanggal Bergabung"
 					/>
 
-					{getFieldError("position_id") && (
-						<small className="p-error">{getFieldError("position_id")}</small>
+					{getFieldError("join_date") && (
+						<small className="p-error">{getFieldError("join_date")}</small>
 					)}
+				</div>
+
+				<div className="flex flex-column md:flex-row gap-2 w-full">
+					<div className="w-full flex flex-column gap-2">
+						<label htmlFor="position_id">Jabatan</label>
+						<Dropdown
+							id="position_id"
+							name="position_id"
+							value={formik.values.position_id}
+							// options={positionOptions}
+							optionLabel="name"
+							optionValue="id"
+							onChange={formik.handleChange}
+							onBlur={formik.handleBlur}
+							filter
+							filterDelay={400}
+							className={isFieldInvalid("position_id") ? "p-invalid" : ""}
+							placeholder="Pilih Jabatan"
+						/>
+
+						{getFieldError("position_id") && (
+							<small className="p-error">{getFieldError("position_id")}</small>
+						)}
+					</div>
 				</div>
 
 				{/* <div className="w-full flex flex-column gap-2"> */}
