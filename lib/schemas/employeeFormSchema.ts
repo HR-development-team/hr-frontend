@@ -16,7 +16,7 @@ export const employeeFormSchema = z.object({
 		(val) => {
 			if (typeof val === "number") return String(val);
 
-			if (val === "") return undefined;
+			if (val === "") return null;
 
 			return val;
 		},

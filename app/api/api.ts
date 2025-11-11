@@ -34,13 +34,14 @@ export const API_ENDPOINTS = {
 	EDITLEAVETYPE: (id: string) => `${API_URL}/master-leave-types/${id}`,
 	DELETELEAVETYPE: (id: string) => `${API_URL}/master-leave-types/${id}`,
 	GETLEAVETYPEBYID: (id: string) => `${API_URL}/master-leave-types/${id}`,
-  
-  GETADMINDASHBOARD: `${API_URL}/admin/dashboard/metrics`,
+
+	GETADMINDASHBOARD: `${API_URL}/admin/dashboard/metrics`,
 
 	GETUSERPROFILE: `${API_URL}/profiles`,
 	UPDATEUSERPROFILE: `${API_URL}/profiles`,
-  GETALLEMPLOYEE: `${API_URL}/master-employees`,
-	POSTREQUEST: `${API_URL}/leave-requests`,
-	GETALLREQUEST: `${API_URL}/leave-requests`,
+	POSTLEAVEREQUEST: `${API_URL}/leave-requests`,
+	GETALLLEAVEREQUEST: `${API_URL}/leave-requests`,
 	LEAVEREQUEST: `${API_URL}/leave-requests`,
+
+	UPDATELEAVEREQUEST: (id: string) => `${API_URL}/leave-requests/${id}/status`,
 };

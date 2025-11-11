@@ -62,7 +62,7 @@ const menuItems: MenuItems[] = [
 		id: "profile",
 		label: "Profil",
 		icon: <MonitorCheck />,
-		href: "/karyawan/Pengajuan/status",
+		href: "/karyawan/Profil",
 	},
 ];
 

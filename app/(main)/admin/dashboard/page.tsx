@@ -81,7 +81,7 @@ export default function Dashboard() {
 					<h2 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
 						{isLoading
 							? "Selamat Datang, "
-							: `Selamat Datang, ${(user?.first_name, user?.last_name)}`}
+							: `Selamat Datang, ${user?.first_name} ${user?.last_name}`}
 					</h2>
 					<p className="text-sm md:text-md text-gray-500">
 						Berikut adalah ringkasan aktivitas HR hari ini.
@@ -93,7 +93,7 @@ export default function Dashboard() {
 			<DashboardStats data={metric} isLoading={isLoadingMetric} />
 
 			{/* Main Content Grid */}
-			<div className="mt-4 grid">
+			<div className="mt-1 grid">
 				{/* Left Column */}
 				<div className="col-12 md:col-6">
 					<QuickActions data={metric.totalLeaveRequest} />
@@ -108,8 +108,8 @@ export default function Dashboard() {
 								<span className="text-sm font-semibold text-800">Kalender</span>
 							</div>
 							<div className="text-center p-4 bg-blue-50 border-round-lg">
-								<p className="text-lg font-bold text-800">{todayDate}</p>
-								<p className="text-500 text-md">Tidak ada hari libur</p>
+								<p className="text-base md:text-lg font-bold text-800">{todayDate}</p>
+								<p className="text-sm text-500 md:text-md">Tidak ada hari libur</p>
 							</div>
 						</div>
 					</Card>

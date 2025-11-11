@@ -37,15 +37,6 @@ export default function DataTableDepartment({
 		return <Tag value={rowData.status} severity={severity} />;
 	};
 
-	const joinDateBodyTemplate = (rowData: DepartmentData) => {
-		const dateObject = new Date(rowData.created_at);
-		return dateObject.toLocaleDateString("id-ID", {
-			day: "2-digit",
-			month: "long",
-			year: "numeric",
-		});
-	};
-
 	return (
 		<DataTable
 			value={department}
@@ -58,12 +49,6 @@ export default function DataTableDepartment({
 		>
 			<Column field="department_code" header="Kode" style={{ width: "25%" }} />
 			<Column field="name" header="Nama Departemen" style={{ width: "25%" }} />
-			<Column
-				field="created_at"
-				header="Tanggal Dibuat"
-				body={joinDateBodyTemplate}
-				style={{ width: "25%" }}
-			/>
 			<Column
 				header="Aksi"
 				body={(row: DepartmentData) => (

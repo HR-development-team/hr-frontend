@@ -6,16 +6,17 @@ import { DataTable, DataTablePageEvent } from "primereact/datatable";
 import { Tag } from "primereact/tag";
 import React, { useState } from "react";
 import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
-import { EmployeeData } from "@/lib/types/employee";
+import { GetAllEmployeeData } from "@/lib/types/employee";
 
 interface DataTableEmployeesProp {
-	employees: EmployeeData[];
+	employees: GetAllEmployeeData[];
 	isLoading: boolean;
 	// lazyParams: { first: number; rows: number; page: number };
 	// totalItems: number;
 	// onPageChange: (event: DataTablePageEvent) => void;
-	onEdit: (employee: EmployeeData) => void;
-	onDelete: (employee: EmployeeData) => void;
+	onView: (employee: GetAllEmployeeData) => void;
+	onEdit: (employee: GetAllEmployeeData) => void;
+	onDelete: (employee: GetAllEmployeeData) => void;
 }
 
 export default function DataTableEmployees({
@@ -24,19 +25,21 @@ export default function DataTableEmployees({
 	// lazyParams,
 	// totalItems,
 	// onPageChange,
+	onView,
 	onEdit,
 	onDelete,
 }: DataTableEmployeesProp) {
 	const newLocal =
 		"border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
-	const statusBodyTemplate = (rowData: any) => {
-		const severity = rowData.status === "Aktif" ? "success" : "danger";
+	const statusBodyTemplate = (rowData: GetAllEmployeeData) => {
+		const severity =
+			rowData.employment_status === "aktif" ? "success" : "danger";
 
-		return <Tag value={rowData.status} severity={severity} />;
+		return <Tag value={rowData.employment_status} severity={severity} />;
 	};
 
-	const joinDateBodyTemplate = (rowData: EmployeeData) => {
+	const joinDateBodyTemplate = (rowData: GetAllEmployeeData) => {
 		const dateObject = new Date(rowData.join_date);
 		return dateObject.toLocaleDateString("id-ID", {
 			day: "2-digit",
@@ -55,35 +58,72 @@ export default function DataTableEmployees({
 			className={newLocal}
 			// style={{ minWidth: "50rem" }}
 		>
-			<Column field="first_name" header="Nama Depan" style={{ width: "25%" }} />
 			<Column
-				field="last_name"
-				header="Nama Belakang"
+				field="employee_code"
+				header="Kode karyawan"
 				style={{ width: "25%" }}
 			/>
 			<Column
-				field="contact_phone"
-				header="Nomor Telepon"
+				field="full_name"
+				header="Nama Lengkap"
 				style={{ width: "25%" }}
 			/>
-			<Column field="address" header="Alamat" style={{ width: "25%" }} />
 			<Column
 				field="join_date"
 				header="Bergabung Pada"
 				body={joinDateBodyTemplate}
 				style={{ width: "25%" }}
 			/>
-			<Column field="division_name" header="Posisi" style={{ width: "25%" }} />
-			{/* <Column
-				field="status"
+
+			<Column
+				field="employment_status"
 				header="Status"
 				body={statusBodyTemplate}
 				style={{ width: "25%" }}
-			/> */}
+			/>
+			<Column
+				field="position_code"
+				header="Kode Posisi"
+				style={{ width: "25%" }}
+			/>
+			<Column
+				field="position_name"
+				header="Nama Posisi"
+				style={{ width: "25%" }}
+			/>
+			<Column
+				field="division_code"
+				header="Kode Divisi"
+				style={{ width: "25%" }}
+			/>
+			<Column
+				field="division_name"
+				header="Nama Divisi"
+				style={{ width: "25%" }}
+			/>
+			<Column
+				field="department_code"
+				header="Kode Departement"
+				style={{ width: "25%" }}
+			/>
+			<Column
+				field="department_name"
+				header="Nama Departement"
+				style={{ width: "25%" }}
+			/>
 			<Column
 				header="Aksi"
-				body={(row: EmployeeData) => (
+				body={(row: GetAllEmployeeData) => (
 					<div className="flex gap-2">
+						<Button
+							icon="pi pi-eye text sm"
+							size="small"
+							severity="success"
+							onClick={() => {
+								onView(row);
+							}}
+						/>
+
 						<Button
 							icon="pi pi-pencil text-sm"
 							size="small"

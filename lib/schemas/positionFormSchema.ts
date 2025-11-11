@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const divisionFormSchema = z.object({
+export const positionFormSchema = z.object({
 	position_code: z
 		.string()
 		.nonempty("Kode divisi wajib diisi")
@@ -18,4 +18,4 @@ export const divisionFormSchema = z.object({
 	department_id: z.number().min(0, "Harus memilih departemen"),
 });
 
-export type DivisionFormData = z.infer<typeof divisionFormSchema>;
+export type PositionFormData = z.infer<typeof positionFormSchema>;

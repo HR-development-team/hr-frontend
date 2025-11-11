@@ -109,9 +109,9 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 		return initials || "U";
 	};
 
-	if (!isLoading && !user) {
-		return null;
-	}
+	// if (!isLoading && !user) {
+	// 	return null;
+	// }
 
 	return (
 		<header className="fixed top-0 z-5 w-full bg-white shadow-1 border-b py-2">

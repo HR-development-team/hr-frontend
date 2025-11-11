@@ -4,21 +4,20 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable, DataTablePageEvent } from "primereact/datatable";
 import React, { useState } from "react";
-import { DivisionData } from "@/lib/types/division";
-import { Row } from "primereact/row";
 import { formatRupiah } from "@/lib/utils/formatRupiah";
+import { PositionData } from "@/lib/types/position";
 
-interface DataTableDivisionProp {
-	division: DivisionData[];
+interface DataTablePositionProp {
+	division: PositionData[];
 	isLoading: boolean;
 	// lazyParams: { first: number; rows: number; page: number };
 	// totalItems: number;
 	// onPageChange: (event: DataTablePageEvent) => void;
-	onEdit: (division: DivisionData) => void;
-	onDelete: (division: DivisionData) => void;
+	onEdit: (division: PositionData) => void;
+	onDelete: (division: PositionData) => void;
 }
 
-export default function DataTableDivision({
+export default function DataTablePosition({
 	division,
 	isLoading,
 	// lazyParams,
@@ -26,18 +25,9 @@ export default function DataTableDivision({
 	// onPageChange,
 	onEdit,
 	onDelete,
-}: DataTableDivisionProp) {
+}: DataTablePositionProp) {
 	const newLocal =
 		"border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
-
-	const joinDateBodyTemplate = (rowData: DivisionData) => {
-		const dateObject = new Date(rowData.created_at);
-		return dateObject.toLocaleDateString("id-ID", {
-			day: "2-digit",
-			month: "long",
-			year: "numeric",
-		});
-	};
 
 	return (
 		<DataTable
@@ -59,18 +49,12 @@ export default function DataTableDivision({
 			<Column
 				field="base_salary"
 				header="Gaji Pokok"
-				body={(row: DivisionData) => formatRupiah(row.base_salary)}
-				style={{ width: "25%" }}
-			/>
-			<Column
-				field="created_at"
-				header="Dibuat pada"
-				body={joinDateBodyTemplate}
+				body={(row: PositionData) => formatRupiah(row.base_salary)}
 				style={{ width: "25%" }}
 			/>
 			<Column
 				header="Aksi"
-				body={(row: DivisionData) => (
+				body={(row: PositionData) => (
 					<div className="flex gap-2">
 						<Button
 							icon="pi pi-pencil text-sm"
