@@ -284,7 +284,7 @@ export default function LeaveType() {
 					visible={isDialogVisible}
 					onHide={() => setIsDialogVisible(false)}
 					modal
-					style={{ width: "75%" }}
+					className="w-full md:w-6"
 				>
 					<LeaveTypeDialogForm
 						leaveType={selectedLeaveType}

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import { usePathname } from "next/navigation";
 import { PrimeReactProvider } from "primereact/api";
+import Header from "@/components/Header";
 
 export default function AdminLayout({
 	children,

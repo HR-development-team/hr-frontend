@@ -1,44 +1,28 @@
 "use client";
 
+import FormCalendar from "@/components/form/FormCalendar";
+import FormDropdown from "@/components/form/FormDropdown";
+import FormInputText from "@/components/form/FormInputText";
+import FormInputTextarea from "@/components/form/FormInputTextarea";
 import {
 	EmployeeFormData,
 	employeeFormSchema,
 } from "@/lib/schemas/employeeFormSchema";
-import { DivisionData } from "@/lib/types/division";
+import { EmployeeFormProps } from "@/lib/types/form/employeeForm";
+import { employeeFormDefaultValues, genderOptions, marriedOptions, statusOptions } from "@/lib/values/employeeDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
-import { Calendar } from "primereact/calendar";
-import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
-
-interface EmployeeFormProps {
-	employeeData: EmployeeFormData | null;
-	onSubmit: (formData: EmployeeFormData) => void;
-	dialogMode: "add" | "edit" | null;
-	divisionOptions: DivisionData[];
-	isSubmitting: boolean;
-}
-
-const defaultValues: EmployeeFormData = {
-	first_name: "",
-	last_name: "",
-	contact_phone: "",
-	address: "",
-	join_date: null as any,
-	position_id: 0,
-	// status: "Non-Aktif",
-};
 
 export default function EmployeeDialogForm({
 	employeeData,
 	onSubmit,
 	dialogMode,
-	divisionOptions,
+	positionOptions,
 	isSubmitting,
 }: EmployeeFormProps) {
 	const formik = useFormik({
-		initialValues: employeeData || defaultValues,
+		initialValues: employeeData || employeeFormDefaultValues,
 		validate: (values) => {
 			const validation = employeeFormSchema.safeParse(values);
 
@@ -76,140 +60,271 @@ export default function EmployeeDialogForm({
 
 	return (
 		<form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
-			<div className="flex flex-column md:flex-row gap-2">
-				<div className="w-full flex flex-column gap-2">
-					<label htmlFor="first_name">Nama Depan</label>
-					<InputText
-						id="first_name"
-						name="first_name"
-						value={formik.values.first_name}
-						onChange={formik.handleChange}
-						onBlur={formik.handleBlur}
-						className={` ${isFieldInvalid("first_name") ? "p-invalid" : ""}`}
-						placeholder="Isi Nama Depan"
-					/>
-					{getFieldError("first_name") && (
-						<small className="p-error">{getFieldError("first_name")}</small>
-					)}
-				</div>
+			<FormInputText
+				props={{
+					...formik.getFieldProps("full_name"),
+					placeholder: "Isi Nama Lengkap",
+				}}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				label="Nama Lengkap"
+				fieldName={"full_name"}
+			/>
 
-				<div className="w-full flex flex-column gap-2">
-					<label htmlFor="last_name">Nama Belakang</label>
-					<InputText
-						id="last_name"
-						name="last_name"
-						value={formik.values.last_name}
-						onChange={formik.handleChange}
-						onBlur={formik.handleBlur}
-						className={isFieldInvalid("last_name") ? "p-invalid" : ""}
-						placeholder="Isi Nama Belakang"
-					/>
+			<FormCalendar
+				props={{
+					value: formik.values.join_date,
+					onChange: (e: any) => formik.setFieldValue("join_date", e.value),
+					onBlur: formik.handleBlur,
+					dateFormat: "dd/mm/yy",
+					disabled: isOnEditMode,
+					showIcon: true,
+					placeholder: "Tanggal Bergabung",
+				}}
+				fieldName={"join_date"}
+				label="Tanggal Bergabung"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+			/>
 
-					{getFieldError("last_name") && (
-						<small className="p-error">{getFieldError("last_name")}</small>
-					)}
-				</div>
-			</div>
+			<FormDropdown
+				props={{
+					...formik.getFieldProps("position_code"),
+					options: positionOptions,
+					optionLabel: "position_name",
+					optionValue: "position_code",
+					filter: true,
+					filterDelay: 400,
+					placeholder: "Pilih Jabatan",
+				}}
+				fieldName={"position_code"}
+				label="Jabatan"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+			/>
+
+			<FormDropdown
+				props={{
+					...formik.getFieldProps("employment_status"),
+					options: statusOptions,
+					optionLabel: "label",
+					optionValue: "value",
+					filter: true,
+					filterDelay: 400,
+					placeholder: "Status",
+				}}
+				fieldName={"employment_status"}
+				label="Status Karyawan"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+			/>
+
+			<FormInputText
+				props={{
+					...formik.getFieldProps("contact_phone"),
+					type: "number",
+				}}
+				label="No. Telepon"
+				fieldName={"contact_phone"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
+
+			<FormInputTextarea
+				props={{
+					...formik.getFieldProps("address"),
+					rows: 5,
+				}}
+				label={"Alamat"}
+				fieldName={"address"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
+
+			<FormInputText
+				props={{
+					...formik.getFieldProps("ktp_number"),
+				}}
+				label={`No. KTP`}
+				fieldName={"ktp_number"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
+
+			<FormInputText
+				props={{
+					...formik.getFieldProps("birth_place"),
+				}}
+				label={"Tempat Lahir"}
+				fieldName={"birth_place"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
+
+			<FormCalendar
+				props={{
+					value: formik.values.birth_date,
+					onChange: (e: any) => formik.setFieldValue("birth_date", e.value),
+					onBlur: formik.handleBlur,
+					dateFormat: "dd/mm/yy",
+					showIcon: true,
+					placeholder: "Tanggal Lahir",
+				}}
+				fieldName={"birth_date"}
+				label="Tanggal Lahir"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
+
+			<FormDropdown
+				props={{
+					...formik.getFieldProps("gender"),
+					options: genderOptions,
+					optionLabel: "label",
+					optionValue: "value",
+				}}
+				label="Jenis Kelamin"
+				fieldName={"gender"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
+
+			<FormInputText
+				props={{
+					...formik.getFieldProps("religion"),
+				}}
+				label={"Agama"}
+				fieldName={"religion"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
+
+			<FormDropdown
+				props={{
+					...formik.getFieldProps('maritial_status'),
+					options: marriedOptions,
+					optionLabel: 'label'	,
+					optionValue: 'value',
+					placeholder: 'Status pernikahan'
+				}}	
+				fieldName={'maritial_status'}
+				label="Status Pernikahan"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
+
+			<FormCalendar
+				props={{
+					value: formik.values.resign_date,
+					onChange: (e: any) => formik.setFieldValue("resign_date", e.value),
+					onBlur: formik.handleBlur,
+					dateFormat: "dd/mm/yy",
+					disabled: isOnEditMode,
+					showIcon: true,
+					placeholder: "Tanggal Keluar",
+				}}
+				fieldName={"resign_date"}
+				label="Tanggal Keluar"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
+
+			<FormInputText
+				props={{
+					...formik.getFieldProps("education"),
+				}}
+				label={"Pendidikan Terakhir"}
+				fieldName={"education"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
+
+			<FormInputText
+				props={{
+					...formik.getFieldProps("blood_type"),
+				}}
+				label={"Gol. Darah"}
+				fieldName={"blood_type"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
 
 			<div className="flex flex-column gap-2">
-				<label htmlFor="contact_phone">
-					No. Telepon <span className="text-xs font-light">(optional)</span>{" "}
+				<label htmlFor="profile_picture">
+					Foto Profil <span className="text-xs font-light">(optional)</span>
 				</label>
 				<InputText
-					keyfilter="int"
-					id="contact_phone"
-					name="contact_phone"
-					value={formik.values.contact_phone}
+					id="profile_picture"
+					name="profile_picture"
+					value={
+						formik.values.profile_picture === "string"
+							? formik.values.profile_picture
+							: null
+					}
 					onChange={formik.handleChange}
 					onBlur={formik.handleBlur}
-					className={isFieldInvalid("contact_phone") ? "p-invalid" : ""}
+					className={isFieldInvalid("profile_picture") ? "p-invalid" : ""}
 				/>
 
-				{getFieldError("contact_phone") && (
-					<small className="p-error">{getFieldError("contact_phone")}</small>
+				{getFieldError("profile_picture") && (
+					<small className="p-error">{getFieldError("profile_picture")}</small>
 				)}
 			</div>
 
-			<div className="flex flex-column gap-2">
-				<label htmlFor="address">
-					Alamat <span className="text-xs font-light">(optional)</span>
-				</label>
-				<InputTextarea
-					id="address"
-					name="address"
-					value={formik.values.address}
-					onChange={formik.handleChange}
-					onBlur={formik.handleBlur}
-					className={isFieldInvalid("address") ? "p-invalid" : ""}
-				/>
+			<FormInputText
+				props={{
+					...formik.getFieldProps("bpjs_ketenagakerjaan"),
+				}}
+				label={"No. BPJS Ketenagakerjaan"}
+				fieldName={"bpjs_ketenagakerjaan"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
 
-				{getFieldError("address") && (
-					<small className="p-error">{getFieldError("address")}</small>
-				)}
-			</div>
+			<FormInputText
+				props={{
+					...formik.getFieldProps("bpjs_kesehatan"),
+				}}
+				label={"No. BPJS Kesehatan"}
+				fieldName={"bpjs_kesehatan"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
 
-			<div className="flex flex-column gap-2">
-				<label htmlFor="join_date">Tanggal Bergabung</label>
-				<Calendar
-					id="join_date"
-					name="join_date"
-					value={formik.values.join_date}
-					onChange={(e: any) => {
-						formik.setFieldValue("join_date", e.value);
-					}}
-					onBlur={formik.handleBlur}
-					className={isFieldInvalid("join_date") ? "p-invalid" : ""}
-					dateFormat="dd/mm/yy"
-					disabled={isOnEditMode}
-					showIcon
-					placeholder="Isi Tanggal Bergabung"
-				/>
+			<FormInputText
+				props={{
+					...formik.getFieldProps("npwp"),
+				}}
+				label={"No. NPWP"}
+				fieldName={"npwp"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
 
-				{getFieldError("join_date") && (
-					<small className="p-error">{getFieldError("join_date")}</small>
-				)}
-			</div>
-
-			<div className="flex flex-column md:flex-row gap-2">
-				<div className="w-full flex flex-column gap-2">
-					<label htmlFor="position_id">Jabatan</label>
-					<Dropdown
-						id="position_id"
-						name="position_id"
-						value={formik.values.position_id}
-						options={divisionOptions}
-						optionLabel="name"
-						optionValue="id"
-						onChange={formik.handleChange}
-						onBlur={formik.handleBlur}
-						filter
-						filterDelay={400}
-						className={isFieldInvalid("position_id") ? "p-invalid" : ""}
-						placeholder="Pilih Jabatan"
-					/>
-
-					{getFieldError("position_id") && (
-						<small className="p-error">{getFieldError("position_id")}</small>
-					)}
-				</div>
-
-				{/* <div className="w-full flex flex-column gap-2"> */}
-				{/* <label htmlFor="status">Status</label>
-					<Dropdown
-						id="status"
-						name="status"
-						value={formik.values.status}
-						options={statusOptions}
-						onChange={formik.handleChange}
-						onBlur={formik.handleBlur}
-						className={isFieldInvalid("status") ? "p-invalid" : ""}
-					/> */}
-
-				{/* {getFieldError("status") && (
-						<small className="p-error">{getFieldError("status")}</small>
-					)} */}
-				{/* </div> */}
-			</div>
+			<FormInputText
+				props={{
+					...formik.getFieldProps("bank_account"),
+				}}
+				label={"No. Rekening Bank"}
+				fieldName={"bank_account"}
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
 
 			<div className="flex justify-content-end mt-4">
 				<Button

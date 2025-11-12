@@ -1,7 +1,11 @@
-export interface DepartmentData {
+export interface GetAllDepartmentData {
 	id: number;
 	name: string;
 	department_code: string;
-	created_at: any;
-	updated_at: any;
+}
+
+export interface GetDepartmentByIdData extends GetAllDepartmentData {
+	description: string;
+	created_at: string;
+	updated_at: string;	
 }

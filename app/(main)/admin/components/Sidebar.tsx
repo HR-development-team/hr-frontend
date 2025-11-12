@@ -2,6 +2,7 @@
 
 import {
 	Building2,
+	ClipboardList,
 	FileText,
 	LayoutDashboard,
 	MonitorCheck,
@@ -47,6 +48,10 @@ const menuItems: MenuItems[] = [
 				href: "/admin/master/division",
 			},
 			{
+				label: "Master Posisi",
+				href: "/admin/master/position",
+			},
+			{
 				label: "Master Karyawan",
 				href: "/admin/master/employees",
 			},
@@ -69,9 +74,20 @@ const menuItems: MenuItems[] = [
 				label: "Monitoring Kehadiran",
 				href: "/admin/attendance",
 			},
+		],
+	},
+	{
+		id: "transaction",
+		label: "Transaksi",
+		icon: <ClipboardList />,
+		children: [
 			{
 				label: "Pengajuan Cuti",
-				href: "/admin/leave",
+				href: "/admin/transaction/leave",
+			},
+			{
+				label: "Pengajuan Lembur",
+				href: "#",
 			},
 		],
 	},
