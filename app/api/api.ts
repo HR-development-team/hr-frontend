@@ -49,8 +49,8 @@ export const API_ENDPOINTS = {
     GETLEAVETYPEBYID: (id: string) => `${API_URL}/master-leave-types/${id}`, // Get Leave Type By Id
     
     // --- Dashboard ---
-    GETADMINDASHBOARD: `${API_URL}/dashboard`, // Get Admin Dashboard Data
-    GETEMPLOYEEDASHBOARD: `${API_URL}/dashboard`, // INI TAMBAHAN: Get Employee Dashboard Data
+    GETADMINDASHBOARD: `${API_URL}/admin/dashboard/metrics`, // Get Admin Dashboard Data
+    GETEMPLOYEEDASHBOARD: `${API_URL}/employees/dashboard`, // INI TAMBAHAN: Get Employee Dashboard Data
 
     // --- Profiles ---
     GETPROFILES: `${API_URL}/profiles`, // Get Profile
