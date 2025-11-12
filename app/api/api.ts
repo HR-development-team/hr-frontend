@@ -20,7 +20,7 @@ export const API_ENDPOINTS = {
     DELETEPOSITION: (id: string) => `${API_URL}/master-positions/${id}`, // Delete Position By Id
     GETPOSITIONBYID: (id: string) => `${API_URL}/master-positions/${id}`, // Get Position By Id
 
-   // 'Master Divisions' 
+    // --- INI TAMBAHAN: 'Master Divisions' yang sebelumnya hilang ---
     ADDDIVISION: `${API_URL}/master-divisions`, // Create New Divisions
     GETALLDIVISION: `${API_URL}/master-divisions`, // Get All Division
     EDITDIVISION: (id: string) => `${API_URL}/master-divisions/${id}`, // Update Division By Id
@@ -49,8 +49,8 @@ export const API_ENDPOINTS = {
     GETLEAVETYPEBYID: (id: string) => `${API_URL}/master-leave-types/${id}`, // Get Leave Type By Id
     
     // --- Dashboard ---
-    GETADMINDASHBOARD: `${API_URL}/dashboard`, // Get Admin Dashboard Data
-    GETEMPLOYEEDASHBOARD: `${API_URL}/dashboard`, // INI TAMBAHAN: Get Employee Dashboard Data
+    GETADMINDASHBOARD: `${API_URL}/admin/dashboard/metrics`, // Get Admin Dashboard Data
+    GETEMPLOYEEDASHBOARD: `${API_URL}/employee/dashboard/metrics`, // INI TAMBAHAN: Get Employee Dashboard Data
 
     // --- Profiles ---
     GETPROFILES: `${API_URL}/profiles`, // Get Profile
@@ -59,39 +59,39 @@ export const API_ENDPOINTS = {
     // --- Leave Request ---
     POSTLEAVEREQUEST: `${API_URL}/leave-requests`, // Submit Leave Request (Menggantikan POSTREQUEST)
     GETALLLEAVEREQUEST: `${API_URL}/leave-requests`, // Get All Leave Request (Menggantikan GETALLREQUEST)
-    UPDATELEAVEREQUESTSTATUS: (id: string) => `${API_URL}/leave-requests/${id}`, // INI TAMBAHAN: Update Leave Request Status
-    GETLEAVEBYUSER: (id: string) => `${API_URL}/leave-requests${id}`, // Ini dari kode Anda
+    UPDATELEAVEREQUESTSTATUS: (id: string) => `${API_URL}/leave-requests/${id}/status`, // INI TAMBAHAN: Update Leave Request Status
+    GETLEAVEBYUSER: (id: string) => `${API_URL}/leave-requests/user/${id}`, // Ini dari kode Anda
 
-    // ---  Attendance Session ---
+    // --- INI TAMBAHAN: Attendance Session ---
     ADDATTENDANCESESSION: `${API_URL}/attendance-sessions`, // Create New Attendance Session
     GETALLATTENDANCESESSION: `${API_URL}/attendance-sessions`, // Get All Attendance Session
     GETATTENDANCESESSIONBYID: (id: string) => `${API_URL}/attendance-sessions/${id}`, // Get Attendance Session By Id
     EDITATTENDANCESESSION: (id: string) => `${API_URL}/attendance-sessions/${id}`, // Update Attendance Session
     DELETEATTENDANCESESSION: (id: string) => `${API_URL}/attendance-sessions/${id}`, // Delete Attendance Session By Id
-    CLOSEATTENDANCESESSION: (id: string) => `${API_URL}/attendance-sessions/${id}`, // Closed Attendance Session
+    CLOSEATTENDANCESESSION: (id: string) => `${API_URL}/attendance-sessions/${id}/close`, // Closed Attendance Session
 
-    // ---  Attendances ---
-    EMPLOYEECHECKIN: `${API_URL}/attendances`, // Employee Check In
-    EMPLOYEECHECKOUT: `${API_URL}/attendances`, // Employee Check Out
+    // --- INI TAMBAHAN: Attendances ---
+    EMPLOYEECHECKIN: `${API_URL}/attendances/check-in`, // Employee Check In
+    EMPLOYEECHECKOUT: `${API_URL}/attendances/check-out`, // Employee Check Out
     GETALLATTENDANCE: `${API_URL}/attendances`, // Get All Attendance
-    GETCURRENTEMPLOYEEATTENDANCE: `${API_URL}/attendances`, // Get Current Employee Attendance
+    GETCURRENTEMPLOYEEATTENDANCE: `${API_URL}/attendances/me`, // Get Current Employee Attendance
 
-    // ---  Leave Balance ---
-    ADDLEAVEBALANCEFORALL: `${API_URL}/leave-balances`, // Add Leave Balance For All Emp...
-    GETALLLEAVEBALANCEREPORT: `${API_URL}/leave-balances`, // Get All Leave Balance Report
+    // --- INI TAMBAHAN: Leave Balance ---
+    ADDLEAVEBALANCEFORALL: `${API_URL}/leave-balances/add-all`, // Add Leave Balance For All Emp...
+    GETALLLEAVEBALANCEREPORT: `${API_URL}/leave-balances/report`, // Get All Leave Balance Report
     GETCURRENTEMPLOYEELEAVEBALANCE: `${API_URL}/leave-balances/me`, // Get Current Employee Leave B...
     UPDATELEAVEBALANCE: (id: string) => `${API_URL}/leave-balances/${id}`, // Update Leave Balance For Spe...
     DELETELEAVEBALANCE: (id: string) => `${API_URL}/leave-balances/${id}`, // Delete Leave Balance for Speci...
 
-    // ---  Payroll Periods ---
+    // --- INI TAMBAHAN: Payroll Periods ---
     ADDPAYROLLPERIOD: `${API_URL}/payroll-periods`, // Create Payroll Periods
     GETALLPAYROLLPERIODS: `${API_URL}/payroll-periods`, // Get All Payroll Periods
     GETPAYROLLPERIODBYID: (id: string) => `${API_URL}/payroll-periods/${id}`, // Get Payroll Period By Id
-    UPDATEPAYROLLPERIODSTATUS: (id: string) => `${API_URL}/payroll-periods/${id}`, // Update Status Payroll Periods
+    UPDATEPAYROLLPERIODSTATUS: (id: string) => `${API_URL}/payroll-periods/${id}/status`, // Update Status Payroll Periods
     DELETEPAYROLLPERIOD: (id: string) => `${API_URL}/payroll-periods/${id}`, // Delete Payroll Periods
 
-    // --- I Payroll ---
-    GENERATEPAYROLL: `${API_URL}/payrolls`, // Generate Payroll for All Employ...
+    // --- INI TAMBAHAN: Payroll ---
+    GENERATEPAYROLL: `${API_URL}/payrolls/generate`, // Generate Payroll for All Employ...
     GETALLPAYROLL: `${API_URL}/payrolls`, // Get All Payroll
     GETPAYROLLBYID: (id: string) => `${API_URL}/payrolls/${id}`, // Get Payroll By Id
     EDITPAYROLL: (id: string) => `${API_URL}/payrolls/${id}`, // Update Payroll By Id

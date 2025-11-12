@@ -1,70 +1,112 @@
-import { NextRequest, NextResponse } from "next/server";
 import { API_ENDPOINTS } from "@/app/api/api";
 import { getAuthToken } from "@/lib/utils/authUtils";
 import { Axios } from "@/lib/utils/axios";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-  try {
-    const token = getAuthToken();
-    if (!token) {
-      return NextResponse.json({ status: "01", message: "Unauthorized" }, { status: 401 });
-    }
+// Helper untuk cek token
+const tokenAvailable = (token: string | null) => {
+	if (!token) {
+		return NextResponse.json(
+			{ message: "Akses ditolak: Tidak terauntetikasi" },
+			{ status: 401 }
+		);
+	}
+	return null;
+};
 
-    // 🔹 Ambil semua data cuti
-    const res = await Axios.get(API_ENDPOINTS.LEAVEREQUEST, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+/**
+ * Handler untuk GETALLLEAVEREQUEST
+ */
+export const GET = async (request: NextRequest) => {
+	const token = getAuthToken();
 
-    const allRequests = res.data?.leave_requests || [];
+	const unauthorizedResponse = tokenAvailable(token);
+	if (unauthorizedResponse) {
+		return unauthorizedResponse;
+	}
 
-    // 🔹 Decode token untuk ambil employee_id
-    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
-    const employeeId = payload?.employee_id;
+	try {
+		// --- PERBAIKAN 1: Menggunakan endpoint yang benar ---
+		const response = await Axios.get(API_ENDPOINTS.GETALLLEAVEREQUEST, {
+			headers: {
+				// --- PERBAIKAN 2: Typo 'application/json' ---
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		});
 
-    // 🔹 Filter hanya milik user yang login
-    const filtered = allRequests.filter((item: any) => item.employee_id === employeeId);
+		return NextResponse.json(response.data);
+	} catch (error: any) {
+		// Tambahkan logging untuk melihat error di terminal
+		console.error("[API_ERROR] /api/karyawan/leave-request (GET):", error.message);
 
-    return NextResponse.json({
-      status: "00",
-      message: "Berhasil mendapatkan data cuti user",
-      leave_requests: filtered,
-    });
-  } catch (error: any) {
-    console.error("❌ Error GET Leave Request:", error);
-    return NextResponse.json({ status: "01", message: "Gagal mengambil data" }, { status: 500 });
-  }
-}
+		if (error.response) {
+			return NextResponse.json(
+				{ message: error.response.data.message },
+				{ status: error.response.status || 500 }
+			);
+		}
 
-export async function POST(req: NextRequest) {
-  try {
-    const token = getAuthToken();
-    if (!token) {
-      return NextResponse.json({ status: "01", message: "Unauthorized" }, { status: 401 });
-    }
+		return NextResponse.json(
+			{ message: "Gagal mendapatkan data leave request" },
+			{ status: 500 }
+		);
+	}
+};
 
-    const payload = await req.json();
+/**
+ * Handler untuk POSTLEAVEREQUEST
+ */
+export const POST = async (request: NextRequest) => {
+	const token = getAuthToken();
 
-    // 🔹 Decode token untuk ambil employee_id
-    const decoded = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
-    const employeeId = decoded?.employee_id;
+	const unauthorizedResponse = tokenAvailable(token);
+	if (unauthorizedResponse) {
+		return unauthorizedResponse;
+	}
 
-    // 🔹 Tambahkan employee_id otomatis ke body
-    const bodyWithEmployee = {
-      ...payload,
-      employee_id: employeeId,
-    };
+	try {
+		const body = await request.json();
 
-    // 🔹 Kirim ke API utama
-    const response = await Axios.post(API_ENDPOINTS.LEAVEREQUEST, bodyWithEmployee, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+		const response = await Axios.post(API_ENDPOINTS.POSTLEAVEREQUEST, body, {
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		});
 
-    return NextResponse.json(response.data);
-  } catch (error: any) {
-    console.error("❌ Error POST Leave Request:", error);
-    return NextResponse.json(
-      { status: "01", message: "Gagal mengirim pengajuan cuti" },
-      { status: 500 }
-    );
-  }
-}
+		return NextResponse.json(response.data);
+	} catch (error: any) {
+		// --- INI BAGIAN YANG DIPERBARUI ---
+		// Kita cek jika ini error Axios dengan status 400
+		if (error.response && error.response.status === 400) {
+			console.error(
+				"[DETAIL_ERROR_400] /api/karyawan/leave-request (POST):",
+				// Cetak detail error validasi dari API utama ke terminal
+				JSON.stringify(error.response.data, null, 2)
+			);
+			// Kirim kembali pesan error yang jelas ke frontend
+			return NextResponse.json(
+				{
+					message: "Data tidak valid. Silakan cek kembali input Anda.",
+					detail: error.response.data.errors || error.response.data.message,
+				},
+				{ status: 400 }
+			);
+		}
+
+		// Error lain yang tidak terduga
+		console.error("[API_ERROR] /api/karyawan/leave-request (POST):", error.message);
+		if (error.response) {
+			return NextResponse.json(error.response.data.message, {
+				status: error.response.status,
+			});
+		} else {
+			return NextResponse.json(
+				{ message: "Gagal mengirim leave request" },
+				{ status: 500 }
+			);
+		}
+		// --- BATAS AKHIR PEMBARUAN ---
+	}
+};
