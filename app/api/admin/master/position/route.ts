@@ -23,7 +23,7 @@ export const GET = async (request: NextRequest) => {
 	}
 
 	try {
-		const response = await Axios.get(API_ENDPOINTS.GETALLDIVISION, {
+		const response = await Axios.get(API_ENDPOINTS.GETALLPOSITION, {
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
@@ -57,7 +57,7 @@ export const POST = async (request: NextRequest) => {
 	try {
 		const body = await request.json();
 
-		const response = await Axios.post(API_ENDPOINTS.ADDDIVISION, body, {
+		const response = await Axios.post(API_ENDPOINTS.ADDPOSITION, body, {
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,

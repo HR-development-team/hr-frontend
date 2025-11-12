@@ -9,7 +9,12 @@ import {
 	employeeFormSchema,
 } from "@/lib/schemas/employeeFormSchema";
 import { EmployeeFormProps } from "@/lib/types/form/employeeForm";
-import { employeeFormDefaultValues, genderOptions, marriedOptions, statusOptions } from "@/lib/values/employeeDefaultValue";
+import {
+	employeeFormDefaultValues,
+	genderOptions,
+	marriedOptions,
+	statusOptions,
+} from "@/lib/values/employeeDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
@@ -109,8 +114,6 @@ export default function EmployeeDialogForm({
 					options: statusOptions,
 					optionLabel: "label",
 					optionValue: "value",
-					filter: true,
-					filterDelay: 400,
 					placeholder: "Status",
 				}}
 				fieldName={"employment_status"}
@@ -208,13 +211,13 @@ export default function EmployeeDialogForm({
 
 			<FormDropdown
 				props={{
-					...formik.getFieldProps('maritial_status'),
+					...formik.getFieldProps("maritial_status"),
 					options: marriedOptions,
-					optionLabel: 'label'	,
-					optionValue: 'value',
-					placeholder: 'Status pernikahan'
-				}}	
-				fieldName={'maritial_status'}
+					optionLabel: "label",
+					optionValue: "value",
+					placeholder: "Status pernikahan",
+				}}
+				fieldName={"maritial_status"}
 				label="Status Pernikahan"
 				isFieldInvalid={isFieldInvalid}
 				getFieldError={getFieldError}
