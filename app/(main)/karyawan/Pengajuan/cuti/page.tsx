@@ -35,12 +35,9 @@ const JATAH_CUTI_TAHUNAN = 12;
 
 const API_URLS = {
   leaveTypes: '/api/admin/master/leave-type',
-  leaveHistory: '/api/karyawan/leave-request',
+  leaveHistory: '/api/karyawan/leave-request', // route lokal nextjs
   submit: '/api/karyawan/leave-request',
 };
-
-// 🔹 Ganti ini dengan user ID yang sedang login
-const currentUserId = 11;
 
 export default function PengajuanCutiPage() {
   const toast = useRef<Toast>(null);
@@ -61,7 +58,7 @@ export default function PengajuanCutiPage() {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // --- LOAD DATA DARI API ---
+  // --- LOAD DATA DARI API (Next.js Route) ---
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -76,35 +73,32 @@ export default function PengajuanCutiPage() {
           setLeaveTypes(leaveTypesData);
         }
 
-        // 2️⃣ Fetch riwayat cuti
+        // 2️⃣ Fetch riwayat cuti (sudah difilter di backend berdasarkan user login)
         const resHistory = await fetch(API_URLS.leaveHistory);
         const dataHistory = await resHistory.json();
         let mappedHistory: LeaveRequest[] = [];
+
         if (dataHistory.status === '00') {
-          // 🔹 Filter hanya untuk user login
-          mappedHistory = dataHistory.leave_requests
-            .filter((item: any) => item.employee_id === currentUserId)
-            .map((item: any) => ({
-              id: item.id,
-              jenisCuti: leaveTypesData.find(lt => lt.id === item.leave_type_id)?.name || 'Lainnya',
-              tanggalMulai: item.start_date.split('T')[0],
-              tanggalSelesai: item.end_date.split('T')[0],
-              alasan: item.reason,
-              status: item.status,
-            }));
+          mappedHistory = dataHistory.leave_requests.map((item: any) => ({
+            id: item.id,
+            jenisCuti: leaveTypesData.find(lt => lt.id === item.leave_type_id)?.name || 'Lainnya',
+            tanggalMulai: item.start_date.split('T')[0],
+            tanggalSelesai: item.end_date.split('T')[0],
+            alasan: item.reason,
+            status: item.status,
+          }));
           setHistory(mappedHistory);
         }
 
-        // 3️⃣ Hitung sisa cuti dan chart
+        // 3️⃣ Hitung sisa cuti dan buat chart
+        const approvedOnly = mappedHistory.filter(item => item.status === 'Approved');
         const cutiTerpakai: { [key: string]: number } = {};
         let totalTahunan = 0;
 
-        mappedHistory.forEach((item) => {
+        approvedOnly.forEach((item) => {
           const jenis = item.jenisCuti || 'Lainnya';
           cutiTerpakai[jenis] = (cutiTerpakai[jenis] || 0) + 1;
-          if (jenis === 'Cuti Tahunan' && item.status === 'Approved') {
-            totalTahunan++;
-          }
+          if (jenis === 'Cuti Tahunan') totalTahunan++;
         });
 
         const sisa = JATAH_CUTI_TAHUNAN - totalTahunan;
@@ -122,11 +116,9 @@ export default function PengajuanCutiPage() {
         };
 
         const chartJSOptions = {
-          cutout: '60%',
+          cutout: '70%',
           responsive: true,
-          plugins: {
-            legend: { position: 'bottom' as const }
-          }
+          plugins: { legend: { position: 'bottom' as const } }
         };
 
         setChartData(chartJSData);
@@ -137,7 +129,7 @@ export default function PengajuanCutiPage() {
         toast.current?.show({
           severity: 'error',
           summary: 'Gagal Memuat',
-          detail: 'Tidak dapat mengambil data dari server'
+          detail: 'Tidak dapat mengambil data dari server',
         });
       } finally {
         setIsLoadingData(false);
@@ -177,8 +169,8 @@ export default function PengajuanCutiPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
 
+      const data = await res.json();
       if (data.status === '00') {
         toast.current?.show({
           severity: 'success',
@@ -189,23 +181,20 @@ export default function PengajuanCutiPage() {
         setTanggal(null);
         setAlasan('');
 
-        // --- Refresh data otomatis setelah submit (hanya user login) ---
+        // 🔁 Refresh otomatis
         const resHistory = await fetch(API_URLS.leaveHistory);
         const dataHistory = await resHistory.json();
         if (dataHistory.status === '00') {
-          const mappedHistory = dataHistory.leave_requests
-            .filter((item: any) => item.employee_id === currentUserId)
-            .map((item: any) => ({
-              id: item.id,
-              jenisCuti: leaveTypes.find(lt => lt.id === item.leave_type_id)?.name || 'Lainnya',
-              tanggalMulai: item.start_date.split('T')[0],
-              tanggalSelesai: item.end_date.split('T')[0],
-              alasan: item.reason,
-              status: item.status,
-            }));
+          const mappedHistory = dataHistory.leave_requests.map((item: any) => ({
+            id: item.id,
+            jenisCuti: leaveTypes.find(lt => lt.id === item.leave_type_id)?.name || 'Lainnya',
+            tanggalMulai: item.start_date.split('T')[0],
+            tanggalSelesai: item.end_date.split('T')[0],
+            alasan: item.reason,
+            status: item.status,
+          }));
           setHistory(mappedHistory);
         }
-
       } else {
         toast.current?.show({
           severity: 'error',
@@ -226,14 +215,14 @@ export default function PengajuanCutiPage() {
 
   const statusBodyTemplate = (req: LeaveRequest) => {
     const severityMap: { [key: string]: 'success' | 'warning' | 'danger' } = {
-      'Approved': 'success',
-      'Pending': 'warning',
-      'Rejected': 'danger',
+      Approved: 'success',
+      Pending: 'warning',
+      Rejected: 'danger',
     };
     return <Tag value={req.status} severity={severityMap[req.status]} />;
   };
 
-  const renderHistoryHeader = () => (
+  const historyHeader = (
     <div className="flex justify-content-between align-items-center">
       {!isSearchVisible && <h5 className="m-0">Riwayat Pengajuan Cuti</h5>}
       {isSearchVisible && (
@@ -261,13 +250,11 @@ export default function PengajuanCutiPage() {
     </div>
   );
 
-  const historyHeader = renderHistoryHeader();
-
   return (
     <div className="grid">
       <Toast ref={toast} />
 
-      {/* --- KIRI: FORM --- */}
+      {/* FORM CUTI */}
       <div className="col-12 md:col-8">
         <Card title="Formulir Pengajuan Cuti" className="shadow-1 h-full">
           {isLoadingData ? (
@@ -303,7 +290,7 @@ export default function PengajuanCutiPage() {
                   rows={4}
                   value={alasan}
                   onChange={(e) => setAlasan(e.target.value)}
-                  placeholder="Tuliskan alasan cuti..."
+                  placeholder="Tuliskan alasan cuti minimal 10 karakter..."
                   autoResize
                 />
               </div>
@@ -322,30 +309,47 @@ export default function PengajuanCutiPage() {
         </Card>
       </div>
 
-      {/* --- KANAN: CHART --- */}
+      {/* RINGKASAN CHART */}
       <div className="col-12 md:col-4">
         <Card title="Ringkasan Cuti Anda" className="shadow-1 h-full">
           {isLoadingData ? (
             <Skeleton height="300px" />
           ) : (
-            <div className="relative">
-              <div className="absolute flex align-items-center justify-content-center w-full"
-                style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1 }}>
-                <div className="text-center">
-                  <span className="text-xl text-color-secondary">Sisa Cuti</span>
-                  <h1 className="m-0" style={{ fontSize: '4rem', color: 'var(--blue-500)' }}>
+            <div className="flex flex-column align-items-center justify-content-center" style={{ position: 'relative' }}>
+              <div style={{ width: '260px', height: '260px', position: 'relative' }}>
+                <Chart type="doughnut" data={chartData!} options={chartOptions!} />
+                <div
+                  className="flex flex-column align-items-center justify-content-center text-center"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    pointerEvents: 'none',
+                    transform: 'translateY(-4px)',
+                  }}
+                >
+                  <span className="text-lg text-color-secondary" style={{ marginBottom: '4px' }}>
+                    Sisa Cuti
+                  </span>
+                  <h1
+                    className="m-0"
+                    style={{
+                      fontSize: '3.2rem',
+                      color: 'var(--blue-500)',
+                      lineHeight: 1,
+                      marginBottom: '6px',
+                    }}
+                  >
                     {sisaCuti}
                   </h1>
-                  <span className="text-lg text-color-secondary">Hari</span>
+                  <span className="text-base text-color-secondary">Hari</span>
                 </div>
               </div>
-              <Chart type="doughnut" data={chartData!} options={chartOptions!} style={{ height: '300px' }} />
             </div>
           )}
         </Card>
       </div>
 
-      {/* --- RIWAYAT --- */}
+      {/* RIWAYAT CUTI */}
       <div className="col-12 mt-4">
         <Card className="shadow-1">
           {isLoadingData ? (
