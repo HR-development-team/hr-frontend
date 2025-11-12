@@ -50,7 +50,7 @@ interface CheckInOutResponse {
 }
 
 // --- Ganti ini dengan URL API dari Postman Anda ---
-const API_BASE_URL = 'http://localhost:8000/api/v1'; // Ganti 8000 dengan port backend Anda
+const API_BASE_URL = 'https://hr-backend-production-1ce0.up.railway.app/api/v1'; // Ganti 8000 dengan port backend Anda
 
 // --- ALUR 2: KOMPONEN UTAMA & SETUP STATE ---
 // ---------------------------------------------
@@ -138,7 +138,7 @@ export default function AbsensiPage() {
       } 
     };
     
-    loadInitialData(); // <-- FUNGSI DIAMBIL DARI SINI
+   // loadInitialData(); // <-- FUNGSI DIAMBIL DARI SINI
     
   }, []); // [] = Dijalankan sekali
   
