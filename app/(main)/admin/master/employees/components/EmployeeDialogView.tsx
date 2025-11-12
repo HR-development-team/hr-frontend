@@ -1,12 +1,11 @@
-import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 import { GetAllEmployeeData, GetEmployeeByIdData } from "@/lib/types/employee";
 import { formatDateIDN } from "@/lib/utils/dateFormat";
-import { IdCard, Phone, User } from "lucide-react";
+import { Briefcase, IdCard, Phone, User } from "lucide-react";
 import { Avatar } from "primereact/avatar";
 import { Card } from "primereact/card";
-import { Dialog } from "primereact/dialog";
 import { Tag } from "primereact/tag";
 import React from "react";
+import EmployeeDialogViewSkeleton from "./EmployeeDialogViewSkeleton";
 
 interface EmployeeViewProps {
 	employeeData: GetEmployeeByIdData | null;
@@ -28,18 +27,11 @@ export default function EmployeeDialogView({
 		return <Tag value={employeeData?.employment_status} severity={severity} />;
 	};
 
-	const joinDateBodyTemplate = () => {
-		if (!employeeData?.join_date) {
-			return "Format tanggal tidak valid";
-		}
+	if (isLoading) {
+		return <EmployeeDialogViewSkeleton />;
+	}
 
-		const dateObject = new Date(employeeData.join_date);
-		return dateObject.toLocaleDateString("id-ID", {
-			day: "2-digit",
-			month: "long",
-			year: "numeric",
-		});
-	};
+	console.log(employeeData?.birth_date);
 
 	return (
 		<div className={`${isOnViewMode ? "text-800" : "hidden"}`}>
@@ -59,7 +51,10 @@ export default function EmployeeDialogView({
 					</Card>
 
 					<Card className="line-height-4 mt-2">
-						<span className="text-800 font-medium">Status Pekerjaan</span>
+						<div className="flex align-items-center gap-2 mb-4">
+							<Briefcase className="text-blue-500" />
+							<span className="text-800 font-medium">Status Pekerjaan</span>
+						</div>
 						<div className="flex align-items-center justify-content-between">
 							<span>Departemen</span>
 							<p>{employeeData?.department_name}</p>
@@ -135,7 +130,7 @@ export default function EmployeeDialogView({
 								Tanggal Lahir
 							</span>
 							<p className="text-800 text-base font-medium">
-								{formatDateIDN(employeeData?.birt_date)}
+								{formatDateIDN(employeeData?.birth_date)}
 							</p>
 						</div>
 

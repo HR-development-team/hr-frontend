@@ -15,13 +15,13 @@ export interface GetAllEmployeeData {
 export interface GetEmployeeByIdData extends GetAllEmployeeData {
 	ktp_number: string;
 	birth_place: string;
-	birt_date: string;
+	birth_date: string;
 	gender: "laki-laki" | "perempuan";
-	address: string;
+	address: string | "";
 	contact_phone: string;
 	religion: string;
-	maritial_status: "belum menikah" | "sudah menikah";
-	resign_date: string | null;
+	maritial_status: "Belum Menikah" | "Menikah";
+	resign_date: string;
 	education: string;
 	blood_type: string;
 	profile_picture: string;

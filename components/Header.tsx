@@ -97,16 +97,15 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 			return "U";
 		}
 
-		const firstInitial = user.first_name ? user.first_name.charAt(0) : "";
-		const lastInitial = user.last_name ? user.last_name.charAt(0) : "";
+		const initial = user.full_name ? user.full_name.charAt(0) : "";
 
-		let initials = (firstInitial + lastInitial).toUpperCase();
+		let initialName = initial.toUpperCase();
 
-		if (!initials && user.email) {
-			initials = user.email.charAt(0).toUpperCase();
+		if (!initialName && user.email) {
+			initialName = user.email.charAt(0).toUpperCase();
 		}
 
-		return initials || "U";
+		return initialName || "U";
 	};
 
 	// if (!isLoading && !user) {
@@ -179,7 +178,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 									) : (
 										<>
 											<span className="font-semibold text-base">
-												{`${user?.first_name} ${user?.last_name}`}
+												{`${user?.full_name}`}
 											</span>
 											<span className="text-xs">{user?.email}</span>
 										</>

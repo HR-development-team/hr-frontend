@@ -1,15 +1,13 @@
 import { LoginFormData } from "../schemas/loginFormSchema";
-import { EmployeeData } from "./employee";
+import { GetEmployeeByIdData } from "./employee";
 
 export interface AuthUser {
 	id: number; // Ini adalah ID User
 	email: string;
-	employee_id: number;
 	role: "admin" | "employee";
 }
 
-export interface User extends EmployeeData {
-	user_id: number;
+export interface User extends GetEmployeeByIdData {
 	email: string;
 	role: "admin" | "employee";
 }
