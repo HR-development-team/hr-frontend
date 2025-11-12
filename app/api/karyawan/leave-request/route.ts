@@ -1,105 +1,70 @@
-import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "../../api";
+import { API_ENDPOINTS } from "@/app/api/api";
 import { getAuthToken } from "@/lib/utils/authUtils";
+import { Axios } from "@/lib/utils/axios";
 
-/**
- * =========================
- *  GET - Ambil semua riwayat cuti karyawan
- * =========================
- */
-export const GET = async (request: NextRequest) => {
-  const token = getAuthToken();
-
-  if (!token) {
-    return NextResponse.json(
-      { message: "Akses ditolak: Tidak terautentikasi." },
-      { status: 401 }
-    );
-  }
-
+export async function GET(req: NextRequest) {
   try {
-    const response = await Axios.get(API_ENDPOINTS.GETALLREQUEST, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    return NextResponse.json(response.data, { status: 200 });
-  } catch (error: any) {
-    console.error("❌ Gagal mengambil data leave-request:", error);
-
-    if (error.response) {
-      return NextResponse.json(
-        {
-          message:
-            error.response.data?.message ||
-            "Gagal mengambil data dari server utama.",
-        },
-        { status: error.response.status || 500 }
-      );
+    const token = getAuthToken();
+    if (!token) {
+      return NextResponse.json({ status: "01", message: "Unauthorized" }, { status: 401 });
     }
 
+    // 🔹 Ambil semua data cuti
+    const res = await Axios.get(API_ENDPOINTS.LEAVEREQUEST, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const allRequests = res.data?.leave_requests || [];
+
+    // 🔹 Decode token untuk ambil employee_id
+    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+    const employeeId = payload?.employee_id;
+
+    // 🔹 Filter hanya milik user yang login
+    const filtered = allRequests.filter((item: any) => item.employee_id === employeeId);
+
+    return NextResponse.json({
+      status: "00",
+      message: "Berhasil mendapatkan data cuti user",
+      leave_requests: filtered,
+    });
+  } catch (error: any) {
+    console.error("❌ Error GET Leave Request:", error);
+    return NextResponse.json({ status: "01", message: "Gagal mengambil data" }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      return NextResponse.json({ status: "01", message: "Unauthorized" }, { status: 401 });
+    }
+
+    const payload = await req.json();
+
+    // 🔹 Decode token untuk ambil employee_id
+    const decoded = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+    const employeeId = decoded?.employee_id;
+
+    // 🔹 Tambahkan employee_id otomatis ke body
+    const bodyWithEmployee = {
+      ...payload,
+      employee_id: employeeId,
+    };
+
+    // 🔹 Kirim ke API utama
+    const response = await Axios.post(API_ENDPOINTS.LEAVEREQUEST, bodyWithEmployee, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return NextResponse.json(response.data);
+  } catch (error: any) {
+    console.error("❌ Error POST Leave Request:", error);
     return NextResponse.json(
-      { message: "Terjadi kesalahan pada server Next.js." },
+      { status: "01", message: "Gagal mengirim pengajuan cuti" },
       { status: 500 }
     );
   }
-};
-
-/**
- * =========================
- *  POST - Ajukan cuti baru
- * =========================
- */
-export const POST = async (request: NextRequest) => {
-  const token = getAuthToken();
-
-  if (!token) {
-    return NextResponse.json(
-      { message: "Akses ditolak: Tidak terautentikasi." },
-      { status: 401 }
-    );
-  }
-
-  try {
-    const body = await request.json();
-
-    // Debugging tambahan: pastikan body sesuai format backend
-    console.log("📦 Data dikirim ke backend:", body);
-
-    const response = await Axios.post(API_ENDPOINTS.POSTREQUEST, body, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    console.log("✅ Respons backend:", response.data);
-
-    return NextResponse.json(response.data, { status: 200 });
-  } catch (error: any) {
-    console.error("❌ Gagal mengirim pengajuan cuti:", error);
-
-    if (error.response) {
-      console.error("🧩 Detail respons error:", error.response.data);
-
-      return NextResponse.json(
-        {
-          message:
-            error.response.data?.message ||
-            "Gagal mengirim data ke server utama.",
-          statusCode: error.response.status,
-          backendError: error.response.data || null,
-        },
-        { status: error.response.status || 500 }
-      );
-    }
-
-    return NextResponse.json(
-      { message: "Terjadi kesalahan pada server Next.js." },
-      { status: 500 }
-    );
-  }
-};
+}
