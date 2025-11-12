@@ -8,6 +8,7 @@ import { Card } from "primereact/card";
 import React, { use, useEffect, useRef, useState } from "react";
 import { Toast } from "primereact/toast";
 import { StatData } from "@/lib/types/statData";
+import { Skeleton } from "primereact/skeleton";
 
 const metricDefaultValues: StatData = {
 	totalEmployee: 0,
@@ -79,9 +80,13 @@ export default function Dashboard() {
 				</div>
 				<div>
 					<h2 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-						{isLoading
-							? "Selamat Datang, "
-							: `Selamat Datang, ${user?.first_name} ${user?.last_name}`}
+						{isLoading ? (
+							<Skeleton className="w-20rem h-1rem" />
+						) : user?.full_name ? (
+							`Selamat Datang, ${user?.full_name}`
+						) : (
+							"Selamat Datang"
+						)}
 					</h2>
 					<p className="text-sm md:text-md text-gray-500">
 						Berikut adalah ringkasan aktivitas HR hari ini.
@@ -108,8 +113,12 @@ export default function Dashboard() {
 								<span className="text-sm font-semibold text-800">Kalender</span>
 							</div>
 							<div className="text-center p-4 bg-blue-50 border-round-lg">
-								<p className="text-base md:text-lg font-bold text-800">{todayDate}</p>
-								<p className="text-sm text-500 md:text-md">Tidak ada hari libur</p>
+								<p className="text-base md:text-lg font-bold text-800">
+									{todayDate}
+								</p>
+								<p className="text-sm text-500 md:text-md">
+									Tidak ada hari libur
+								</p>
 							</div>
 						</div>
 					</Card>

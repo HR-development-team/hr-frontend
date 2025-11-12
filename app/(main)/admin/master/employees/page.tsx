@@ -10,10 +10,13 @@ import EmployeeDialogForm from "./components/EmployeeDialogForm";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 import { Toast } from "primereact/toast";
 import EmployeeDialogView from "./components/EmployeeDialogView";
 import { GetAllEmployeeData, GetEmployeeByIdData } from "@/lib/types/employee";
+import { GetAllPositionData } from "@/lib/types/position";
+import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
+import { vi } from "zod/v4/locales";
+import { format } from "date-fns";
 
 // interface CombinedEmployeeData extends EmployeeData {
 // 	division_name: string;
@@ -28,6 +31,8 @@ export default function Employees() {
 	const [viewEmployee, setViewEmployee] = useState<GetEmployeeByIdData | null>(
 		null
 	);
+
+	const [position, setPosition] = useState<GetAllPositionData[]>([]);
 
 	const [currentSelectedId, setCurrentSelectedId] = useState<number | null>(
 		null
@@ -53,7 +58,7 @@ export default function Employees() {
 			const res = await fetch("/api/admin/master/employee");
 
 			if (!res.ok) {
-				throw new Error("Gagal mendapatkan data dari server");
+				throw new Error("Gagal mendapatkan data semua karyawan");
 			}
 
 			const responseData = await res.json();
@@ -83,7 +88,7 @@ export default function Employees() {
 			const res = await fetch(`/api/admin/master/employee/${id}`);
 
 			if (!res.ok) {
-				throw new Error("Gagal mendapatkan data dari server");
+				throw new Error("Gagal mendapatkan data karyawan berdasarkan id");
 			}
 
 			const responseData = await res.json();
@@ -107,71 +112,79 @@ export default function Employees() {
 		}
 	};
 
-	// const fetchAllData = async () => {
-	// 	setIsLoading(true);
-	// 	try {
-	// 		const [positionRes, employeeRes] = await Promise.all([
-	// 			fetch("/api/admin/master/position"),
-	// 			fetch("/api/admin/master/employee"),
-	// 		]);
+	const fetchPosition = async () => {
+		try {
+			const res = await fetch("/api/admin/master/position");
 
-	// 		if (!positionRes.ok || !employeeRes.ok)
-	// 			throw new Error("Gagal mendapatkan data dari server");
+			if (!res.ok) {
+				throw new Error("Gagal mendapatkan data posisi");
+			}
 
-	// 		const positionData = await positionRes.json();
-	// 		const employeeData = await employeeRes.json();
+			const responseData = await res.json();
 
-	// 		console.log(employeeData.message);
+			if (responseData && responseData.status === "00") {
+				setPosition(responseData.master_positions || []);
+			} else {
+				setPosition([]);
+			}
+		} catch (error) {
+			setPosition([]);
+		}
+	};
 
-	// 		if (
-	// 			positionData &&
-	// 			employeeData &&
-	// 			positionData.status === "00" &&
-	// 			employeeData.status === "00"
-	// 		) {
-	// 			if (isInitialLoad.current) {
-	// 				toastRef.current?.show({
-	// 					severity: "success",
-	// 					summary: "Sukses",
-	// 					detail: employeeData.message,
-	// 					life: 3000,
-	// 				});
+	const cleanEmployeeDataForm = useMemo(() => {
+		if (!viewEmployee) {
+			return null;
+		}
 
-	// 				isInitialLoad.current = false;
-	// 			}
-	// 			setPosition(positionData.master_positions || []);
-	// 			setEmployee(employeeData.master_employees || []);
-	// 		} else {
-	// 			toastRef.current?.show({
-	// 				severity: "error",
-	// 				summary: "Gagal",
-	// 				detail: employeeData.message,
-	// 				life: 3000,
-	// 			});
+		const {
+			id,
+			employee_code,
+			position_name,
+			division_code,
+			division_name,
+			department_code,
+			department_name,
+			updated_at,
+			created_at,
 
-	// 			setPosition([]);
-	// 			setEmployee([]);
-	// 		}
-	// 	} catch (error: any) {
-	// 		setPosition([]);
-	// 		setEmployee([]);
-	// 	} finally {
-	// 		setIsLoading(false);
-	// 	}
-	// };
+			join_date,
+			birth_date,
+			resign_date,
+			// maritial_status,
+			profile_picture,
+			...cleanData
+		} = viewEmployee;
+
+		console.log(join_date);
+
+		return {
+			...cleanData,
+
+			join_date: new Date(join_date),
+			birth_date: birth_date ? new Date(birth_date) : null,
+			profile_picture:
+				typeof profile_picture === "string" ? profile_picture : null,
+		};
+	}, [viewEmployee]);
 
 	const handleSubmit = async (formData: EmployeeFormData) => {
 		setIsSaving(true);
 		setIsLoading(true);
 
-		const { join_date, ...restOfValues } = formData;
+		const { join_date, contact_phone, birth_date, ...restOfValues } = formData;
+
+		const formattedBirthDate = birth_date
+			? format(birth_date, "yyyy-MM-dd")
+			: null;
+
+		console.log(`Format birth date: ${formattedBirthDate}`);
 
 		const payload: any = {
 			...restOfValues,
-
-			contact_phone:
-				formData.contact_phone === "" ? null : formData.contact_phone,
-			address: formData.address === "" ? null : formData.address,
+			
+			contact_phone: contact_phone?.toString(),
+			birth_date: formattedBirthDate,
 		};
 
 		if (dialogMode !== "edit") {
@@ -235,31 +248,23 @@ export default function Employees() {
 		setDialogMode("view");
 		setIsDialogVisible(true);
 		setDialogLabel("Lihat Data Karyawan");
-		console.log("Id detail karyawan:", employee.id);
-
 		fetchEmployeeById(employee.id);
 	};
 
-	const handleEdit = (employee: EmployeeData) => {
+	const handleEdit = (employee: GetAllEmployeeData) => {
 		setDialogMode("edit");
 		setIsDialogVisible(true);
-		setSelectedEmployee({
-			first_name: employee.first_name,
-			last_name: employee.last_name,
-			join_date: new Date(`${employee.join_date.split("T")[0]}T00:00:00`),
-			position_id: employee.position_id,
-			contact_phone: employee.contact_phone,
-			address: employee.address,
-		});
+		// setSelectedEmployee();
 		setCurrentSelectedId(employee.id);
 		setDialogLabel("Edit Karyawan");
+		fetchEmployeeById(employee.id);
 	};
 
-	const handleDelete = (employee: EmployeeData) => {
+	const handleDelete = (employee: GetAllEmployeeData) => {
 		confirmDialog({
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
-			message: `Yakin ingin menghapus karyawan ${employee.first_name}`,
+			message: `Yakin ingin menghapus karyawan ${employee.full_name}`,
 			acceptLabel: "Hapus",
 			rejectLabel: "Batal",
 			acceptClassName: "p-button-danger",
@@ -303,27 +308,8 @@ export default function Employees() {
 	useEffect(() => {
 		// fetchAllData();
 		fetchAllEmployee();
+		fetchPosition();
 	}, []);
-
-	// const positionMap = useMemo(() => {
-	// 	const map = new Map<number, string>();
-	// 	position.forEach((depth) => {
-	// 		map.set(depth.id, depth.name);
-	// 	});
-	// 	return map;
-	// }, [position]);
-
-	// const combinedEmployeeData: CombinedEmployeeData[] = useMemo(() => {
-	// 	return employee.map((employee) => {
-	// 		const divisionName =
-	// 			positionMap.get(employee.position_id) || "Tidak diketahui";
-
-	// 		return {
-	// 			...employee,
-	// 			division_name: divisionName,
-	// 		};
-	// 	});
-	// }, [employee, positionMap]);
 
 	return (
 		<div>
@@ -439,21 +425,30 @@ export default function Employees() {
 						setViewEmployee(null);
 					}}
 					modal
-					className={`w-full ${dialogMode === "view" ? "md:w-9" : "md:w-6"}`}
+					className={`w-full ${dialogMode === "view" ? "md:w-9" : "md:w-4"}`}
 				>
-					<EmployeeDialogForm
-						employeeData={selectedEmployee}
-						dialogMode={dialogMode}
-						onSubmit={handleSubmit}
-						// positionOptions={position}
-						isSubmitting={isSaving}
-					/>
+					<div
+						className={`${
+							dialogMode === "edit" || dialogMode === "add" ? "block" : "hidden"
+						}`}
+					>
+						<EmployeeDialogForm
+							// employeeData={selectedEmployee}
+							employeeData={cleanEmployeeDataForm}
+							dialogMode={dialogMode}
+							onSubmit={handleSubmit}
+							positionOptions={position}
+							isSubmitting={isSaving}
+						/>
+					</div>
 
-					<EmployeeDialogView
-						employeeData={viewEmployee}
-						isLoading={isLoading}
-						dialogMode={dialogMode}
-					/>
+					<div className={`${dialogMode === "view" ? "block" : "hidden"}`}>
+						<EmployeeDialogView
+							employeeData={viewEmployee}
+							isLoading={isLoading}
+							dialogMode={dialogMode}
+						/>
+					</div>
 				</Dialog>
 			</Card>
 		</div>

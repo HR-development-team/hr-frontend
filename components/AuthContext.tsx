@@ -2,7 +2,7 @@
 
 import { LoginFormData } from "@/lib/schemas/loginFormSchema";
 import { AuthContextType, AuthUser, User } from "@/lib/types/auth";
-import { EmployeeData } from "@/lib/types/employee";
+import { GetEmployeeByIdData } from "@/lib/types/employee";
 import {
 	createContext,
 	ReactNode,
@@ -28,21 +28,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 			const authData: AuthUser = meData.users;
 
-			const userRes = await fetch(
-				`/api/admin/master/employee/${authData.employee_id}`
-			);
-			const userData = await userRes.json();
+			// const userRes = await fetch(
+			// 	`/api/admin/master/employee/${authData.employee_id}`
+			// );
 
-			if (!userData || userData.status !== "00" || !userData.master_employees) {
+			const profileRes = await fetch("/api/auth/profile");
+			const profileData = await profileRes.json();
+			// const userData = await userRes.json();
+
+			if (!profileData || profileData.status !== "00" || !profileData.users) {
 				throw new Error("Profil karyawan tidak ditemukan atau data korup.");
 			}
 
-			const profileData: EmployeeData = userData.master_employees;
+			const profileUser: GetEmployeeByIdData = profileData.users;
 
 			const fullUserData: User = {
-				...profileData,
+				...profileUser,
 
-				user_id: authData.id,
 				email: authData.email,
 				role: authData.role,
 			};
