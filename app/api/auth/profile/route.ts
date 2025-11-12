@@ -15,7 +15,7 @@ export const GET = async () => {
 
 	try {
 		// Panggil endpoint profil dari backend kamu
-		const response = await Axios.get(API_ENDPOINTS.GETUSERPROFILE, {
+		const response = await Axios.get(API_ENDPOINTS.GETPROFILES, {
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
