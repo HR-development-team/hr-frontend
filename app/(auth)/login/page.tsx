@@ -190,30 +190,6 @@ export default function Home() {
 									<label htmlFor="password" className="font-semibold">
 										Password
 									</label>
-									{/* <Password
-										id="password"
-										name="password"
-										placeholder="Masukkan password Anda"
-										value={formik.values.password}
-										onChange={formik.handleChange}
-										className={`w-full ${
-											formik.touched.password && formik.errors.password
-												? "p-invalid"
-												: ""
-										}`}
-										inputClassName="w-full"
-										feedback={false}
-										toggleMask
-										pt={{
-											root: {
-												className: "w-full",
-											},
-											input: {
-												className: "w-full",
-												style: { paddingRight: "2.5rem" },
-											},
-										}}
-									/> */}
 									<div className="p-inputgroup w-full">
 										<InputText
 											id="password"

@@ -1,8 +1,5 @@
 "use client";
-import {
-	DivisionFormData,
-	divisionFormSchema,
-} from "@/lib/schemas/divisionFormSchema";
+import { PositionFormData, positionFormSchema } from "@/lib/schemas/positionFormSchema";
 import { DepartmentData } from "@/lib/types/department";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
@@ -13,31 +10,31 @@ import {
 } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 
-interface DivisionFormProps {
-	divisionData: DivisionFormData | null;
-	onSubmit: (formData: DivisionFormData) => void;
+interface PositionFormProps {
+	divisionData: PositionFormData | null;
+	onSubmit: (formData: PositionFormData) => void;
 	departmentOptions: DepartmentData[];
 	isSubmitting: boolean;
 }
 
-const defaultValues: DivisionFormData = {
+const defaultValues: PositionFormData = {
 	position_code: "",
 	name: "",
 	base_salary: 0,
 	department_id: 0,
 };
 
-export default function DivisionDialogForm({
+export default function PositionDialogForm({
 	divisionData,
 	onSubmit,
 	departmentOptions,
 	isSubmitting,
-}: DivisionFormProps) {
+}: PositionFormProps) {
 
 	const formik = useFormik({
 		initialValues: divisionData || defaultValues,
 		validate: (values) => {
-			const validation = divisionFormSchema.safeParse(values);
+			const validation = positionFormSchema.safeParse(values);
 
 			if (validation.success) {
 				return {};
@@ -60,10 +57,10 @@ export default function DivisionDialogForm({
 		enableReinitialize: true,
 	});
 
-	const isFieldInvalid = (fieldName: keyof DivisionFormData) =>
+	const isFieldInvalid = (fieldName: keyof PositionFormData) =>
 		!!(formik.touched[fieldName] && formik.errors[fieldName]);
 
-	const getFieldError = (fieldName: keyof DivisionFormData) => {
+	const getFieldError = (fieldName: keyof PositionFormData) => {
 		return isFieldInvalid(fieldName)
 			? (formik.errors[fieldName] as string)
 			: undefined;

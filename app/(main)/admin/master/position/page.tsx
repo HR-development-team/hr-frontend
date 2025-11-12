@@ -1,30 +1,30 @@
 "use client";
 
-import { User, Users } from "lucide-react";
+import { GitFork } from "lucide-react";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import UserDialogForm from "./components/UserDialogForm";
-import { UserFormData } from "@/lib/schemas/userFormSchema";
-import DataTableUser from "./components/DataTableUser";
 import { Toast } from "primereact/toast";
-import { UserData } from "@/lib/types/user";
-import { EmployeeData } from "@/lib/types/employee";
+import { DepartmentData } from "@/lib/types/department";
+import { PositionData } from "@/lib/types/position";
+import { PositionFormData } from "@/lib/schemas/positionFormSchema";
+import PositionDialogForm from "./components/PositionDialogForm";
+import DataTablePosition from "./components/DataTablePosition";
 
-interface CombinedUserData extends UserData {
-	employee_first_name: string;
+interface CombinedPositionData extends PositionData {
+	department_name: string;
 }
 
-export default function UserPage() {
+export default function Position() {
 	const toastRef = useRef<Toast>(null);
 	const isInitialLoad = useRef<boolean>(true);
 
-	const [employee, setEmployee] = useState<EmployeeData[]>([]);
-	const [user, setUser] = useState<UserData[]>([]);
+	const [department, setDepartment] = useState<DepartmentData[]>([]);
+	const [division, setDivision] = useState<PositionData[]>([]);
 
 	const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
@@ -33,69 +33,71 @@ export default function UserPage() {
 	const [isSaving, setIsSaving] = useState<boolean>(false);
 
 	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
-	const [selecteduser, setSelectedUser] = useState<UserFormData | null>(null);
+	const [selectedDivision, setSelectedDivision] =
+		useState<PositionFormData | null>(null);
 
 	const fetchAllData = async () => {
 		setIsLoading(true);
 		try {
-			const [employeeRes, userRes] = await Promise.all([
-				fetch("/api/admin/master/employee"),
-				fetch("/api/admin/master/user"),
+			const [divisionRes, departmentRes] = await Promise.all([
+				fetch("/api/admin/master/division"),
+				fetch("/api/admin/master/department"),
 			]);
 
-			if (!employeeRes.ok || !userRes.ok)
-				throw new Error("Gagal mendapatkan data dari server");
+			if (!divisionRes.ok || !departmentRes.ok)
+				throw new Error("Gagal mengambil data dari server");
 
-			const employeeData = await employeeRes.json();
-			const userData = await userRes.json();
+			const divisionData = await divisionRes.json();
+			const departmentData = await departmentRes.json();
 
-			console.log(userData.message);
+			console.log(divisionData.message);
 
 			if (
-				employeeData &&
-				userData &&
-				employeeData.status === "00" &&
-				userData.status === "00"
+				divisionData &&
+				departmentData &&
+				divisionData.status === "00" &&
+				departmentData.status === "00"
 			) {
 				if (isInitialLoad.current) {
 					toastRef.current?.show({
 						severity: "success",
 						summary: "Sukses",
-						detail: userData.message,
+						detail: divisionData.message,
 						life: 3000,
 					});
 
 					isInitialLoad.current = false;
 				}
-				setEmployee(employeeData.master_employees || []);
-				setUser(userData.users || []);
+
+				setDivision(divisionData.master_positions || []);
+				setDepartment(departmentData.master_departments || []);
 			} else {
 				toastRef.current?.show({
 					severity: "error",
 					summary: "Gagal",
-					detail: userData.message,
+					detail: divisionData.message,
 					life: 3000,
 				});
 
-				setEmployee([]);
-				setUser([]);
+				setDivision([]);
+				setDepartment([]);
 			}
 		} catch (error: any) {
-			setEmployee([]);
-			setUser([]);
+			setDivision([]);
+			setDepartment([]);
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
-	const handleSubmit = async (formData: UserFormData) => {
+	const handleSubmit = async (formData: PositionFormData) => {
 		setIsSaving(true);
 		setIsLoading(true);
 
 		const url =
 			dialogMode === "edit"
-				? `/api/admin/master/user/${currentEditedId}`
-				: "/api/admin/master/user";
+				? `/api/admin/master/division/${currentEditedId}`
+				: "/api/admin/master/division";
 
 		const method = dialogMode === "edit" ? "PUT" : "POST";
 
@@ -119,13 +121,13 @@ export default function UserPage() {
 				toastRef.current?.show({
 					severity: "error",
 					summary: "Gagal",
-					detail: response?.errors?.[0]?.message || "Gagal menyimpan data user",
+					detail: response.error[0].message || "Gagal menyimpan data divisi",
 					life: 3000,
 				});
 			}
 
 			fetchAllData();
-			setSelectedUser(null);
+			setSelectedDivision(null);
 			setDialogMode(null);
 			setIsDialogVisible(false);
 			setCurrentEditedId(null);
@@ -133,7 +135,7 @@ export default function UserPage() {
 			toastRef.current?.show({
 				severity: "error",
 				summary: "Error",
-				detail: error,
+				detail: "Terjadi kesalahan koneksi",
 				life: 3000,
 			});
 		} finally {
@@ -142,30 +144,29 @@ export default function UserPage() {
 		}
 	};
 
-	const handleEdit = (user: UserData) => {
+	const handleEdit = (division: PositionData) => {
 		setDialogMode("edit");
 		setIsDialogVisible(true);
-		setSelectedUser({
-			email: user.email,
-			password: user.password,
-			role: user.role,
-			employee_id: user.employee_id,
+		setSelectedDivision({
+			position_code: division.position_code,
+			name: division.name,
+			department_id: division.department_id,
+			base_salary: parseInt(division.base_salary, 10),
 		});
-
-		setCurrentEditedId(user.id);
+		setCurrentEditedId(division.id);
 	};
 
-	const handleDelete = (user: UserData) => {
+	const handleDelete = (division: PositionData) => {
 		confirmDialog({
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
-			message: `Yakin ingin menghapus user ${user.email}`,
+			message: `Yakin ingin menghapus divisi ${division.name}`,
 			acceptLabel: "Hapus",
 			rejectLabel: "Batal",
 			acceptClassName: "p-button-danger",
 			accept: async () => {
 				try {
-					const res = await fetch(`/api/admin/master/user/${user.id}`, {
+					const res = await fetch(`/api/admin/master/division/${division.id}`, {
 						method: "DELETE",
 					});
 
@@ -184,7 +185,7 @@ export default function UserPage() {
 					});
 
 					fetchAllData();
-					setSelectedUser(null);
+					setSelectedDivision(null);
 				} catch (error: any) {
 					toastRef.current?.show({
 						severity: "error",
@@ -203,39 +204,39 @@ export default function UserPage() {
 		fetchAllData();
 	}, []);
 
-	const employeeMap = useMemo(() => {
+	const departmentMap = useMemo(() => {
 		const map = new Map<number, string>();
-		employee.forEach((depth) => {
-			map.set(depth.id, depth.first_name);
+		department.forEach((depth) => {
+			map.set(depth.id, depth.name);
 		});
 		return map;
-	}, [employee]);
+	}, [department]);
 
-	const combinedUserData: CombinedUserData[] = useMemo(() => {
-		return user.map((user) => {
-			const employeeFirstName =
-				employeeMap.get(user.employee_id) || "Tidak diketahui";
+	const combinedDivisionData: CombinedPositionData[] = useMemo(() => {
+		return division.map((division) => {
+			const departmentName =
+				departmentMap.get(division.department_id) || "Tidak diketahui";
 
 			return {
-				...user,
-				employee_first_name: employeeFirstName,
+				...division,
+				department_name: departmentName,
 			};
 		});
-	}, [user, employeeMap]);
+	}, [division, departmentMap]);
 
 	return (
 		<div>
 			<Toast ref={toastRef} />
 			<div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
 				<div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
-					<User className="w-2rem h-2rem" />
+					<GitFork className="w-2rem h-2rem" />
 				</div>
 				<div>
 					<h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-						Master Data User
+						Master Data Divisi
 					</h1>
 					<p className="text-sm md:text-md text-gray-500">
-						Kelola data diri dan informasi User
+						Kelola data divisi atau jabatan
 					</p>
 				</div>
 			</div>
@@ -243,8 +244,8 @@ export default function UserPage() {
 			<Card>
 				<div className="flex flex-column gap-4">
 					<div className="flex gap-2 align-items-center">
-						<User className="h-2" />
-						<h2 className="text-base text-800">Master Data User</h2>
+						<GitFork className="h-2" />
+						<h2 className="text-base text-800">Master Data Divisi</h2>
 					</div>
 
 					{/* filters */}
@@ -279,7 +280,7 @@ export default function UserPage() {
 							<div className="flex flex-column gap-2">
 								<span>Terapkan</span>
 								<div className="flex align-items-center gap-3">
-									<Button icon="pi pi-check" type="submit" severity="info" />
+									<Button icon="pi pi-check" type="submit" />
 
 									<Button icon="pi pi-times" severity="secondary" />
 								</div>
@@ -291,7 +292,7 @@ export default function UserPage() {
 							{/* search */}
 							<InputTextComponent
 								icon="pi pi-search"
-								placeholder="Cari berdasarkan ID atau nama"
+								placeholder="Cari berdasarkan Kode atau nama"
 								className="w-full"
 							/>
 
@@ -300,13 +301,14 @@ export default function UserPage() {
 								<Button
 									icon="pi pi-plus"
 									label="Tambah"
-									severity="info"
 									pt={{
 										icon: { className: "mr-2" },
 									}}
 									onClick={() => {
 										setDialogMode("add");
 										setIsDialogVisible(true);
+										setSelectedDivision(null);
+										setCurrentEditedId(null);
 									}}
 								/>
 							</div>
@@ -314,8 +316,8 @@ export default function UserPage() {
 					</div>
 
 					{/* data table */}
-					<DataTableUser
-						user={combinedUserData}
+					<DataTablePosition
+						division={combinedDivisionData}
 						isLoading={isLoading}
 						onEdit={handleEdit}
 						onDelete={handleDelete}
@@ -325,17 +327,16 @@ export default function UserPage() {
 				<ConfirmDialog />
 
 				<Dialog
-					header={dialogMode === "edit" ? "Edit User" : "Tambah User"}
+					header={dialogMode === "edit" ? "Edit Divisi" : "Tambah Divisi"}
 					visible={isDialogVisible}
 					onHide={() => setIsDialogVisible(false)}
 					modal
 					className="w-full md:w-6"
 				>
-					<UserDialogForm
-						userData={selecteduser}
+					<PositionDialogForm
+						divisionData={selectedDivision}
 						onSubmit={handleSubmit}
-						dialogMode={dialogMode}
-						employeeOptions={employee}
+						departmentOptions={department}
 						isSubmitting={isSaving}
 					/>
 				</Dialog>
