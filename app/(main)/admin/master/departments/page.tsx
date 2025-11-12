@@ -12,23 +12,36 @@ import DataTableDepartment from "./components/DataTableDepartment";
 import { Dialog } from "primereact/dialog";
 import DepartmentDialogForm from "./components/DepartmentDialogForm";
 import { Toast } from "primereact/toast";
-import { DepartmentData } from "@/lib/types/department";
+import {
+	GetAllDepartmentData,
+	GetDepartmentByIdData,
+} from "@/lib/types/department";
+import DepartmentDialogView from "./components/DepartmentDialogView";
 
 export default function Department() {
 	const toastRef = useRef<Toast>(null);
 	const isInitialLoad = useRef<boolean>(true);
 
-	const [department, setDepartment] = useState<DepartmentData[]>([]);
+	const [department, setDepartment] = useState<GetAllDepartmentData[]>([]);
+	const [viewDepartment, setViewDepartment] =
+		useState<GetDepartmentByIdData | null>(null);
+
 	const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
+	const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
+		null
+	);
+	const [dialogLabel, setDialogLabel] = useState<
+		"Lihat Data Departement" | "Edit Departemen" | "Tambah Departemen" | null
+	>(null);
+
 	const [selectedDepartment, setSelectedDepartment] =
 		useState<DepartementFormData | null>(null);
 
-	const fetchDepartment = async () => {
+	const fetchAllDepartment = async () => {
 		setIsLoading(true);
 
 		try {
@@ -64,6 +77,27 @@ export default function Department() {
 		}
 	};
 
+	const fetchDepartmentById = async (id: number) => {
+		setIsLoading(true);
+		try {
+			const res = await fetch(`/api/admin/master/department/${id}`);
+
+			if (!res.ok) {
+				throw new Error("Gagal mendapatkan data departemen berdasarkan id");
+			}
+
+			const responseData = await res.json();
+
+			if (responseData && responseData.status === "00") {
+				setViewDepartment(responseData.master_departments || null);
+			}
+		} catch (error: any) {
+			setViewDepartment(null);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	const handleSubmit = async (formData: DepartementFormData) => {
 		try {
 			const method = dialogMode === "add" ? "POST" : "PUT";
@@ -91,7 +125,7 @@ export default function Department() {
 				life: 3000,
 			});
 
-			fetchDepartment();
+			fetchAllDepartment();
 			setSelectedDepartment(null);
 			setDialogMode(null);
 			setIsDialogVisible(false);
@@ -107,18 +141,22 @@ export default function Department() {
 		}
 	};
 
-	const handleEdit = (department: DepartmentData) => {
-		setDialogMode("edit");
+	const handleView = (department: GetAllDepartmentData) => {
+		setDialogMode("view");
 		setIsDialogVisible(true);
-		setSelectedDepartment({
-			name: department.name,
-			department_code: department.department_code,
-		});
-
-		setCurrentEditedId(department.id);
+		setDialogLabel("Lihat Data Departement");
+		fetchDepartmentById(department.id);
 	};
 
-	const handleDelete = (department: DepartmentData) => {
+	const handleEdit = (department: GetAllDepartmentData) => {
+		setDialogMode("edit");
+		setIsDialogVisible(true);
+		setCurrentEditedId(department.id);
+		setDialogLabel("Edit Departemen");
+		fetchDepartmentById(department.id);
+	};
+
+	const handleDelete = (department: GetAllDepartmentData) => {
 		confirmDialog({
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
@@ -150,7 +188,7 @@ export default function Department() {
 						life: 3000,
 					});
 
-					fetchDepartment();
+					fetchAllDepartment();
 					setSelectedDepartment(null);
 				} catch (error: any) {
 					toastRef.current?.show({
@@ -167,7 +205,7 @@ export default function Department() {
 	};
 
 	useEffect(() => {
-		fetchDepartment();
+		fetchAllDepartment();
 	}, []);
 
 	return (
@@ -252,6 +290,7 @@ export default function Department() {
 									}}
 									onClick={() => {
 										setDialogMode("add");
+										setDialogLabel("Tambah Departemen");
 										setSelectedDepartment(null);
 										setCurrentEditedId(null);
 										setIsDialogVisible(true);
@@ -267,25 +306,42 @@ export default function Department() {
 						isLoading={isLoading}
 						onEdit={handleEdit}
 						onDelete={handleDelete}
+						onView={handleView}
 					/>
 				</div>
 
 				<ConfirmDialog />
 
 				<Dialog
-					header={
-						dialogMode === "edit" ? "Edit Departemen" : "Tambah Departemen"
-					}
+					header={dialogLabel}
 					visible={isDialogVisible}
-					onHide={() => setIsDialogVisible(false)}
+					onHide={() => {
+						setIsDialogVisible(false);
+						setDialogLabel(null);
+						setViewDepartment(null);
+					}}
 					modal
-					className="w-full md:w-6"
+					className="w-full md:w-4"
 				>
-					<DepartmentDialogForm
-						departmentData={selectedDepartment}
-						dialogMode={dialogMode}
-						onSubmit={handleSubmit}
-					/>
+					<div
+						className={`${
+							dialogMode === "edit" || dialogMode === "add" ? "block" : "hidden"
+						}`}
+					>
+						<DepartmentDialogForm
+							departmentData={viewDepartment}
+							dialogMode={dialogMode}
+							onSubmit={handleSubmit}
+						/>
+					</div>
+
+					<div className={`${dialogMode === "view" ? "block" : "hidden"}`}>
+						<DepartmentDialogView
+							departmentData={viewDepartment}
+							isLoading={isLoading}
+							dialogMode={dialogMode}
+						/>
+					</div>
 				</Dialog>
 			</Card>
 		</div>

@@ -5,7 +5,7 @@ export interface GetAllDepartmentData {
 }
 
 export interface GetDepartmentByIdData extends GetAllDepartmentData {
-	description: string;
+	description: string | null;
 	created_at: string;
 	updated_at: string;	
 }

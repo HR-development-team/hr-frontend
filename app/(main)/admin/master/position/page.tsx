@@ -9,22 +9,21 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
 import { Toast } from "primereact/toast";
-import { DepartmentData } from "@/lib/types/department";
-import { PositionData } from "@/lib/types/position";
-import { PositionFormData } from "@/lib/schemas/positionFormSchema";
 import PositionDialogForm from "./components/PositionDialogForm";
 import DataTablePosition from "./components/DataTablePosition";
-
-interface CombinedPositionData extends PositionData {
-	department_name: string;
-}
+import { PositionFormData } from "@/lib/schemas/positionFormSchema";
+import { GetAllPositionData, GetPositionByIdData } from "@/lib/types/position";
+import { GetAllDivisionData } from "@/lib/types/division";
 
 export default function Position() {
 	const toastRef = useRef<Toast>(null);
 	const isInitialLoad = useRef<boolean>(true);
 
-	const [department, setDepartment] = useState<DepartmentData[]>([]);
-	const [division, setDivision] = useState<PositionData[]>([]);
+	const [division, setDivision] = useState<GetAllDivisionData[]>([]);
+	const [position, setPosition] = useState<GetAllPositionData[]>([]);
+	const [viewPosition, setViewPosition] = useState<GetPositionByIdData | null>(
+		null
+	);
 
 	const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
@@ -32,62 +31,79 @@ export default function Position() {
 	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
 	const [isSaving, setIsSaving] = useState<boolean>(false);
 
-	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
+	const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
+		null
+	);
+	const [dialogLabel, setDialogLabel] = useState<
+		"Lihat Data Posisi" | "Edit Posisi" | "Tambah Posisi" | null
+	>(null);
+
 	const [selectedDivision, setSelectedDivision] =
 		useState<PositionFormData | null>(null);
 
-	const fetchAllData = async () => {
+	const fetchAllPosition = async () => {
 		setIsLoading(true);
 		try {
-			const [divisionRes, departmentRes] = await Promise.all([
-				fetch("/api/admin/master/division"),
-				fetch("/api/admin/master/department"),
-			]);
+			const res = await fetch("/api/admin/master/position");
 
-			if (!divisionRes.ok || !departmentRes.ok)
-				throw new Error("Gagal mengambil data dari server");
+			if (!res.ok) {
+				throw new Error("Gagal mendapatkan data posisi");
+			}
 
-			const divisionData = await divisionRes.json();
-			const departmentData = await departmentRes.json();
+			const responseData = await res.json();
 
-			console.log(divisionData.message);
-
-			if (
-				divisionData &&
-				departmentData &&
-				divisionData.status === "00" &&
-				departmentData.status === "00"
-			) {
+			if (responseData && responseData.status === "00") {
 				if (isInitialLoad.current) {
 					toastRef.current?.show({
 						severity: "success",
 						summary: "Sukses",
-						detail: divisionData.message,
+						detail: responseData.message,
 						life: 3000,
 					});
-
 					isInitialLoad.current = false;
 				}
-
-				setDivision(divisionData.master_positions || []);
-				setDepartment(departmentData.master_departments || []);
-			} else {
-				toastRef.current?.show({
-					severity: "error",
-					summary: "Gagal",
-					detail: divisionData.message,
-					life: 3000,
-				});
-
-				setDivision([]);
-				setDepartment([]);
+				setPosition(responseData.master_positions || []);
 			}
 		} catch (error: any) {
-			setDivision([]);
-			setDepartment([]);
+			setPosition([]);
 		} finally {
 			setIsLoading(false);
 		}
+	};
+
+	const fetchPositionById = async (id: number) => {
+		setIsLoading(true);
+		try {
+			const res = await fetch(`/api/admin/master/position/${id}`);
+
+			if (!res.ok) {
+				throw new Error("Gagal mendapatkan data posisi berdasarkan id");
+			}
+
+			const responseData = await res.json();
+
+			if (responseData && responseData.status === "00") {
+				if (isInitialLoad.current) {
+					toastRef.current?.show({
+						severity: "success",
+						summary: "Sukses",
+						detail: responseData.message,
+						life: 3000,
+					});
+					isInitialLoad.current = false;
+				}
+				setViewPosition(responseData.master_employees || null);
+			}
+		} catch (error: any) {
+			setViewPosition(null);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const fetchDivision = async () => {
+		try {
+		} catch (error) {}
 	};
 
 	const handleSubmit = async (formData: PositionFormData) => {
@@ -116,7 +132,7 @@ export default function Position() {
 					detail: response.message,
 					life: 3000,
 				});
-				fetchAllData();
+				fetchAllPosition();
 			} else {
 				toastRef.current?.show({
 					severity: "error",
@@ -126,7 +142,7 @@ export default function Position() {
 				});
 			}
 
-			fetchAllData();
+			fetchAllPosition();
 			setSelectedDivision(null);
 			setDialogMode(null);
 			setIsDialogVisible(false);
@@ -144,29 +160,32 @@ export default function Position() {
 		}
 	};
 
-	const handleEdit = (division: PositionData) => {
-		setDialogMode("edit");
+	const handleView = (position: GetAllPositionData) => {
+		setDialogMode("view");
 		setIsDialogVisible(true);
-		setSelectedDivision({
-			position_code: division.position_code,
-			name: division.name,
-			department_id: division.department_id,
-			base_salary: parseInt(division.base_salary, 10),
-		});
-		setCurrentEditedId(division.id);
+		setDialogLabel("Lihat Data Posisi");
+		fetchPositionById(position.id);
 	};
 
-	const handleDelete = (division: PositionData) => {
+	const handleEdit = (position: GetAllPositionData) => {
+		setDialogMode("edit");
+		setIsDialogVisible(true);
+		setCurrentEditedId(position.id);
+		setDialogLabel("Edit Posisi");
+		fetchPositionById(position.id);
+	};
+
+	const handleDelete = (position: GetAllPositionData) => {
 		confirmDialog({
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
-			message: `Yakin ingin menghapus divisi ${division.name}`,
+			message: `Yakin ingin menghapus posisi ${position.position_name}`,
 			acceptLabel: "Hapus",
 			rejectLabel: "Batal",
 			acceptClassName: "p-button-danger",
 			accept: async () => {
 				try {
-					const res = await fetch(`/api/admin/master/division/${division.id}`, {
+					const res = await fetch(`/api/admin/master/division/${position.id}`, {
 						method: "DELETE",
 					});
 
@@ -184,7 +203,7 @@ export default function Position() {
 						life: 3000,
 					});
 
-					fetchAllData();
+					fetchAllPosition();
 					setSelectedDivision(null);
 				} catch (error: any) {
 					toastRef.current?.show({
@@ -201,28 +220,8 @@ export default function Position() {
 	};
 
 	useEffect(() => {
-		fetchAllData();
+		fetchAllPosition();
 	}, []);
-
-	const departmentMap = useMemo(() => {
-		const map = new Map<number, string>();
-		department.forEach((depth) => {
-			map.set(depth.id, depth.name);
-		});
-		return map;
-	}, [department]);
-
-	const combinedDivisionData: CombinedPositionData[] = useMemo(() => {
-		return division.map((division) => {
-			const departmentName =
-				departmentMap.get(division.department_id) || "Tidak diketahui";
-
-			return {
-				...division,
-				department_name: departmentName,
-			};
-		});
-	}, [division, departmentMap]);
 
 	return (
 		<div>
@@ -317,10 +316,11 @@ export default function Position() {
 
 					{/* data table */}
 					<DataTablePosition
-						division={combinedDivisionData}
+						position={position}
 						isLoading={isLoading}
 						onEdit={handleEdit}
 						onDelete={handleDelete}
+						onView={handleView}
 					/>
 				</div>
 
@@ -334,9 +334,8 @@ export default function Position() {
 					className="w-full md:w-6"
 				>
 					<PositionDialogForm
-						divisionData={selectedDivision}
+						positionData={viewPosition}
 						onSubmit={handleSubmit}
-						departmentOptions={department}
 						isSubmitting={isSaving}
 					/>
 				</Dialog>

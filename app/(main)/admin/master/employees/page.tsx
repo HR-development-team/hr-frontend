@@ -151,7 +151,6 @@ export default function Employees() {
 			join_date,
 			birth_date,
 			resign_date,
-			// maritial_status,
 			profile_picture,
 			...cleanData
 		} = viewEmployee;
@@ -254,7 +253,6 @@ export default function Employees() {
 	const handleEdit = (employee: GetAllEmployeeData) => {
 		setDialogMode("edit");
 		setIsDialogVisible(true);
-		// setSelectedEmployee();
 		setCurrentSelectedId(employee.id);
 		setDialogLabel("Edit Karyawan");
 		fetchEmployeeById(employee.id);

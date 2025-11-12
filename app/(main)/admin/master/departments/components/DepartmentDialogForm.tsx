@@ -1,22 +1,16 @@
 "use client";
+
+import FormInputText from "@/components/form/FormInputText";
+import FormInputTextarea from "@/components/form/FormInputTextarea";
 import {
 	DepartementFormData,
 	departmentFormSchema,
 } from "@/lib/schemas/departmentFormSchema";
+import { DepartmentFormProps } from "@/lib/types/form/departmentFormType";
+import { departmentDefaultValues } from "@/lib/values/departmentDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-
-interface DepartmentFormProps {
-	departmentData: DepartementFormData | null;
-	dialogMode: "add" | "edit" | null;
-	onSubmit: (formData: DepartementFormData) => Promise<void>;
-}
-
-const defaultValues: DepartementFormData = {
-	name: "",
-	department_code: "",
-};
 
 export default function DepartmentDialogForm({
 	departmentData,
@@ -24,7 +18,7 @@ export default function DepartmentDialogForm({
 	onSubmit,
 }: DepartmentFormProps) {
 	const formik = useFormik({
-		initialValues: departmentData || defaultValues,
+		initialValues: departmentData || departmentDefaultValues,
 		validate: (values) => {
 			const validation = departmentFormSchema.safeParse(values);
 
@@ -63,36 +57,27 @@ export default function DepartmentDialogForm({
 
 	return (
 		<form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
-			<div className="w-full flex flex-column gap-2">
-				<label htmlFor="department_code">Kode Departemen</label>
-				<InputText
-					id="department_code"
-					name="department_code"
-					value={formik.values.department_code}
-					onChange={formik.handleChange}
-					onBlur={formik.handleBlur}
-					className={` ${isFieldInvalid("department_code") ? "p-invalid" : ""}`}
-				/>
-				{getFieldError("department_code") && (
-					<small className="p-error">{getFieldError("department_code")}</small>
-				)}
-			</div>
+			<FormInputText
+				props={{
+					...formik.getFieldProps("name"),
+				}}
+				fieldName={"name"}
+				label="Nama Departemen"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+			/>
 
-			<div className="w-full flex flex-column gap-2">
-				<label htmlFor="name">Nama Departement</label>
-				<InputText
-					id="name"
-					name="name"
-					value={formik.values.name}
-					onChange={formik.handleChange}
-					onBlur={formik.handleBlur}
-					className={isFieldInvalid("department_code") ? "p-invalid" : ""}
-				/>
-
-				{getFieldError("department_code") && (
-					<small className="p-error">{getFieldError("department_code")}</small>
-				)}
-			</div>
+			<FormInputTextarea
+				props={{
+					...formik.getFieldProps('description'),
+					rows: 5
+				}}
+				fieldName={'description'}
+				label="Deskripsi"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
 
 			<div className="flex justify-content-end mt-4">
 				<Button

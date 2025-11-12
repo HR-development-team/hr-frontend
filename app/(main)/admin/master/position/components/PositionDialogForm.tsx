@@ -1,6 +1,10 @@
 "use client";
-import { PositionFormData, positionFormSchema } from "@/lib/schemas/positionFormSchema";
-import { DepartmentData } from "@/lib/types/department";
+import {
+	PositionFormData,
+	positionFormSchema,
+} from "@/lib/schemas/positionFormSchema";
+import { PositionFormProps } from "@/lib/types/form/positionFormType";
+import { positionDefaultValues } from "@/lib/values/positionDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
@@ -10,29 +14,14 @@ import {
 } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 
-interface PositionFormProps {
-	divisionData: PositionFormData | null;
-	onSubmit: (formData: PositionFormData) => void;
-	departmentOptions: DepartmentData[];
-	isSubmitting: boolean;
-}
-
-const defaultValues: PositionFormData = {
-	position_code: "",
-	name: "",
-	base_salary: 0,
-	department_id: 0,
-};
-
 export default function PositionDialogForm({
-	divisionData,
+	positionData,
 	onSubmit,
-	departmentOptions,
+	divisionOptions,
 	isSubmitting,
 }: PositionFormProps) {
-
 	const formik = useFormik({
-		initialValues: divisionData || defaultValues,
+		initialValues: positionData || positionDefaultValues,
 		validate: (values) => {
 			const validation = positionFormSchema.safeParse(values);
 
@@ -105,7 +94,7 @@ export default function PositionDialogForm({
 					id="department_id"
 					name="department_id"
 					value={formik.values.department_id}
-					options={departmentOptions}
+					options={divisionOptions}
 					optionLabel="name"
 					optionValue="id"
 					onChange={formik.handleChange}
