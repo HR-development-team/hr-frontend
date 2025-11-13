@@ -8,7 +8,7 @@ import {
 	EmployeeFormData,
 	employeeFormSchema,
 } from "@/lib/schemas/employeeFormSchema";
-import { EmployeeFormProps } from "@/lib/types/form/employeeForm";
+import { EmployeeFormProps } from "@/lib/types/form/employeeFormType";
 import {
 	employeeFormDefaultValues,
 	genderOptions,
@@ -96,7 +96,7 @@ export default function EmployeeDialogForm({
 				props={{
 					...formik.getFieldProps("position_code"),
 					options: positionOptions,
-					optionLabel: "position_name",
+					optionLabel: "name",
 					optionValue: "position_code",
 					filter: true,
 					filterDelay: 400,

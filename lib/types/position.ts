@@ -1,7 +1,7 @@
 export interface GetAllPositionData {
 	id: number;
 	position_code: string;
-	position_name: string;
+	name: string;
 	base_salary: string;
 	division_code: string;
 	division_name: string;

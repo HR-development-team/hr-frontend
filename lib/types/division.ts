@@ -6,8 +6,8 @@ export interface GetAllDivisionData {
 	department_name: string;
 }
 
-export interface GetAllDivisionByIdData extends GetAllDivisionData {
-    description: string
-    created_at: string
-    updated_at: string
+export interface GetDivisionByIdData extends GetAllDivisionData {
+	description: string;
+	created_at: string;
+	updated_at: string;
 }

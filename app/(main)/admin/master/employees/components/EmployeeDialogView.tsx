@@ -104,7 +104,11 @@ export default function EmployeeDialogView({
 								Jenis Kelamin
 							</span>
 							<p className="text-800 text-base font-medium">
-								{employeeData?.gender ? employeeData.gender : "-"}
+								{employeeData?.gender === "laki-laki"
+									? "Laki-laki"
+									: employeeData?.gender === "perempuan"
+									? "Perempuan"
+									: "-"}
 							</p>
 						</div>
 

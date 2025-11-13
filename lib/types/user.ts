@@ -1,9 +1,9 @@
 export interface UserData {
 	id: number;
+	user_code: string
 	email: string;
 	password: string;
 	role: "admin" | "employee";
-	employee_id: number;
-	created_at: string;
-	updated_at: string;
+	employee_code: string;
+	employee_name: string
 }

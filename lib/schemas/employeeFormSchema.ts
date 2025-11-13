@@ -1,4 +1,3 @@
-import { profile } from "console";
 import z, { number } from "zod";
 
 const numberRegex = /^\+?[0-9]+$/;
