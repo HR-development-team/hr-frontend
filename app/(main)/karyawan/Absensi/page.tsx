@@ -1,439 +1,400 @@
-// /app/karyawan/Absensi/page.tsx
+"use client"; // WAJIB: Menandakan ini adalah Client Component untuk Next.js
 
-'use client';
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
-import { Toast } from 'primereact/toast';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
-import { InputText } from 'primereact/inputtext';
-import { Skeleton } from 'primereact/skeleton'; 
-import { Divider } from 'primereact/divider';
+import { Timeline } from 'primereact/timeline';
+import { Toast } from 'primereact/toast';
+import { TabView, TabPanel } from 'primereact/tabview';
+import { DataView } from 'primereact/dataview';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 
-// --- ALUR 1: KONTRAK DATA (INTERFACE) ---
-// Ini adalah "Kontrak Data" Anda.
-// Nama field di sini SAMA PERSIS dengan nama field di JSON Postman Anda.
-// ---------------------------------------------
+// --- BAGIAN 1: TIPE DATA & ENDPOINT API ---
 
-type AttendanceStatus = 'loading' | 'not_checked_in' | 'checked_in' | 'checked_out';
-
-// Tipe untuk objek di dalam array "attendances"
-// Sesuai dengan JSON 'GET Get Current Employee Attendance'
-interface AttendanceLog {
-  id: number;
-  employee_id: number;
-  work_date: string | null;
-  check_in_time: string | null; 
-  check_out_time: string | null;
-  created_at?: string; 
-  updated_at?: string;
-  // 'status' ('Tepat Waktu', 'Terlambat') akan kita tambahkan nanti jika ada di API
+// [FIX 1] Sesuaikan Interface dengan JSON dari API
+interface Session {
+	id: string | number;
+	name: string;
+	// Ganti start_time -> open_time dan end_time -> close_time
+	open_time?: string; // cth: "14:59:00"
+	close_time?: string;   // cth: "20:00:00"
 }
 
-// Tipe untuk respons 'GET Get Current Employee Attendance'
-interface AttendanceResponse {
-  status: string;
-  message: string;
-  datetime: string;
-  attendances: AttendanceLog[]; // <-- Array-nya ada di sini
+interface HistoryItem {
+	status: string;
+	time: string;
 }
 
-// Tipe untuk respons 'POST Check-In' dan 'PUT Check-Out'
-interface CheckInOutResponse {
-  status: string;
-  message: string;
-  datetime: string;
-  attendances: AttendanceLog; // <-- Objek tunggal
+interface AttendanceStatus {
+	id: string | null;
+	isCheckedIn: boolean;
+	checkInTime: string | null; // ISO Date String
+	checkOutTime: string | null; // ISO Date String
+	history: HistoryItem[];
 }
 
-// --- Ganti ini dengan URL API dari Postman Anda ---
-const API_BASE_URL = 'http://localhost:8000/api/v1'; // Ganti 8000 dengan port backend Anda
+type AttendanceStatusType = 'Hadir' | 'Terlambat' | 'Absen';
 
-// --- ALUR 2: KOMPONEN UTAMA & SETUP STATE ---
-// ---------------------------------------------
-export default function AbsensiPage() {
-  const toast = useRef<Toast>(null);
-  
-  // State untuk Kartu Aksi
-  const [status, setStatus] = useState<AttendanceStatus>('loading'); 
-  const [isSubmitting, setIsSubmitting] = useState(false); // Untuk loading tombol
-  const [checkInTime, setCheckInTime] = useState('');
-  
-  // State untuk Tabel Riwayat
-  const [attendanceLog, setAttendanceLog] = useState<AttendanceLog[]>([]);
+interface DailyHistoryItem {
+	id: string;
+	date: string;
+	checkIn: string | null;
+	checkOut: string | null;
+	status: AttendanceStatusType;
+}
 
-  // State untuk Fitur Tambahan (Search & Jam)
-  const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState('');
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const [currentTime, setCurrentTime] = useState('--:--:--');
-  const [currentDate, setCurrentDate] = useState('');
+// --- PERUBAHAN 1: Sederhanakan API_URLS ---
+const API_URLS = {
+	// getCurrentStatus: '/api/karyawan/attendances/me', // Dihapus, digabung ke getAttendanceData
+	getAttendanceData: '/api/karyawan/attendances', // Menggantikan getHistory
+	checkIn: '/api/karyawan/attendances/check-in',
+	checkOut: '/api/karyawan/attendances/check-out',
+	getAllSessions: '/api/karyawan/attendance-sessions', 
+};
 
-  // --- ALUR 3: MEMUAT DATA AWAL (useEffect) ---
-  // Kode ini berjalan OTOMATIS saat halaman dibuka.
-  // --------------------------------------------------
-  useEffect(() => {
-    const loadInitialData = async () => {
-      // 'status' sudah 'loading' secara default
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        window.location.href = '/login'; // Asumsi login ada di /login
-        return;
-      }
+// --- [FIX 2] Sesuaikan helper dengan Interface baru ---
+const findActiveSession = (sessions: Session[]): Session | null => {
+	const now = new Date(); // Waktu saat ini
 
-      try {
-        //
-        // --- INI ADALAH KODE BACKEND YANG SEBENARNYA (GET) ---
-        //
-        // 1. Panggil 'GET Get Current Employee Attendanc...' (dari Postman)
-        // Pastikan URL ini benar
-        const logResponse = await fetch(`${API_BASE_URL}/attendances/current-employee`, { 
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (logResponse.status === 401) {
-            localStorage.removeItem('authToken'); // Hapus token buruk
-            window.location.href = '/login'; // Paksa login ulang
-            return;
-        }
-        if (!logResponse.ok) throw new Error('Gagal memuat riwayat (Server Error)');
-        
-        const logData: AttendanceResponse = await logResponse.json();
-        console.log("Respons Riwayat Absensi (GET):", logData); // Cek data di konsol
+	for (const session of sessions) {
+		// Ganti session.start_time -> session.open_time
+		if (!session.open_time || !session.close_time) continue;
 
-        if (logData.status !== "00") {
-          throw new Error(logData.message || 'Gagal memuat riwayat absensi');
-        }
-        setAttendanceLog(logData.attendances); // Isi state tabel
+		// Asumsi format 'HH:mm:ss'
+		try {
+			const [startH, startM, startS] = session.open_time.split(':').map(Number);
+			const [endH, endM, endS] = session.close_time.split(':').map(Number);
 
-        // 2. Panggil API untuk cek status HARI INI
-        // Pastikan Anda punya endpoint ini di Postman
-        const statusResponse = await fetch(`${API_BASE_URL}/attendances/status-today`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (statusResponse.status === 401) {
-            localStorage.removeItem('authToken');
-            window.location.href = '/login';
-            return;
-        }
-         if (!statusResponse.ok) throw new Error('Gagal memuat status absensi');
-        
-         const statusData = await statusResponse.json(); 
-         console.log("Respons Status Hari Ini (GET):", statusData); // Cek data di konsol
-        
-        // Isi state kartu aksi
-        setStatus(statusData.status); // misal: 'checked_in' atau 'not_checked_in'
-        if (statusData.attendance && statusData.attendance.check_in_time) {
-           const jam = new Date(statusData.attendance.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-           setCheckInTime(jam);
-        }
+			const startTime = new Date();
+			startTime.setHours(startH, startM, startS, 0);
 
-      } catch (error) {
-        console.error("Gagal memuat data:", error);
-        toast.current?.show({ severity: 'error', summary: 'Error', detail: (error as Error).message });
-        setStatus('not_checked_in'); // Fallback jika error
-      } 
-    };
-    
-    loadInitialData(); // <-- FUNGSI DIAMBIL DARI SINI
-    
-  }, []); // [] = Dijalankan sekali
-  
-  // useEffect untuk auto-focus search (tidak berubah)
-  useEffect(() => {
-    if (isSearchVisible) {
-        searchInputRef.current?.focus();
-    }
-  }, [isSearchVisible]);
+			const endTime = new Date();
+			endTime.setHours(endH, endM, endS, 0);
 
-  // useEffect untuk Jam Real-time (tidak berubah)
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setCurrentTime(now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-      setCurrentDate(now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
-    };
-    updateTime();
-    const timerId = setInterval(updateTime, 1000);
-    return () => clearInterval(timerId);
-  }, []); 
+			if (now >= startTime && now <= endTime) {
+				return session; // Ditemukan sesi yang aktif!
+			}
+		} catch (e) {
+			console.error("Error parsing session time:", session, e);
+		}
+	}
+	return null; // Tidak ada sesi aktif
+};
 
-  // --- ALUR 4: AKSI PENGGUNA (HANDLERS) ---
-  // Kode ini berjalan saat pengguna MENGEKLIK TOMBOL.
-  // --------------------------------------------
-  
-  // Handler untuk Tombol "Check-In"
-  const handleCheckIn = async () => {
-    setIsSubmitting(true);
-    const token = localStorage.getItem('authToken');
-    if (!token) { /* ... (Handle error/redirect) ... */ return; }
 
-    try {
-      // Panggil 'POST Employee Check In' (dari Postman)
-      // Pastikan URL ini benar
-      const response = await fetch(`${API_BASE_URL}/attendances/check-in`, { 
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      const data: CheckInOutResponse = await response.json(); 
-      console.log("Respons Check-In (POST):", data);
-      
-      if (data.status !== "00") {
-        throw new Error(data.message || 'Gagal Check-In di server');
-      }
-      
-      // Ambil data 'check_in_time' dari JSON Postman Anda
-      const checkInTimestamp = data.attendances.check_in_time;
-      const jam = new Date(checkInTimestamp!).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-      
-      // Update Tampilan (State)
-      setCheckInTime(jam);
-      setStatus('checked_in');
-      toast.current?.show({ 
-        severity: 'success', 
-        summary: 'Check-In Berhasil', 
-        detail: data.message, // Tampilkan pesan sukses dari API
-        life: 3000 
-      });
-      
-    } catch (error) {
-      toast.current?.show({ 
-        severity: 'error', 
-        summary: 'Gagal', 
-        detail: (error as Error).message || 'Gagal melakukan Check-In', 
-        life: 3000 
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  // Handler untuk Tombol "Check-Out"
-  const handleCheckOut = async () => {
-    setIsSubmitting(true);
-    const token = localStorage.getItem('authToken');
-    if (!token) { /* ... (Handle error/redirect) ... */ return; }
+// --- BAGIAN 2: KOMPONEN REACT (TSX) ---
 
-    try {
-      // Panggil 'PUT Employee Check Out' (dari Postman)
-      // Pastikan URL ini benar
-      const response = await fetch(`${API_BASE_URL}/attendances/check-out`, { 
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+export default function AttendancePage() {
+	const [currentTime, setCurrentTime] = useState(new Date());
+	const [activeSession, setActiveSession] = useState<Session | null>(null);
+	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>({
+		id: null, isCheckedIn: false, checkInTime: null, checkOutTime: null, history: []
+	});
+	const [history, setHistory] = useState<DailyHistoryItem[]>([]);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+	const toast = useRef<Toast>(null);
 
-      const data: CheckInOutResponse = await response.json(); 
-      console.log("Respons Check-Out (PUT):", data); 
+	useEffect(() => {
+		const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+		return () => clearInterval(timer);
+	}, []);
 
-      if (data.status !== "00") {
-          throw new Error(data.message || 'Gagal Check-Out di server');
-      }
+	useEffect(() => {
+		fetchInitialData();
+	}, []);
 
-      // Update Tampilan (State)
-      setStatus('checked_out');
-      toast.current?.show({ 
-        severity: 'info', 
-        summary: 'Check-Out Berhasil', 
-        detail: data.message, // Tampilkan pesan sukses dari API
-        life: 3000 
-      });
+	const showErrorToast = (message: string) => {
+		toast.current?.show({ severity: 'error', summary: 'Error', detail: message });
+	};
 
-    } catch (error) {
-      toast.current?.show({ 
-        severity: 'error', 
-        summary: 'Gagal', 
-        detail: (error as Error).message || 'Gagal melakukan Check-Out', 
-        life: 3000 
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+	// --- [PERUBAHAN 2: Perbarui fetchInitialData] ---
+	// Sekarang hanya memanggil 2 API (bukan 3)
+	const fetchInitialData = async () => {
+		setIsLoading(true);
+		try {
+			// 1. Panggil 2 endpoint API secara paralel
+			const [resAttendance, resSessions] = await Promise.all([
+				// fetch(API_URLS.getCurrentStatus), // Dihapus
+				fetch(API_URLS.getAttendanceData), // Panggil endpoint gabungan
+				fetch(API_URLS.getAllSessions) 
+			]);
 
-  // --- ALUR 5: FUNGSI BANTU TAMPILAN (HELPERS) ---
-  // Kode di sini hanya mengatur TAMPILAN (UI) berdasarkan data dari state.
-  // --------------------------------------------------
+			// 2. Cek jika ada respons yang gagal
+			if (!resAttendance.ok || !resSessions.ok) {
+				console.error("Salah satu API gagal:", { resAttendance, resSessions });
+				throw new Error('Gagal mengambil data dari server');
+			}
 
-  // Helper untuk Kartu Aksi (sudah rapi)
-  const renderAttendanceAction = () => {
-    
-    const clockDisplay = (
-      <div className="text-center mb-4">
-        <h1 className="m-0" style={{ fontSize: '3.5rem', color: 'var(--text-color)' }}>{currentTime}</h1>
-        <p className="m-0 text-color-secondary text-lg">{currentDate}</p>
-      </div>
-    );
+			// 3. Parse semua JSON
+			const dataAttendance = await resAttendance.json(); // Data gabungan (status + riwayat)
+			const dataSessions = await resSessions.json();
+			
+			// 4. Proses Sesi Aktif
+			// (Logika ini tidak berubah)
+			if (dataSessions.status === '00' && Array.isArray(dataSessions['attendance-sessions'])) {
+				const active = findActiveSession(dataSessions['attendance-sessions']);
+				setActiveSession(active); 
+			} else {
+				setActiveSession(null);
+			}
 
-    if (status === 'loading') {
-        return ( 
-            <div className="text-center">
-                <Skeleton width="12rem" height="3.5rem" className="mb-2 mx-auto"></Skeleton>
-                <Skeleton width="15rem" height="1.5rem" className="mb-4 mx-auto"></Skeleton>
-                <Divider />
-                <Skeleton width="10rem" height="1.5rem" className="mb-2 mx-auto"></Skeleton>
-                <Skeleton width="15rem" height="1rem" className="mb-4 mx-auto"></Skeleton>
-                <Skeleton height="3.5rem"></Skeleton>
-            </div>
-        );
-    }
-    
-    switch (status) {
-      case 'not_checked_in':
-        return (
-          <div className="text-center">
-            {clockDisplay} 
-            <Divider />
-            <div className="mt-4">
-              <i className="pi pi-clock" style={{ fontSize: '2rem', color: 'var(--text-muted)' }}></i>
-              <h3 className="mt-2">Aksi Absensi</h3>
-              <p className="text-color-secondary">Anda belum melakukan absensi masuk hari ini.</p>
-              <Button label="Check-In Sekarang" icon="pi pi-sign-in" className="w-full p-button-success p-button-lg mt-2" onClick={handleCheckIn} loading={isSubmitting} />
-            </div>
-          </div>
-        );
-      case 'checked_in':
-        return (
-          <div className="text-center">
-            {clockDisplay}
-            <Divider /> 
-            <div className="mt-4">
-              <i className="pi pi-check-circle" style={{ fontSize: '2rem', color: 'var(--green-500)' }}></i>
-              <h3 className="mt-2">Anda Sudah Masuk</h3>
-              <p className="text-color-secondary">Waktu Check-In:</p>
-              <h2 className="my-2" style={{ color: 'var(--text-color)' }}>{checkInTime} WIB</h2>
-              <Button label="Check-Out" icon="pi pi-sign-out" className="w-full p-button-danger p-button-lg mt-2" onClick={handleCheckOut} loading={isSubmitting} />
-            </div>
-          </div>
-        );
-      case 'checked_out':
-        return (
-          <div className="text-center">
-            {clockDisplay}
-            <Divider />
-            <div className="mt-4">
-              <i className="pi pi-thumbs-up" style={{ fontSize: '2rem', color: 'var(--blue-500)' }}></i>
-              <h3 className="mt-2">Absensi Selesai</h3>
-              <p className="text-color-secondary">Anda sudah berhasil Check-Out hari ini. Terima kasih!</p>
-            </div>
-          </div>
-        );
-    }
-  };
-  
-  // Helper untuk format tanggal dari "2025-10-28T08:05:00"
-  const tanggalBodyTemplate = (log: AttendanceLog) => {
-    const dateToUse = log.work_date || log.check_in_time;
-    if (!dateToUse) return 'N/A'; // Jika Alpha
-    return new Date(dateToUse).toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
+			// 5. Proses Status Hari Ini
+			// (Gunakan dataAttendance, asumsi berisi properti "attendance")
+			if (dataAttendance.status === '00' && dataAttendance.attendance) {
+				const apiStatus = dataAttendance.attendance;
+				const history: HistoryItem[] = [];
+				if (apiStatus.check_in_time) history.push({ status: 'Check In', time: format(new Date(apiStatus.check_in_time), 'HH:mm:ss') });
+				if (apiStatus.check_out_time) history.push({ status: 'Check Out', time: format(new Date(apiStatus.check_out_time), 'HH:mm:ss') });
 
-  // Helper untuk format waktu masuk
-  const waktuMasukBodyTemplate = (log: AttendanceLog) => {
-    if (!log.check_in_time) return '-';
-    return new Date(log.check_in_time).toLocaleTimeString('id-ID', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+				setAttendanceStatus({
+					id: apiStatus.id,
+					isCheckedIn: !!apiStatus.check_in_time && !apiStatus.check_out_time,
+					checkInTime: apiStatus.check_in_time,
+					checkOutTime: apiStatus.check_out_time,
+					history: history
+				});
+			} else {
+				setAttendanceStatus({ id: null, isCheckedIn: false, checkInTime: null, checkOutTime: null, history: [] });
+			}
+			
+			// 6. Proses Riwayat Absensi
+			// (Gunakan dataAttendance, asumsi berisi properti "attendances")
+			if (dataAttendance.status === '00' && Array.isArray(dataAttendance.attendances)) {
+				const mappedHistory = dataAttendance.attendances.map((item: any): DailyHistoryItem => {
+					let status: AttendanceStatusType = 'Absen';
+					// Sesuaikan 'Present' dan 'Late' jika API Anda mengirim status yang berbeda
+					if (item.status === 'Present') status = 'Hadir';
+					else if (item.status === 'Late') status = 'Terlambat';
+					
+					return {
+						id: item.id,
+						date: format(new Date(item.date), 'EEEE, dd MMMM yyyy', { locale: id }),
+						checkIn: item.check_in ? format(new Date(item.check_in), 'HH:mm:ss') : null,
+						checkOut: item.check_out ? format(new Date(item.check_out), 'HH:mm:ss') : null,
+						status: status
+					};
+				});
+				setHistory(mappedHistory);
+			}
 
-  // Helper untuk format waktu keluar
-  const waktuKeluarBodyTemplate = (log: AttendanceLog) => {
-    if (!log.check_out_time) return '-';
-    return new Date(log.check_out_time).toLocaleTimeString('id-ID', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+		} catch (error: unknown) {
+			console.error("Error fetching data:", error);
+			showErrorToast('Gagal memuat data absensi');
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-  // Header tabel (Search)
-  const renderRiwayatHeader = () => {
-    return (
-      <div className="flex justify-content-between align-items-center">
-        {!isSearchVisible && (
-          <h5 className="m-0">Riwayat Absensi</h5>
-        )}
-        {isSearchVisible && (
-          <span className="p-input-icon-left w-full">
-            <i className="pi pi-search" />
-            <InputText 
-              ref={searchInputRef}
-              type="search" 
-              value={globalFilter} 
-              onChange={(e) => setGlobalFilter(e.target.value)} 
-              placeholder="Cari..." 
-              className="w-full"
-              onBlur={() => { 
-                  if (!globalFilter) setIsSearchVisible(false);
-              }}
-            />
-          </span>
-        )}
-        <Button 
-          icon={isSearchVisible ? "pi pi-times" : "pi pi-search"} 
-          className="p-button-text p-button-rounded ml-2" 
-          onClick={() => {
-            setIsSearchVisible(!isSearchVisible);
-            if (isSearchVisible) {
-              setGlobalFilter('');
-            }
-          }} 
-        />
-      </div>
-    );
-  };
+	// --- (Sisa kode tidak berubah, semua sudah benar) ---
+	const handleCheckIn = async () => {
+		if (!activeSession) {
+			showErrorToast('Tidak ada sesi absensi yang aktif saat ini.');
+			return; 
+		}
+		setIsSubmitting(true);
+		try {
+			// Kirim ID sesi di dalam body
+			const payload = {
+				session_id: activeSession.id, 
+			};
 
-  // --- ALUR 6: TAMPILAN UTAMA (JSX) ---
-  // Ini adalah struktur HTML/PrimeReact yang menampilkan semua data
-  // dari state Anda.
-  // ----------------------------------------
-  return (
-    <div className="grid">
-      <Toast ref={toast} />
-      
-      {/* Kolom Kiri: Kartu Aksi */}
-      <div className="col-12 md:col-5 lg:col-4">
-        <Card className="shadow-1 h-full">
-          {renderAttendanceAction()}
-        </Card>
-      </div>
-      
-      {/* Kolom Kanan: Tabel Riwayat */}
-      <div className="col-12 md:col-7 lg:col-8">
-        <Card className="shadow-1 h-full">
-          <DataTable 
-            value={attendanceLog} 
-            responsiveLayout="stack"
-            breakpoint="768px" 
-            paginator 
-            rows={5} 
-            emptyMessage="Belum ada riwayat absensi."
-            header={renderRiwayatHeader}
-            globalFilter={globalFilter}
-            sortField="check_in_time" 
-            sortOrder={-1}
-            className="compact-datatable-mobile"
-          >
-            {/* Kolom ini sudah disinkronkan dengan Kontrak Data */}
-            <Column field="check_in_time" header="Tanggal" body={tanggalBodyTemplate} sortable />
-            <Column field="check_in_time" header="Masuk" body={waktuMasukBodyTemplate} />
-            <Column field="check_out_time" header="Keluar" body={waktuKeluarBodyTemplate} />
-            
-            {/* CATATAN: Kolom 'Status' ('Tepat Waktu', 'Terlambat') tidak ada di JSON Anda.
-              Jika backend menambahkannya, Anda bisa aktifkan (uncomment) baris ini 
-              dan membuat fungsi 'statusBodyTemplate'
-            */}
-            {/* <Column field="status" header="Status" body={statusBodyTemplate} /> */}
-          </DataTable>
-        </Card>
-      </div>
-    </div>
-  );
+			const res = await fetch(API_URLS.checkIn, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
+			
+			const data = await res.json();
+
+			if (!res.ok || data.status !== '00') {
+				// Tangkap error dari API (misal: "Sudah check-in")
+				throw new Error(data.message || 'Gagal melakukan Check In');
+			}
+			
+			toast.current?.show({ severity: 'success', summary: 'Berhasil', detail: data.message || 'Anda berhasil Check In' });
+			await fetchInitialData(); // Muat ulang semua data
+		} catch (error: any) {
+			console.error("Error Check In:", error);
+			showErrorToast(error.message || 'Gagal melakukan Check In');
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const handleCheckOut = async () => {
+		if (!attendanceStatus.id) return;
+		setIsSubmitting(true);
+		try {
+			const payload = {
+				attendance_id: attendanceStatus.id
+			};
+
+			const res = await fetch(API_URLS.checkOut, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
+
+			const data = await res.json();
+
+			if (!res.ok || data.status !== '00') {
+				throw new Error(data.message || 'Gagal melakukan Check Out');
+			}
+
+			toast.current?.show({ severity: 'success', summary: 'Berhasil', detail: data.message || 'Anda berhasil Check Out' });
+			await fetchInitialData(); 
+		} catch (error: any)
+		{
+			console.error("Error Check Out:", error);
+			showErrorToast(error.message || 'Gagal melakukan Check Out');
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const formattedTime = format(currentTime, 'HH:mm:ss');
+	const formattedDate = format(currentTime, 'EEEE, dd MMMM yyyy', { locale: id });
+	const isButtonDisabled = isLoading || isSubmitting || !activeSession || !!attendanceStatus.checkOutTime;
+
+	const cardTitle = (
+		<div className="flex justify-content-between align-items-center">
+			<span>Absensi Karyawan</span>
+			{!isLoading && (
+				<Tag
+					value={activeSession ? 'Sesi Aktif' : 'Sesi Tidak Aktif'}
+					severity={activeSession ? 'success' : 'danger'}
+				/>
+			)}
+		</div>
+	);
+
+	const cardSubtitle = (
+		<span>
+			{activeSession ? activeSession.name : (isLoading ? 'Memuat sesi...' : 'Tidak ada sesi absensi yang aktif.')}
+		</span>
+	);
+	
+	const getHistorySeverity = (status: AttendanceStatusType) => {
+		switch (status) {
+			case 'Hadir': return 'success';
+			case 'Terlambat': return 'warning';
+			case 'Absen': return 'danger';
+			default: return 'info';
+		}
+	};
+
+	const historyItemTemplate = (item: DailyHistoryItem) => {
+		return (
+			<div className="col-12 p-3">
+				<div className="flex flex-column md:flex-row md:align-items-center md:justify-content-between gap-3"
+					style={{ borderBottom: '1px solid var(--surface-d)', paddingBottom: '1rem' }}>
+					
+					<div className="flex flex-column gap-1">
+						<div className="text-lg font-bold">{item.date}</div>
+						<Tag value={item.status} severity={getHistorySeverity(item.status)} style={{ width: 'fit-content' }} />
+					</div>
+					
+					<div className="flex flex-row md:flex-column md:align-items-end gap-3 md:gap-1">
+						<span className="text-md font-medium text-green-600">
+							<i className="pi pi-sign-in mr-2" />{item.checkIn || 'N/A'}
+						</span>
+						<span className="text-md font-medium text-red-600">
+							<i className="pi pi-sign-out mr-2" />{item.checkOut || 'N/A'}
+						</span>
+					</div>
+
+				</div>
+			</div>
+		);
+	};
+
+	// --- TAMPILAN JSX (RENDER) ---
+	return (
+		<div className="grid grid-nogutter justify-content-center p-4" style={{ minHeight: '90vh', background: '#f4f4f4' }}>
+			<Toast ref={toast} />
+			{/* --- [PERUBAHAN UKURAN] --- */}
+			{/* Diubah menjadi full-width (12) untuk medium dan large screen */}
+			<div className="col-12 md:col-12 lg:col-12"> 
+				
+				<Card title={cardTitle} subTitle={cardSubtitle} className="shadow-5">
+					
+					{/* Area Jam dan Tombol Aksi */}
+					<div className="text-center p-4">
+						<div className="mb-4">
+							<div className="text-6xl font-bold text-primary">{formattedTime}</div>
+							<div className="text-xl text-color-secondary">{formattedDate}</div>
+						</div>
+
+						{attendanceStatus.isCheckedIn && !attendanceStatus.checkOutTime && attendanceStatus.checkInTime && (
+							<div className="mb-4">
+								<Tag className="p-3" severity="success"
+									value={`Checked In @ ${format(new Date(attendanceStatus.checkInTime), 'HH:mm:ss')}`}
+									icon="pi pi-check-circle" />
+							</div>
+						)}
+
+						{!attendanceStatus.isCheckedIn ? (
+							<Button label="Check In" icon="pi pi-sign-in"
+									className="p-button-success p-button-lg p-button-raised w-full md:w-auto"
+									onClick={handleCheckIn} loading={isSubmitting} disabled={isButtonDisabled} />
+						) : (
+							<Button label="Check Out" icon="pi pi-sign-out"
+									className="p-button-danger p-button-lg p-button-raised w-full md:w-auto"
+									onClick={handleCheckOut} loading={isSubmitting} disabled={isButtonDisabled} />
+						)}
+						
+						{attendanceStatus.checkOutTime && (
+								<Tag className="mt-4" severity="info" value="Anda sudah menyelesaikan absensi hari ini." />
+						)}
+						
+						{!activeSession && !isLoading && (
+								<Tag className="mt-4" severity="warning" value="Tidak ada sesi absensi yang aktif saat ini." />
+						)}
+					</div>
+
+					{/* (Sisa TabView dan TabPanel tidak berubah) */}
+					<TabView>
+						<TabPanel header="Hari Ini">
+							<div className="px-1 py-3">
+								{attendanceStatus.history.length > 0 ? (
+									<Timeline
+										value={attendanceStatus.history}
+										align="alternate"
+										className="custom-timeline"
+										content={(item: HistoryItem) => ( 
+											<>
+												<strong className={item.status === 'Check Out' ? 'text-red-500' : 'text-blue-500'}>
+													{item.status}
+												</strong>
+												<div className="text-sm text-color-secondary">{item.time}</div>
+											</>
+										)}
+									/>
+								) : (
+									<div className="text-center text-color-secondary">
+										<i className="pi pi-info-circle mr-2" />
+										Belum ada riwayat check-in/out hari ini.
+									</div>
+								)}
+							</div>
+						</TabPanel>
+						
+						<TabPanel header="Riwayat Sebelumnya">
+							<DataView
+								value={history}
+								itemTemplate={historyItemTemplate}
+								loading={isLoading}
+								layout="list"
+								emptyMessage="Tidak ada riwayat absensi sebelumnya."
+							/>
+						</TabPanel>
+					</TabView>
+
+				</Card>
+			</div>
+		</div>
+	);
 }

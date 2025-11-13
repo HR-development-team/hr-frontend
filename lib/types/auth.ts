@@ -17,4 +17,6 @@ export interface AuthContextType {
 	isLoading: boolean;
 	login: (credentials: LoginFormData) => Promise<AuthUser>;
 	logout: () => Promise<void>;
+	
+	updateAuthUser: (newUserData: Partial<User>) => void;
 }
