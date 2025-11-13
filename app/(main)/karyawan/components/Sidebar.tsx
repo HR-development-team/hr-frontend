@@ -5,13 +5,19 @@ import {
 	FileText,
 	LayoutDashboard,
 	MonitorCheck,
+	PiggyBank,
+	PiIcon,
 	Users,
+	WalletCards,
+	WalletIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { ReactNode, useState } from "react";
 import { idText } from "typescript";
+import Attendance from "../../admin/attendance/page";
+import { FaUser, FaUserCheck } from "react-icons/fa";
 
 interface ChildrenMenuItems {
 	label: string;
@@ -36,7 +42,7 @@ const menuItems: MenuItems[] = [
 	{
 		id: "attendance",
 		label: "Absensi",
-		icon: <LayoutDashboard />,
+		icon: <FaUserCheck size={25} className="text-gray-400 group-hover:text-white" />,
 		href: "/karyawan/Absensi",
 	},
 	{
@@ -63,6 +69,12 @@ const menuItems: MenuItems[] = [
 		label: "Profil",
 		icon: <MonitorCheck />,
 		href: "/karyawan/Profil",
+	},
+	{
+		id: "payrol",
+		label: "Pembayaran",
+		icon: <WalletIcon />,
+		href: "/karyawan/Pembayaran",
 	},
 ];
 
