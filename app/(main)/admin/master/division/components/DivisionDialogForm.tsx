@@ -3,26 +3,24 @@ import FormDropdown from "@/components/form/FormDropdown";
 import FormInputNumber from "@/components/form/FormInputNumber";
 import FormInputText from "@/components/form/FormInputText";
 import FormInputTextarea from "@/components/form/FormInputTextarea";
-import {
-	PositionFormData,
-	positionFormSchema,
-} from "@/lib/schemas/positionFormSchema";
-import { PositionFormProps } from "@/lib/types/form/positionFormType";
-import { positionDefaultValues } from "@/lib/values/positionDefaultValue";
+import { DivisionFormData, divisionFormSchema } from "@/lib/schemas/divisionFormSchema";
+import { positionFormSchema } from "@/lib/schemas/positionFormSchema";
+import { DivisionFormProps } from "@/lib/types/form/divisionFormType";
+import { divisionDefaultValue } from "@/lib/values/divisionDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { InputNumberValueChangeEvent } from "primereact/inputnumber";
 
-export default function PositionDialogForm({
-	positionData,
+export default function DivisionDialogForm({
+	divisionData,
 	onSubmit,
-	divisionOptions,
+	departmentOptions,
 	isSubmitting,
-}: PositionFormProps) {
+}: DivisionFormProps) {
 	const formik = useFormik({
-		initialValues: positionData || positionDefaultValues,
+		initialValues: divisionData || divisionDefaultValue,
 		validate: (values) => {
-			const validation = positionFormSchema.safeParse(values);
+			const validation = divisionFormSchema.safeParse(values);
 
 			if (validation.success) {
 				return {};
@@ -45,10 +43,10 @@ export default function PositionDialogForm({
 		enableReinitialize: true,
 	});
 
-	const isFieldInvalid = (fieldName: keyof PositionFormData) =>
+	const isFieldInvalid = (fieldName: keyof DivisionFormData) =>
 		!!(formik.touched[fieldName] && formik.errors[fieldName]);
 
-	const getFieldError = (fieldName: keyof PositionFormData) => {
+	const getFieldError = (fieldName: keyof DivisionFormData) => {
 		return isFieldInvalid(fieldName)
 			? (formik.errors[fieldName] as string)
 			: undefined;
@@ -61,37 +59,23 @@ export default function PositionDialogForm({
 					...formik.getFieldProps("name"),
 				}}
 				fieldName={"name"}
-				label="Nama Posisi"
+				label="Nama Divisi"
 				isFieldInvalid={isFieldInvalid}
 				getFieldError={getFieldError}
 			/>
 
 			<FormDropdown
 				props={{
-					...formik.getFieldProps("division_code"),
-					options: divisionOptions,
+					...formik.getFieldProps("department_code"),
+					options: departmentOptions,
 					optionLabel: "name",
-					optionValue: "division_code",
-					placeholder: "Pilih Divisi",
+					optionValue: "department_code",
+					placeholder: "Pilih Departemen",
 					filter: true,
 					filterDelay: 400,
 				}}
-				fieldName={"division_code"}
-				label="Pilih Divisi"
-				isFieldInvalid={isFieldInvalid}
-				getFieldError={getFieldError}
-			/>
-
-			<FormInputNumber
-				props={{
-					value: formik.values.base_salary,
-					onValueChange: (e: InputNumberValueChangeEvent) => {
-						formik.setFieldValue("base_salary", e.value);
-					},
-					onBlur: formik.handleBlur,
-				}}
-				fieldName={"base_salary"}
-				label="Gaji Pokok"
+				fieldName={"department_code"}
+				label="Pilih Departemen"
 				isFieldInvalid={isFieldInvalid}
 				getFieldError={getFieldError}
 			/>

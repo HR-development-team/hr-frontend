@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { Toast } from "primereact/toast";
 import { useAuth } from "@/components/AuthContext";
 import { Skeleton } from "primereact/skeleton";
+import { CircleAlert } from "lucide-react";
 
 const getMenuitems = (logoutHandler: () => void): MenuItem[] => [
 	{
@@ -94,7 +95,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 
 	const getInitials = () => {
 		if (!user) {
-			return "U";
+			return <i className="pi pi-exclamation-circle"></i>;
 		}
 
 		const initial = user.full_name ? user.full_name.charAt(0) : "";
@@ -105,7 +106,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 			initialName = user.email.charAt(0).toUpperCase();
 		}
 
-		return initialName || "U";
+		return initialName || <i className="pi pi-exclamation-circle"></i>;
 	};
 
 	// if (!isLoading && !user) {
@@ -139,7 +140,11 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 								<Skeleton width="5rem" height="0.8rem" />
 							) : (
 								<p className="text-500 text-xs md:text-sm">
-									{user?.role === "admin" ? "Admin" : "Karyawan"}
+									{user?.role === "admin"
+										? "Admin"
+										: user?.role === "employee"
+										? "Karyawan"
+										: "Perlu Login"}
 								</p>
 							)}
 						</div>
@@ -163,10 +168,9 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 							{isLoading ? (
 								<Skeleton shape="rectangle" size="2.5rem" className="mr-2" />
 							) : (
-								<Avatar
-									label={getInitials()}
-									className="bg-blue-500 text-white"
-								/>
+								<Avatar className="bg-blue-500 text-white">
+									{getInitials()}
+								</Avatar>
 							)}
 							<div className="flex align-items-center gap-3">
 								<div className="hidden text-800 md:flex md:flex-column md:align-items-start">
@@ -178,7 +182,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
 									) : (
 										<>
 											<span className="font-semibold text-base">
-												{`${user?.full_name}`}
+												{user?.full_name ? user.full_name : "Perlu Login"}
 											</span>
 											<span className="text-xs">{user?.email}</span>
 										</>

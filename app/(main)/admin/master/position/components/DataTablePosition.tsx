@@ -32,7 +32,7 @@ export default function DataTablePosition({
 		>
 			<Column field="position_code" header="Kode" style={{ width: "25%" }} />
 			<Column
-				field="position_name"
+				field="name"
 				header="Nama Posisi"
 				style={{ width: "25%" }}
 			/>

@@ -1,47 +1,56 @@
 "use client";
 
-import { DataTableDepartmentProp } from "@/lib/types/dataTable/dataTableDepartmentType";
-import { GetAllDepartmentData } from "@/lib/types/department";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
-import { DataTable } from "primereact/datatable";
-import { Tag } from "primereact/tag";
-import React from "react";
+import { DataTable, DataTablePageEvent } from "primereact/datatable";
+import React, { useState } from "react";
+import { formatRupiah } from "@/lib/utils/formatRupiah";
+import { GetAllPositionData } from "@/lib/types/position";
+import { DataTablePositionProp } from "@/lib/types/dataTable/dataTablePositionType";
+import { DataTableDivisionProp } from "@/lib/types/dataTable/dataTableDivisionType";
+import { GetAllDivisionData } from "@/lib/types/division";
 
-export default function DataTableDepartment({
-	department,
+export default function DataTableDivision({
+	division,
 	isLoading,
 	// lazyParams,
 	// totalItems,
 	// onPageChange,
 	onEdit,
 	onDelete,
-	onView
-}: DataTableDepartmentProp) {
+	onView,
+}: DataTableDivisionProp ) {
 	const newLocal =
 		"border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
-	const statusBodyTemplate = (rowData: any) => {
-		const severity = rowData.status === "Aktif" ? "success" : "danger";
-
-		return <Tag value={rowData.status} severity={severity} />;
-	};
-
 	return (
 		<DataTable
-			value={department}
+			value={division}
 			loading={isLoading}
 			paginator
 			rows={5}
 			rowsPerPageOptions={[5, 10, 25, 50]}
 			className={newLocal}
-			// style={{ minWidth: "50rem" }}
 		>
-			<Column field="department_code" header="Kode" style={{ width: "25%" }} />
-			<Column field="name" header="Nama Departemen" style={{ width: "25%" }} />
+			<Column field="division_code" header="Kode" style={{ width: "25%" }} />
+			<Column
+				field="name"
+				header="Kode"
+				style={{ width: "25%" }}
+			/>
+			<Column
+				field="department_code"
+				header="Kode Departemen"
+				style={{ width: "25%" }}
+			/>
+			<Column
+				field="department_name"
+				header="Nama Departemen"
+				style={{ width: "25%" }}
+			/>
 			<Column
 				header="Aksi"
-				body={(row: GetAllDepartmentData) => (
+				body={(row: GetAllDivisionData) => (
 					<div className="flex gap-2">
 						<Button
 							icon="pi pi-eye text-sm"

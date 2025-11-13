@@ -6,7 +6,6 @@ import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { Password } from "primereact/password";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 
@@ -21,6 +20,8 @@ export default function Home() {
 	const { login, user, isLoading } = useAuth();
 
 	const [passowrdVisible, setPasswordVisible] = useState<boolean>(false);
+
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
 	const router = useRouter();
 
@@ -56,6 +57,7 @@ export default function Home() {
 		},
 		onSubmit: async (values, { setStatus, setSubmitting }) => {
 			setStatus("");
+			setIsSubmitting(true)
 
 			try {
 				const loggedInUser = await login(values);
@@ -82,6 +84,8 @@ export default function Home() {
 					detail: error.message,
 					life: 3000,
 				});
+			} finally {
+				setIsSubmitting(false)
 			}
 		},
 
@@ -224,6 +228,7 @@ export default function Home() {
 									<Button
 										type="submit"
 										label="Masuk ke Sistem"
+										loading={isSubmitting}
 										disabled={formik.isSubmitting}
 										className="w-full"
 									/>

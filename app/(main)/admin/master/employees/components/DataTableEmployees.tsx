@@ -7,17 +7,7 @@ import { Tag } from "primereact/tag";
 import React, { useState } from "react";
 import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 import { GetAllEmployeeData } from "@/lib/types/employee";
-
-interface DataTableEmployeesProp {
-	employees: GetAllEmployeeData[];
-	isLoading: boolean;
-	// lazyParams: { first: number; rows: number; page: number };
-	// totalItems: number;
-	// onPageChange: (event: DataTablePageEvent) => void;
-	onView: (employee: GetAllEmployeeData) => void;
-	onEdit: (employee: GetAllEmployeeData) => void;
-	onDelete: (employee: GetAllEmployeeData) => void;
-}
+import { DataTableEmployeesProp } from "@/lib/types/dataTable/dataTableEmployeeType";
 
 export default function DataTableEmployees({
 	employees,

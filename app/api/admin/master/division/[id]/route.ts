@@ -31,7 +31,7 @@ export const GET = async (request: NextRequest, { params }: paramsProp) => {
 
 	try {
 		const response = await Axios.get(
-			API_ENDPOINTS.GETDEPARTMENTBYID(params.id),
+			API_ENDPOINTS.GETDIVISIONBYID(params.id),
 			{
 				headers: {
 					"Content-Type": "application/json",
@@ -50,7 +50,7 @@ export const GET = async (request: NextRequest, { params }: paramsProp) => {
 		}
 
 		return NextResponse.json(
-			{ message: "Gagal mendapatkan data master departemen" },
+			{ message: "Gagal mendapatkan data master divisi" },
 			{ status: 500 }
 		);
 	}
@@ -68,7 +68,7 @@ export const PUT = async (request: NextRequest, { params }: paramsProp) => {
 		const body = await request.json();
 
 		const response = await Axios.put(
-			API_ENDPOINTS.EDITDEPARTMENT(params.id),
+			API_ENDPOINTS.EDITDIVISION(params.id),
 			body,
 			{
 				headers: {
@@ -86,7 +86,7 @@ export const PUT = async (request: NextRequest, { params }: paramsProp) => {
 			});
 		} else {
 			return NextResponse.json(
-				{ message: "Gagal mengedit data master departemen" },
+				{ message: "Gagal mengedit data master divisi" },
 				{ status: 500 }
 			);
 		}
@@ -104,7 +104,7 @@ export const DELETE = async (request: NextRequest, { params }: paramsProp) => {
 
 	try {
 		const response = await Axios.delete(
-			API_ENDPOINTS.DELETEDEPARTMENT(params.id),
+			API_ENDPOINTS.DELETEDIVISION(params.id),
 			{
 				headers: {
 					"Content-Type": "application/json",
@@ -115,7 +115,6 @@ export const DELETE = async (request: NextRequest, { params }: paramsProp) => {
 
 		return NextResponse.json(response.data);
 	} catch (error: any) {
-
 		if (error.response) {
 			return NextResponse.json(
 				{ message: error.response.data.message },
