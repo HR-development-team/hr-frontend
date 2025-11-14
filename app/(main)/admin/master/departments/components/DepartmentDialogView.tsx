@@ -5,59 +5,59 @@ import DepartmentDialogViewSkeleton from "./DepartmentDialogViewSkeleton";
 import { formatDateIDN } from "@/lib/utils/dateFormat";
 
 export default function DepartmentDialogView({
-	departmentData,
-	isLoading,
-	dialogMode,
+  departmentData,
+  isLoading,
+  dialogMode,
 }: DepartmentViewProps) {
-	const isOnViewMode = dialogMode === "view" ? true : false;
+  const isOnViewMode = dialogMode === "view" ? true : false;
 
-	if (isLoading) {
-		return <DepartmentDialogViewSkeleton />;
-	}
-	return (
-		<div className={`${isOnViewMode ? "text-800" : "hidden"}`}>
-			<Card className="line-height-3">
-				<div className="flex align-items-center gap-2 mb-4">
-					<Building className="text-blue-500" />
-					<span className="font-medium text-800">Detail Departemen</span>
-				</div>
-				<div className="grid">
-					<div className="col-12 flex justify-content-between border-bottom-1 border-gray-400 py-4">
-						<div className="text-base font-medium">
-							<span className="text-500">ID Departemen</span>
-							<p>
-								{departmentData?.department_code
-									? departmentData.department_code
-									: "-"}
-							</p>
-						</div>
+  if (isLoading) {
+    return <DepartmentDialogViewSkeleton />;
+  }
+  return (
+    <div className={`${isOnViewMode ? "text-800" : "hidden"}`}>
+      <Card className="line-height-3">
+        <div className="flex align-items-center gap-2 mb-4">
+          <Building className="text-blue-500" />
+          <span className="font-medium text-800">Detail Departemen</span>
+        </div>
+        <div className="grid">
+          <div className="col-12 flex justify-content-between border-bottom-1 border-gray-400 py-4">
+            <div className="text-base font-medium">
+              <span className="text-500">ID Departemen</span>
+              <p>
+                {departmentData?.department_code
+                  ? departmentData.department_code
+                  : "-"}
+              </p>
+            </div>
 
-						<div className="text-base font-medium">
-							<span className="text-500">Nama Departemen</span>
-							<p>{departmentData?.name ? departmentData.name : "-"}</p>
-						</div>
-					</div>
+            <div className="text-base font-medium">
+              <span className="text-500">Nama Departemen</span>
+              <p>{departmentData?.name ? departmentData.name : "-"}</p>
+            </div>
+          </div>
 
-					<div className="text-base font-medium col-12 p-3 bg-gray-100 border-round-xl mt-3">
-						<span>Deskripsi Departemen</span>
-						<p className="text-500">
-							{departmentData?.description ? departmentData.description : "-"}
-						</p>
-					</div>
-				</div>
+          <div className="text-base font-medium col-12 p-3 bg-gray-100 border-round-xl mt-3">
+            <span>Deskripsi Departemen</span>
+            <p className="text-500">
+              {departmentData?.description ? departmentData.description : "-"}
+            </p>
+          </div>
+        </div>
 
-				<div className="mt-4 flex flex-column xl:flex-row xl:align-items-center justify-content-between font-italic text-xs">
-					<div className="font-light flex align-items-center gap-2 text-500">
-						<span className="">Diperbarui:</span>
-						<span>{formatDateIDN(departmentData?.updated_at)}</span>
-					</div>
+        <div className="mt-4 flex flex-column xl:flex-row xl:align-items-center justify-content-between font-italic text-xs">
+          <div className="font-light flex align-items-center gap-2 text-500">
+            <span className="">Diperbarui:</span>
+            <span>{formatDateIDN(departmentData?.updated_at)}</span>
+          </div>
 
-					<div className="font-light flex align-items-center gap-2 text-500">
-						<span className="">Ditambahkan:</span>
-						<span>{formatDateIDN(departmentData?.created_at)}</span>
-					</div>
-				</div>
-			</Card>
-		</div>
-	);
+          <div className="font-light flex align-items-center gap-2 text-500">
+            <span className="">Ditambahkan:</span>
+            <span>{formatDateIDN(departmentData?.created_at)}</span>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
 }

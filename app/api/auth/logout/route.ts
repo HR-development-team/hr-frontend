@@ -4,33 +4,33 @@ import { cookies } from "next/dist/client/components/headers";
 import { API_ENDPOINTS } from "@/api/api";
 
 export const DELETE = async (request: NextRequest) => {
-	const tokenCookie = cookies().get("token");
+  const tokenCookie = cookies().get("token");
 
-	if (!tokenCookie) {
-		return NextResponse.json(
-			{ message: "Akses ditolak: Tidak terauntetikasi" },
-			{ status: 401 }
-		);
-	}
+  if (!tokenCookie) {
+    return NextResponse.json(
+      { message: "Akses ditolak: Tidak terauntetikasi" },
+      { status: 401 }
+    );
+  }
 
-	const token = tokenCookie.value;
+  const token = tokenCookie.value;
 
-	try {
-		const response = await Axios.delete(API_ENDPOINTS.LOGOUT, {
-			headers: {
-				"Content-type": "application/json",
-				Authorization: `Bearer ${token}`,
-			},
-		});
+  try {
+    const response = await Axios.delete(API_ENDPOINTS.LOGOUT, {
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-		const responseData = response.data;
-		cookies().delete("token");
-		console.log(responseData);
+    const responseData = response.data;
+    cookies().delete("token");
+    console.log(responseData);
 
-		const responseToBrowser = NextResponse.json({ message: responseData });
+    const responseToBrowser = NextResponse.json({ message: responseData });
 
-		return responseToBrowser;
-	} catch (error: any) {
-		return NextResponse.json({ message: error.message }, { status: 500 });
-	}
+    return responseToBrowser;
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
 };

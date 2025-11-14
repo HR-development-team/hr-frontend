@@ -145,7 +145,6 @@ const terbilang = (n: number): string => {
   return (n < 0 ? "Minus " : "") + (result || "Nol");
 };
 
-
 /**
  * Sub-komponen (MODIFIKASI): Typografi label & value dibedakan
  */
@@ -157,7 +156,9 @@ const LinesTable: React.FC<{ lines: PayrollLine[] }> = ({ lines }) => (
         className="flex justify-content-between align-items-center border-bottom-1 border-dashed border-gray-200 pb-2"
       >
         <span className="text-gray-600">{l.label}</span>
-        <span className="font-semibold text-gray-900">{formatRp(l.amount)}</span>
+        <span className="font-semibold text-gray-900">
+          {formatRp(l.amount)}
+        </span>
       </div>
     ))}
   </div>
@@ -184,26 +185,65 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
       try {
         setLoading(true);
         setError(null);
-        
+
         // --- DATA MOCK UNTUK DEMO ---
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, 800));
         const mockData = {
           payrolls: [
             {
-              id: 1, generated_at: "2025-10-25",
-              employee: { id: employeeId, name: "Budi Santoso", nik: "12345678", position: "Software Engineer", department: "IT", bank_account: "BCA 123-456-7890", email: "budi@example.com" },
-              earnings: [{ label: "Gaji Pokok", amount: 8000000 }, { label: "Tunjangan Transport", amount: 500000 }, { label: "Tunjangan Makan", amount: 600000 }],
-              deductions: [{ label: "BPJS Kesehatan", amount: 200000 }, { label: "BPJS Ketenagakerjaan", amount: 150000 }, { label: "PPH 21", amount: 450000 }],
-              gross_salary: 9100000, total_deductions: 800000, net_salary: 8300000,
+              id: 1,
+              generated_at: "2025-10-25",
+              employee: {
+                id: employeeId,
+                name: "Budi Santoso",
+                nik: "12345678",
+                position: "Software Engineer",
+                department: "IT",
+                bank_account: "BCA 123-456-7890",
+                email: "budi@example.com",
+              },
+              earnings: [
+                { label: "Gaji Pokok", amount: 8000000 },
+                { label: "Tunjangan Transport", amount: 500000 },
+                { label: "Tunjangan Makan", amount: 600000 },
+              ],
+              deductions: [
+                { label: "BPJS Kesehatan", amount: 200000 },
+                { label: "BPJS Ketenagakerjaan", amount: 150000 },
+                { label: "PPH 21", amount: 450000 },
+              ],
+              gross_salary: 9100000,
+              total_deductions: 800000,
+              net_salary: 8300000,
             },
             {
-              id: 2, generated_at: "2025-09-25",
-              employee: { id: employeeId, name: "Budi Santoso", nik: "12345678", position: "Software Engineer", department: "IT", bank_account: "BCA 123-456-7890", email: "budi@example.com" },
-              earnings: [{ label: "Gaji Pokok", amount: 8000000 }, { label: "Tunjangan Transport", amount: 500000 }, { label: "Tunjangan Makan", amount: 600000 }, { label: "Bonus Kinerja", amount: 1000000 }],
-              deductions: [{ label: "BPJS Kesehatan", amount: 200000 }, { label: "BPJS Ketenagakerjaan", amount: 150000 }, { label: "PPH 21", amount: 550000 }],
-              gross_salary: 10100000, total_deductions: 900000, net_salary: 9200000,
-            }
-          ]
+              id: 2,
+              generated_at: "2025-09-25",
+              employee: {
+                id: employeeId,
+                name: "Budi Santoso",
+                nik: "12345678",
+                position: "Software Engineer",
+                department: "IT",
+                bank_account: "BCA 123-456-7890",
+                email: "budi@example.com",
+              },
+              earnings: [
+                { label: "Gaji Pokok", amount: 8000000 },
+                { label: "Tunjangan Transport", amount: 500000 },
+                { label: "Tunjangan Makan", amount: 600000 },
+                { label: "Bonus Kinerja", amount: 1000000 },
+              ],
+              deductions: [
+                { label: "BPJS Kesehatan", amount: 200000 },
+                { label: "BPJS Ketenagakerjaan", amount: 150000 },
+                { label: "PPH 21", amount: 550000 },
+              ],
+              gross_salary: 10100000,
+              total_deductions: 900000,
+              net_salary: 9200000,
+            },
+          ],
         };
         const data = mockData;
         // --- AKHIR DATA MOCK ---
@@ -232,7 +272,8 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
     fetchPayrolls();
   }, [employeeId]);
 
-  const selectedPayroll = payrolls.find((p) => p.id === selectedPayrollId) || null;
+  const selectedPayroll =
+    payrolls.find((p) => p.id === selectedPayrollId) || null;
 
   // --- Handler Tombol (Sama seperti sebelumnya) ---
   const handlePrint = () => {
@@ -241,20 +282,20 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
 
   const handleExportPDF = async () => {
     if (!slipRef.current) return;
-    
+
     const canvas = await html2canvas(slipRef.current, {
-        scale: 2,
+      scale: 2,
     });
-    
+
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
-    
+
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    
+
     const imgWidth = canvas.width;
     const imgHeight = canvas.height;
-    
+
     const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
     const w = imgWidth * ratio;
     const h = imgHeight * ratio;
@@ -263,14 +304,14 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
     const y = 20; // Beri margin atas
 
     pdf.addImage(imgData, "PNG", x, y, w, h);
-    
+
     const fileName = `Slip_Gaji_${
       selectedPayroll?.employee.name || "Karyawan"
     }_${selectedPayroll?.period_label || "Periode"}.pdf`;
-    
+
     pdf.save(fileName.replace(/\s+/g, "_"));
   };
-  
+
   // --- Render State (Sama seperti sebelumnya) ---
   const renderContentState = () => {
     if (loading) {
@@ -292,7 +333,7 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
         />
       );
     }
-      if (payrolls.length === 0) {
+    if (payrolls.length === 0) {
       return (
         <Message
           severity="warn"
@@ -310,7 +351,9 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
       {/* 1. JUDUL HALAMAN */}
       <div className="flex flex-column md:flex-row justify-content-between md:align-items-center mb-4">
         <div>
-          <h2 className="m-0 text-3xl font-bold text-gray-800">Slip Gaji Karyawan</h2>
+          <h2 className="m-0 text-3xl font-bold text-gray-800">
+            Slip Gaji Karyawan
+          </h2>
           <small className="text-gray-500 text-lg">
             Lihat dan cetak slip gaji Anda per periode.
           </small>
@@ -321,7 +364,10 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
       <Card className="mb-4 shadow-md">
         <div className="grid align-items-center gap-3">
           <div className="col-12 md:col-6">
-            <label htmlFor="selectPeriod" className="block mb-2 font-medium text-gray-700">
+            <label
+              htmlFor="selectPeriod"
+              className="block mb-2 font-medium text-gray-700"
+            >
               Pilih Periode Gaji
             </label>
             <Dropdown
@@ -332,14 +378,12 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
               }))}
               value={selectedPayrollId}
               onChange={(e) => setSelectedPayrollId(e.value)}
-              placeholder={
-                loading ? "Memuat..." : "Pilih periode"
-              }
+              placeholder={loading ? "Memuat..." : "Pilih periode"}
               className="w-full"
               disabled={loading || payrolls.length === 0}
             />
           </div>
-          
+
           <div className="col-12 md:col-6">
             <div className="flex flex-wrap justify-content-start md:justify-content-end gap-2">
               <Button
@@ -375,28 +419,34 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
               // MODIFIKASI: Padding, border, dan shadow untuk feel dokumen
               className="p-5 md:p-6 bg-white"
               style={{
-                 border: '1px solid #dee2e6',
-                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                border: "1px solid #dee2e6",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
               }}
             >
               {/* Header Slip (BARU) */}
               <div className="flex justify-content-between align-items-start pb-4 mb-4 border-bottom-1 border-gray-300">
                 <div className="flex align-items-center">
-                    {/* Placeholder Logo */}
-                    <i className="pi pi-building text-4xl text-blue-600 mr-3"></i>
-                    <div>
-                        <div className="text-xl font-bold text-gray-900">PT. MARSTECH GLOBAL</div>
-                        <div className="text-sm text-gray-600">
-                            JL. Margatama Asri IV No. 3 - Kota Madiun - Jawa Timur
-                        </div>
-                        <div className="text-sm text-gray-600">
-                            Telp: 0351-2812555
-                        </div>
+                  {/* Placeholder Logo */}
+                  <i className="pi pi-building text-4xl text-blue-600 mr-3"></i>
+                  <div>
+                    <div className="text-xl font-bold text-gray-900">
+                      PT. MARSTECH GLOBAL
                     </div>
+                    <div className="text-sm text-gray-600">
+                      JL. Margatama Asri IV No. 3 - Kota Madiun - Jawa Timur
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Telp: 0351-2812555
+                    </div>
+                  </div>
                 </div>
                 <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-800">SLIP GAJI</div>
-                    <div className="text-md text-gray-600">Periode: {selectedPayroll.period_label}</div>
+                  <div className="text-2xl font-bold text-gray-800">
+                    SLIP GAJI
+                  </div>
+                  <div className="text-md text-gray-600">
+                    Periode: {selectedPayroll.period_label}
+                  </div>
                 </div>
               </div>
 
@@ -404,40 +454,62 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
               <div className="grid mb-4">
                 {/* Info Karyawan */}
                 <div className="col-12 md:col-6 pr-0 md:pr-4">
-                  <h5 className="mb-3 font-semibold text-gray-700">DATA KARYAWAN</h5>
+                  <h5 className="mb-3 font-semibold text-gray-700">
+                    DATA KARYAWAN
+                  </h5>
                   <div className="grid text-sm">
                     <div className="col-4 text-gray-600">Nama</div>
-                    <div className="col-8 font-semibold text-gray-900">: {selectedPayroll.employee.name || '-'}</div>
-                    
+                    <div className="col-8 font-semibold text-gray-900">
+                      : {selectedPayroll.employee.name || "-"}
+                    </div>
+
                     <div className="col-4 text-gray-600">NIK</div>
-                    <div className="col-8 font-semibold text-gray-900">: {selectedPayroll.employee.nik || '-'}</div>
+                    <div className="col-8 font-semibold text-gray-900">
+                      : {selectedPayroll.employee.nik || "-"}
+                    </div>
 
                     <div className="col-4 text-gray-600">Jabatan</div>
-                    <div className="col-8 font-semibold text-gray-900">: {selectedPayroll.employee.position || '-'}</div>
+                    <div className="col-8 font-semibold text-gray-900">
+                      : {selectedPayroll.employee.position || "-"}
+                    </div>
 
                     <div className="col-4 text-gray-600">Departemen</div>
-                    <div className="col-8 font-semibold text-gray-900">: {selectedPayroll.employee.department || '-'}</div>
+                    <div className="col-8 font-semibold text-gray-900">
+                      : {selectedPayroll.employee.department || "-"}
+                    </div>
                   </div>
                 </div>
-                
+
                 {/* Info Periode */}
                 <div className="col-12 md:col-6 mt-4 md:mt-0 pt-4 md:pt-0 pl-0 md:pl-4 border-top-1 md:border-top-0 md:border-left-1 border-gray-200">
-                    <h5 className="mb-3 font-semibold text-gray-700">INFO PEMBAYARAN</h5>
-                    <div className="grid text-sm">
-                        <div className="col-4 text-gray-600">Tanggal Terbit</div>
-                        <div className="col-8 font-semibold text-gray-900">: {selectedPayroll.generated_at
-                          ? new Date(
-                              selectedPayroll.generated_at
-                            ).toLocaleDateString("id-ID", { day: '2-digit', month: 'long', year: 'numeric' })
-                          : "-"}
-                        </div>
-
-                        <div className="col-4 text-gray-600">Rekening</div>
-                        <div className="col-8 font-semibold text-gray-900">: {selectedPayroll.employee.bank_account || '-'}</div>
-                        
-                         <div className="col-4 text-gray-600">Status</div>
-                        <div className="col-8 font-semibold text-green-600">: LUNAS / PAID</div>
+                  <h5 className="mb-3 font-semibold text-gray-700">
+                    INFO PEMBAYARAN
+                  </h5>
+                  <div className="grid text-sm">
+                    <div className="col-4 text-gray-600">Tanggal Terbit</div>
+                    <div className="col-8 font-semibold text-gray-900">
+                      :{" "}
+                      {selectedPayroll.generated_at
+                        ? new Date(
+                            selectedPayroll.generated_at
+                          ).toLocaleDateString("id-ID", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : "-"}
                     </div>
+
+                    <div className="col-4 text-gray-600">Rekening</div>
+                    <div className="col-8 font-semibold text-gray-900">
+                      : {selectedPayroll.employee.bank_account || "-"}
+                    </div>
+
+                    <div className="col-4 text-gray-600">Status</div>
+                    <div className="col-8 font-semibold text-green-600">
+                      : LUNAS / PAID
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -470,12 +542,14 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
                       </strong>
                     </div>
                     <div className="flex justify-content-between align-items-center">
-                      <span className="text-gray-700 text-lg">Total Potongan</span>
+                      <span className="text-gray-700 text-lg">
+                        Total Potongan
+                      </span>
                       <strong className="text-lg text-gray-800">
                         ({formatRp(selectedPayroll.total_deductions)})
                       </strong>
                     </div>
-                    
+
                     {/* MODIFIKASI: Highlight Gaji Bersih lebih kuat */}
                     <div className="p-3 bg-blue-700 text-white border-round-lg flex justify-content-between align-items-center mt-2">
                       <strong className="text-xl font-bold text-blue-50">
@@ -485,15 +559,14 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
                         {formatRp(selectedPayroll.net_salary)}
                       </strong>
                     </div>
-                    
+
                     {/* BARU: Terbilang */}
                     <div className="text-right mt-1 pr-2">
-                        <span className="text-gray-600 italic">Terbilang: </span>
-                        <strong className="text-gray-800 italic">
-                            {terbilang(selectedPayroll.net_salary)} Rupiah
-                        </strong>
+                      <span className="text-gray-600 italic">Terbilang: </span>
+                      <strong className="text-gray-800 italic">
+                        {terbilang(selectedPayroll.net_salary)} Rupiah
+                      </strong>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -502,9 +575,11 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
               <div className="text-center mt-6 pt-4 border-top-1 border-gray-200 text-gray-500 text-xs">
                 <strong>RAHASIA & PRIBADI (CONFIDENTIAL & PRIVATE)</strong>
                 <br />
-                Ini adalah slip gaji yang sah dan dibuat oleh sistem HRD PT. Marstech Global.
-                <br/>
-                Informasi yang terkandung bersifat rahasia dan hanya untuk karyawan yang bersangkutan.
+                Ini adalah slip gaji yang sah dan dibuat oleh sistem HRD PT.
+                Marstech Global.
+                <br />
+                Informasi yang terkandung bersifat rahasia dan hanya untuk
+                karyawan yang bersangkutan.
               </div>
             </div>
           </Card>
@@ -519,7 +594,8 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
-          #slip-to-print, #slip-to-print * {
+          #slip-to-print,
+          #slip-to-print * {
             visibility: visible;
           }
           #slip-to-print {
@@ -533,16 +609,16 @@ const PayrollSlip: React.FC<{ employeeId: number | string }> = ({
             border: none !important;
           }
           /* Mencegah card dari primereact terpotong */
-          .p-card, .p-card-content {
-             overflow: visible !important;
+          .p-card,
+          .p-card-content {
+            overflow: visible !important;
           }
           /* Sembunyikan panel kontrol saat print */
           .p-card.mb-4.shadow-md {
-             display: none;
+            display: none;
           }
         }
       `}</style>
-
     </div>
   );
 };
