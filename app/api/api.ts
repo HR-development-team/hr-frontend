@@ -50,7 +50,7 @@ export const API_ENDPOINTS = {
 
   // --- Dashboard ---
   GETADMINDASHBOARD: `${API_URL}/admin/dashboard/metrics`, // Get Admin Dashboard Data
-  GETEMPLOYEEDASHBOARD: `${API_URL}/employee/dashboard/metrics`, // INI TAMBAHAN: Get Employee Dashboard Data
+  GETEMPLOYEEDASHBOARD: `${API_URL}/employees/dashboard/metrics`, // INI TAMBAHAN: Get Employee Dashboard Data
 
   // --- Profiles ---
   GETPROFILES: `${API_URL}/profiles`, // Get Profile
