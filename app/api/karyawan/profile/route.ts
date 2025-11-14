@@ -1,7 +1,7 @@
 import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "@/app/api/api";
 import { cookies } from "next/headers";
+import { API_ENDPOINTS } from "@/api/api";
 
 // FUNGSI GET ANDA (TETAP SAMA)
 export const GET = async (request: NextRequest) => {

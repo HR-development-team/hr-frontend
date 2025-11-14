@@ -1,9 +1,8 @@
 import { getAuthToken } from "@/lib/utils/authUtils";
-import { getSecretKey } from "@/lib/utils/getSecretKey";
 import { verifyToken } from "@/lib/utils/verifyToken";
-import { API_ENDPOINTS } from "../../api";
 import { Axios } from "@/lib/utils/axios";
 import { NextResponse } from "next/server";
+import { API_ENDPOINTS } from "@/api/api";
 
 export const GET = async () => {
 	const token = getAuthToken();

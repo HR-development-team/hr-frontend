@@ -1,7 +1,7 @@
 import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthToken } from "@/lib/utils/authUtils";
-import { API_ENDPOINTS } from "@/app/api/api";
+import { API_ENDPOINTS } from "@/api/api";
 
 export const GET = async (request: NextRequest) => {
 	const token = getAuthToken();

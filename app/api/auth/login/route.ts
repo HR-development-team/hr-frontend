@@ -1,7 +1,6 @@
+import { API_ENDPOINTS } from "@/api/api";
 import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "../../api";
-import { error } from "console";
 
 export const POST = async (request: NextRequest) => {
 	try {

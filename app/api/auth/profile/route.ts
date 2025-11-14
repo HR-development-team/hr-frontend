@@ -1,6 +1,6 @@
 import { getAuthToken } from "@/lib/utils/authUtils";
 import { NextResponse } from "next/server";
-import { API_ENDPOINTS } from "../../api";
+import { API_ENDPOINTS } from "@/api/api";
 import { Axios } from "@/lib/utils/axios";
 
 export const GET = async () => {
