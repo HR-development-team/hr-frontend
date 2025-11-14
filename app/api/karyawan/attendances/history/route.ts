@@ -10,25 +10,21 @@ const tokenAvailable = (token: string | null) => {
 	return null;
 };
 
-// Handler untuk EMPLOYEECHECKOUT
-export const PUT = async (request: NextRequest) => {
+// Handler untuk GETATTENDANCEHISTORY
+export const GET = async (request: NextRequest) => {
 	const token = getAuthToken();
 	const unauthorizedResponse = tokenAvailable(token);
 	if (unauthorizedResponse) return unauthorizedResponse;
 
 	try {
-        // [FIX 400 ERROR]
-        // Sama seperti check-in, kita kirim 'undefined' sebagai body
-		const response = await Axios.put(API_ENDPOINTS.EMPLOYEECHECKOUT, undefined, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
+		const response = await Axios.get(API_ENDPOINTS.GETATTENDANCEHISTORY, {
+			headers: { Authorization: `Bearer ${token}` },
 		});
 		return NextResponse.json(response.data);
 	} catch (error: any) {
-		console.error("[API_ERROR] /check-out (PUT):", error.response?.data || error.message);
+		console.error("[API_ERROR] /attendances/history (GET):", error.message);
 		return NextResponse.json(
-			{ message: error.response?.data?.message || "Gagal melakukan check-out" },
+			{ message: "Gagal mengambil riwayat absensi" },
 			{ status: error.response?.status || 500 }
 		);
 	}
