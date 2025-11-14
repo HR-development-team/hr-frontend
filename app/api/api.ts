@@ -76,6 +76,7 @@ export const API_ENDPOINTS = {
     GETALLATTENDANCE: `${API_URL}/attendances`, // Get All Attendance
     GETCURRENTEMPLOYEEATTENDANCE: `${API_URL}/attendances`, // Get Current Employee Attendance
     GETATTENDANCEBYID: (id: string) => `${API_URL}/attendance/${id}`,
+    GETATTENDANCEHISTORY: `${API_URL}/attendances`,
 
     // --- INI TAMBAHAN: Leave Balance ---
     ADDLEAVEBALANCEFORALL: `${API_URL}/leave-balances/add-all`, // Add Leave Balance For All Emp...
