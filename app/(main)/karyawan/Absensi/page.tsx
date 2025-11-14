@@ -13,13 +13,14 @@ import { id } from 'date-fns/locale';
 
 // --- BAGIAN 1: TIPE DATA & ENDPOINT API ---
 
-// [FIX 1] Sesuaikan Interface dengan JSON dari API
+// Tipe data berdasarkan JSON Anda
 interface Session {
 	id: string | number;
-	name: string;
-	// Ganti start_time -> open_time dan end_time -> close_time
-	open_time?: string; // cth: "14:59:00"
-	close_time?: string;   // cth: "20:00:00"
+	session_code: string; 
+	open_time?: string;
+	close_time?: string;
+	date?: string;
+	status?: string;
 }
 
 interface HistoryItem {
@@ -27,81 +28,133 @@ interface HistoryItem {
 	time: string;
 }
 
+// Status hari ini (berasal dari data riwayat)
 interface AttendanceStatus {
-	id: string | null;
-	isCheckedIn: boolean;
-	checkInTime: string | null; // ISO Date String
-	checkOutTime: string | null; // ISO Date String
+	id: string | number | null; // ID absensi (bukan employee)
+	checkInTime: string | null; 
+	checkOutTime: string | null; 
 	history: HistoryItem[];
 }
 
 type AttendanceStatusType = 'Hadir' | 'Terlambat' | 'Absen';
 
+// Riwayat (dari JSON #5)
 interface DailyHistoryItem {
-	id: string;
-	date: string;
-	checkIn: string | null;
-	checkOut: string | null;
+	id: string | number;
+	date: string; // Ini adalah string tanggal yang akan kita format
+	checkIn: string | null; // Ini adalah string jam
+	checkOut: string | null; // Ini adalah string jam
 	status: AttendanceStatusType;
+	// Kita juga butuh data mentah untuk filter
+	raw_date: string; // cth: "2025-11-14T07:05:31.000Z" (akan kita ambil dari check_in_time)
+	raw_check_in_time: string | null;
+	raw_check_out_time: string | null;
 }
 
-// --- PERUBAHAN 1: Sederhanakan API_URLS ---
+// API URLS (Hanya 4 endpoint)
 const API_URLS = {
-	// getCurrentStatus: '/api/karyawan/attendances/me', // Dihapus, digabung ke getAttendanceData
-	getAttendanceData: '/api/karyawan/attendances', // Menggantikan getHistory
+	getActiveSession: '/api/karyawan/attendance-sessions',
+	getHistory: '/api/karyawan/attendances/history', // HANYA INI SUMBER DATA ABSENSI
 	checkIn: '/api/karyawan/attendances/check-in',
 	checkOut: '/api/karyawan/attendances/check-out',
-	getAllSessions: '/api/karyawan/attendance-sessions', 
 };
 
-// --- [FIX 2] Sesuaikan helper dengan Interface baru ---
+// Helper untuk format tanggal (Memperbaiki RangeError)
+const safeFormat = (dateString: string | null | undefined, formatStr: string): string | null => {
+	if (!dateString) {
+		return null;
+	}
+	try {
+		const date = new Date(dateString);
+		if (isNaN(date.getTime())) {
+			console.warn(`[DEBUG] safeFormat: Nilai tanggal tidak valid: ${dateString}`);
+			return null; 
+		}
+		return format(date, formatStr, { locale: id });
+	} catch (e) {
+		console.error(`[DEBUG] safeFormat: Error memformat tanggal: ${dateString}`, e);
+		return null; 
+	}
+};
+
+// Helper untuk cek tanggal
+const isSameDay = (date1: Date, date2: Date) => {
+	// PENTING: Cek jika date2 valid
+	if (isNaN(date2.getTime())) {
+		return false;
+	}
+	return date1.getFullYear() === date2.getFullYear() &&
+		   date1.getMonth() === date2.getMonth() &&
+		   date1.getDate() === date2.getDate();
+};
+
+// Helper untuk mencari sesi aktif (dari JSON Array baru Anda)
 const findActiveSession = (sessions: Session[]): Session | null => {
-	const now = new Date(); // Waktu saat ini
+	const now = new Date(); 
+	console.log(`[DEBUG] Waktu 'now' (Lokal): ${now.toString()}`);
 
 	for (const session of sessions) {
-		// Ganti session.start_time -> session.open_time
-		if (!session.open_time || !session.close_time) continue;
-
-		// Asumsi format 'HH:mm:ss'
+		console.log(`[DEBUG] Mengecek Sesi ID: ${session.id}`, session);
+		if (!session.open_time || !session.close_time || !session.date || !session.status) {
+			console.log("   - Gagal: Field 'date', 'status', 'open_time', or 'close_time' hilang.");
+			continue;
+		}
+		const sessionDate = new Date(session.date);
+		const isToday = isSameDay(now, sessionDate);
+		console.log(`   - Cek Tanggal: ${isToday} (Pencocokan: ${now.toDateString()} vs ${sessionDate.toDateString()})`);
+		if (!isToday) {
+			continue; 
+		}
+		const isOpen = session.status === 'open';
+		console.log(`   - Cek Status: ${isOpen} (API: ${session.status})`);
+		if (!isOpen) {
+			continue; 
+		}
 		try {
 			const [startH, startM, startS] = session.open_time.split(':').map(Number);
 			const [endH, endM, endS] = session.close_time.split(':').map(Number);
-
 			const startTime = new Date();
 			startTime.setHours(startH, startM, startS, 0);
-
 			const endTime = new Date();
 			endTime.setHours(endH, endM, endS, 0);
-
-			if (now >= startTime && now <= endTime) {
-				return session; // Ditemukan sesi yang aktif!
+			const timeCheck = (now >= startTime && now <= endTime);
+			console.log(`   - Cek Jam: ${timeCheck} (Pencocokan: ${format(now, 'HH:mm:ss')} vs ${session.open_time}-${session.close_time})`);
+			if (timeCheck) {
+				console.log("   - BERHASIL: Sesi ini aktif!");
+				return session; 
 			}
 		} catch (e) {
-			console.error("Error parsing session time:", session, e);
+			console.error("   - Gagal: Error parsing session time:", session, e);
 		}
 	}
-	return null; // Tidak ada sesi aktif
+	console.log("[DEBUG] Tidak ada sesi aktif ditemukan.");
+	return null; 
 };
-
 
 // --- BAGIAN 2: KOMPONEN REACT (TSX) ---
 
 export default function AttendancePage() {
-	const [currentTime, setCurrentTime] = useState(new Date());
+	// State untuk jam (Memperbaiki Hydration Error)
+	const [currentTime, setCurrentTime] = useState<Date | null>(null);
+	
 	const [activeSession, setActiveSession] = useState<Session | null>(null);
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>({
-		id: null, isCheckedIn: false, checkInTime: null, checkOutTime: null, history: []
+		id: null, checkInTime: null, checkOutTime: null, history: []
 	});
 	const [history, setHistory] = useState<DailyHistoryItem[]>([]);
+	
 	const [isLoading, setIsLoading] = useState<boolean>(true);
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const toast = useRef<Toast>(null);
 
+	// Efek untuk jam
 	useEffect(() => {
+		setCurrentTime(new Date()); 
 		const timer = setInterval(() => setCurrentTime(new Date()), 1000);
 		return () => clearInterval(timer);
 	}, []);
 
+	// Efek untuk memuat data awal
 	useEffect(() => {
 		fetchInitialData();
 	}, []);
@@ -110,74 +163,93 @@ export default function AttendancePage() {
 		toast.current?.show({ severity: 'error', summary: 'Error', detail: message });
 	};
 
-	// --- [PERUBAHAN 2: Perbarui fetchInitialData] ---
-	// Sekarang hanya memanggil 2 API (bukan 3)
+	// --- [PERBAIKAN UTAMA] Logika fetchInitialData yang Jauh Lebih Sederhana ---
 	const fetchInitialData = async () => {
 		setIsLoading(true);
+		console.log("[DEBUG] Memulai fetchInitialData...");
 		try {
-			// 1. Panggil 2 endpoint API secara paralel
-			const [resAttendance, resSessions] = await Promise.all([
-				// fetch(API_URLS.getCurrentStatus), // Dihapus
-				fetch(API_URLS.getAttendanceData), // Panggil endpoint gabungan
-				fetch(API_URLS.getAllSessions) 
+			// Panggil HANYA 2 endpoint API
+			const [resSession, resHistory] = await Promise.all([
+				fetch(API_URLS.getActiveSession), 
+				fetch(API_URLS.getHistory)
 			]);
 
-			// 2. Cek jika ada respons yang gagal
-			if (!resAttendance.ok || !resSessions.ok) {
-				console.error("Salah satu API gagal:", { resAttendance, resSessions });
+			console.log("[DEBUG] Selesai fetch 2 API");
+
+			if (!resSession.ok || !resHistory.ok) {
+				console.error("Salah satu API gagal:", { resSession, resHistory });
 				throw new Error('Gagal mengambil data dari server');
 			}
 
-			// 3. Parse semua JSON
-			const dataAttendance = await resAttendance.json(); // Data gabungan (status + riwayat)
-			const dataSessions = await resSessions.json();
+			// Parse semua JSON
+			const dataSession = await resSession.json();
+			const dataHistory = await resHistory.json();
 			
-			// 4. Proses Sesi Aktif
-			// (Logika ini tidak berubah)
-			if (dataSessions.status === '00' && Array.isArray(dataSessions['attendance-sessions'])) {
-				const active = findActiveSession(dataSessions['attendance-sessions']);
+			console.log("[DEBUG] dataSession (JSON Sesi):", dataSession);
+			console.log("[DEBUG] dataHistory (JSON Riwayat):", dataHistory);
+
+			// 1. Proses Sesi Aktif
+			// (Menggunakan JSON Array baru Anda)
+			if (dataSession.status === '00' && Array.isArray(dataSession.attendance_sessions)) {
+				const active = findActiveSession(dataSession.attendance_sessions);
 				setActiveSession(active); 
 			} else {
+				console.log("[DEBUG] Tidak ada data sesi (bukan array) dari API.");
 				setActiveSession(null);
 			}
 
-			// 5. Proses Status Hari Ini
-			// (Gunakan dataAttendance, asumsi berisi properti "attendance")
-			if (dataAttendance.status === '00' && dataAttendance.attendance) {
-				const apiStatus = dataAttendance.attendance;
-				const history: HistoryItem[] = [];
-				if (apiStatus.check_in_time) history.push({ status: 'Check In', time: format(new Date(apiStatus.check_in_time), 'HH:mm:ss') });
-				if (apiStatus.check_out_time) history.push({ status: 'Check Out', time: format(new Date(apiStatus.check_out_time), 'HH:mm:ss') });
-
-				setAttendanceStatus({
-					id: apiStatus.id,
-					isCheckedIn: !!apiStatus.check_in_time && !apiStatus.check_out_time,
-					checkInTime: apiStatus.check_in_time,
-					checkOutTime: apiStatus.check_out_time,
-					history: history
-				});
-			} else {
-				setAttendanceStatus({ id: null, isCheckedIn: false, checkInTime: null, checkOutTime: null, history: [] });
-			}
-			
-			// 6. Proses Riwayat Absensi
-			// (Gunakan dataAttendance, asumsi berisi properti "attendances")
-			if (dataAttendance.status === '00' && Array.isArray(dataAttendance.attendances)) {
-				const mappedHistory = dataAttendance.attendances.map((item: any): DailyHistoryItem => {
+			// 2. Proses Riwayat (JSON #5)
+			let mappedHistory: DailyHistoryItem[] = [];
+			if (dataHistory.status === '00' && Array.isArray(dataHistory.attendances)) {
+				mappedHistory = dataHistory.attendances.map((item: any): DailyHistoryItem => {
 					let status: AttendanceStatusType = 'Absen';
-					// Sesuaikan 'Present' dan 'Late' jika API Anda mengirim status yang berbeda
-					if (item.status === 'Present') status = 'Hadir';
-					else if (item.status === 'Late') status = 'Terlambat';
+					if (item.check_in_status === 'in-time') status = 'Hadir';
+					else if (item.check_in_status === 'late') status = 'Terlambat';
 					
+					// [FIX BUG "Tanggal Tidak Valid"]
+					// Ambil tanggal dari check_in_time (karena item.date tidak ada)
+					const dateToUse = item.check_in_time || item.created_at; 
+
 					return {
 						id: item.id,
-						date: format(new Date(item.date), 'EEEE, dd MMMM yyyy', { locale: id }),
-						checkIn: item.check_in ? format(new Date(item.check_in), 'HH:mm:ss') : null,
-						checkOut: item.check_out ? format(new Date(item.check_out), 'HH:mm:ss') : null,
-						status: status
+						date: safeFormat(dateToUse, 'EEEE, dd MMMM yyyy') || 'Tanggal Tidak Valid',
+						checkIn: safeFormat(item.check_in_time, 'HH:mm:ss'),
+						checkOut: safeFormat(item.check_out_time, 'HH:mm:ss'),
+						status: status,
+						// Simpan data mentah untuk filter
+						raw_date: dateToUse, // <-- [FIX] Gunakan tanggal yang valid
+						raw_check_in_time: item.check_in_time,
+						raw_check_out_time: item.check_out_time,
 					};
 				});
 				setHistory(mappedHistory);
+				console.log("[DEBUG] Riwayat absensi DITEMUKAN:", mappedHistory);
+			} else {
+				console.log("[DEBUG] Tidak ada riwayat absensi dari API.");
+			}
+
+			// 3. Proses Status Hari Ini (Berdasarkan data Riwayat)
+			const now = new Date();
+			// [FIX BUG UI] Cari di 'mappedHistory' yang baru saja kita buat
+			const todayAttendance = mappedHistory.find(item => 
+				isSameDay(now, new Date(item.raw_date))
+			);
+
+			if (todayAttendance) {
+				console.log("[DEBUG] Status hari ini DITEMUKAN (dari riwayat):", todayAttendance);
+				const history: HistoryItem[] = [];
+				if (todayAttendance.checkIn) history.push({ status: 'Check In', time: todayAttendance.checkIn });
+				if (todayAttendance.checkOut) history.push({ status: 'Check Out', time: todayAttendance.checkOut });
+
+				setAttendanceStatus({
+					id: todayAttendance.id,
+					checkInTime: todayAttendance.raw_check_in_time,
+					checkOutTime: todayAttendance.raw_check_out_time,
+					history: history
+				});
+			} else {
+				console.log("[DEBUG] Tidak ada data absensi hari ini (dari riwayat).");
+				setAttendanceStatus({ id: null, checkInTime: null, checkOutTime: null, history: [] });
 			}
 
 		} catch (error: unknown) {
@@ -188,26 +260,22 @@ export default function AttendancePage() {
 		}
 	};
 
-	// --- (Sisa kode tidak berubah, semua sudah benar) ---
+	// Handler untuk Check-In
 	const handleCheckIn = async () => {
 		if (!activeSession) {
 			showErrorToast('Tidak ada sesi absensi yang aktif saat ini.');
 			return; 
 		}
 		setIsSubmitting(true);
+		console.log("[DEBUG] Memulai Check-In...");
 		try {
-			// Kirim ID sesi di dalam body
-			const payload = {
-				session_id: activeSession.id, 
-			};
-
+			// Sesuai konfirmasi Anda ("Tidak ada body")
 			const res = await fetch(API_URLS.checkIn, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload),
 			});
 			
 			const data = await res.json();
+			console.log("[DEBUG] Respons Check-In:", data);
 
 			if (!res.ok || data.status !== '00') {
 				// Tangkap error dari API (misal: "Sudah check-in")
@@ -224,21 +292,21 @@ export default function AttendancePage() {
 		}
 	};
 
+	// Handler untuk Check-Out
 	const handleCheckOut = async () => {
-		if (!attendanceStatus.id) return;
+		if (!attendanceStatus.id) {
+			showErrorToast('ID Absensi tidak ditemukan untuk check-out.');
+			return;
+		}
 		setIsSubmitting(true);
+		console.log("[DEBUG] Memulai Check-Out...");
 		try {
-			const payload = {
-				attendance_id: attendanceStatus.id
-			};
-
 			const res = await fetch(API_URLS.checkOut, {
 				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload),
 			});
 
 			const data = await res.json();
+			console.log("[DEBUG] Respons Check-Out:", data);
 
 			if (!res.ok || data.status !== '00') {
 				throw new Error(data.message || 'Gagal melakukan Check Out');
@@ -255,9 +323,18 @@ export default function AttendancePage() {
 		}
 	};
 
-	const formattedTime = format(currentTime, 'HH:mm:ss');
-	const formattedDate = format(currentTime, 'EEEE, dd MMMM yyyy', { locale: id });
-	const isButtonDisabled = isLoading || isSubmitting || !activeSession || !!attendanceStatus.checkOutTime;
+	// --- Helper Tampilan ---
+	const formattedTime = currentTime 
+		? format(currentTime, 'HH:mm:ss') 
+		: '00:00:00';
+	const formattedDate = currentTime 
+		? format(currentTime, 'EEEE, dd MMMM yyyy', { locale: id }) 
+		: 'Memuat tanggal...';
+
+	// Logika Tombol
+	const hasCheckedIn = !!attendanceStatus.checkInTime;
+	const hasCheckedOut = !!attendanceStatus.checkOutTime;
+	const isButtonDisabled = isLoading || isSubmitting || !activeSession || hasCheckedOut;
 
 	const cardTitle = (
 		<div className="flex justify-content-between align-items-center">
@@ -273,7 +350,7 @@ export default function AttendancePage() {
 
 	const cardSubtitle = (
 		<span>
-			{activeSession ? activeSession.name : (isLoading ? 'Memuat sesi...' : 'Tidak ada sesi absensi yang aktif.')}
+			{activeSession ? activeSession.session_code : (isLoading ? 'Memuat sesi...' : 'Tidak ada sesi absensi yang aktif.')}
 		</span>
 	);
 	
@@ -315,47 +392,55 @@ export default function AttendancePage() {
 	return (
 		<div className="grid grid-nogutter justify-content-center p-4" style={{ minHeight: '90vh', background: '#f4f4f4' }}>
 			<Toast ref={toast} />
-			{/* --- [PERUBAHAN UKURAN] --- */}
-			{/* Diubah menjadi full-width (12) untuk medium dan large screen */}
 			<div className="col-12 md:col-12 lg:col-12"> 
 				
 				<Card title={cardTitle} subTitle={cardSubtitle} className="shadow-5">
 					
-					{/* Area Jam dan Tombol Aksi */}
+					{/* --- [PERBAIKAN TATA LETAK] --- */}
 					<div className="text-center p-4">
 						<div className="mb-4">
 							<div className="text-6xl font-bold text-primary">{formattedTime}</div>
 							<div className="text-xl text-color-secondary">{formattedDate}</div>
 						</div>
 
-						{attendanceStatus.isCheckedIn && !attendanceStatus.checkOutTime && attendanceStatus.checkInTime && (
+						{/* Tampilkan Tag "Checked In @ ..." */}
+						{hasCheckedIn && !hasCheckedOut && (
 							<div className="mb-4">
 								<Tag className="p-3" severity="success"
-									value={`Checked In @ ${format(new Date(attendanceStatus.checkInTime), 'HH:mm:ss')}`}
+									value={`Checked In @ ${safeFormat(attendanceStatus.checkInTime, 'HH:mm:ss')}`}
 									icon="pi pi-check-circle" />
 							</div>
 						)}
 
-						{!attendanceStatus.isCheckedIn ? (
-							<Button label="Check In" icon="pi pi-sign-in"
-									className="p-button-success p-button-lg p-button-raised w-full md:w-auto"
-									onClick={handleCheckIn} loading={isSubmitting} disabled={isButtonDisabled} />
-						) : (
-							<Button label="Check Out" icon="pi pi-sign-out"
-									className="p-button-danger p-button-lg p-button-raised w-full md:w-auto"
-									onClick={handleCheckOut} loading={isSubmitting} disabled={isButtonDisabled} />
-						)}
-						
-						{attendanceStatus.checkOutTime && (
-								<Tag className="mt-4" severity="info" value="Anda sudah menyelesaikan absensi hari ini." />
-						)}
-						
-						{!activeSession && !isLoading && (
-								<Tag className="mt-4" severity="warning" value="Tidak ada sesi absensi yang aktif saat ini." />
-						)}
+						{/* Bungkus Tombol dan Tag di dalam div flex-column */}
+						<div className="flex flex-column align-items-center">
+							{/* Logika Tampilan Tombol */}
+							{!hasCheckedIn ? (
+								// Tampilkan Check In jika BELUM check-in
+								<Button label="Check In" icon="pi pi-sign-in"
+										className="p-button-success p-button-lg p-button-raised w-full md:w-auto"
+										onClick={handleCheckIn} loading={isSubmitting} disabled={isButtonDisabled} />
+							) : (
+								// Tampilkan Check Out jika SUDAH check-in
+								<Button label="Check Out" icon="pi pi-sign-out"
+										className="p-button-danger p-button-lg p-button-raised w-full md:w-auto"
+										onClick={handleCheckOut} loading={isSubmitting} disabled={isButtonDisabled} />
+							)}
+							
+							{/* Tampilkan jika sudah check-out */}
+							{hasCheckedOut && (
+									<Tag className="mt-4" severity="info" value="Anda sudah menyelesaikan absensi hari ini." />
+							)}
+							
+							{/* Tampilkan jika tidak ada sesi */}
+							{!activeSession && !isLoading && (
+									<Tag className="mt-4" severity="warning" value="Tidak ada sesi absensi yang aktif saat ini." />
+							)}
+						</div>
 					</div>
+					{/* --- BATAS PERBAIKAN --- */}
 
-					{/* (Sisa TabView dan TabPanel tidak berubah) */}
+
 					<TabView>
 						<TabPanel header="Hari Ini">
 							<div className="px-1 py-3">

@@ -10,25 +10,21 @@ const tokenAvailable = (token: string | null) => {
 	return null;
 };
 
-// Handler untuk EMPLOYEECHECKIN
-export const POST = async (request: NextRequest) => {
+// Handler untuk GETATTENDANCEHISTORY
+export const GET = async (request: NextRequest) => {
 	const token = getAuthToken();
 	const unauthorizedResponse = tokenAvailable(token);
 	if (unauthorizedResponse) return unauthorizedResponse;
 
 	try {
-        // [FIX 400 ERROR]
-        // Sesuai konfirmasi Anda, API Utama tidak mau body.
-		const response = await Axios.post(API_ENDPOINTS.EMPLOYEECHECKIN, undefined, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
+		const response = await Axios.get(API_ENDPOINTS.GETATTENDANCEHISTORY, {
+			headers: { Authorization: `Bearer ${token}` },
 		});
 		return NextResponse.json(response.data);
 	} catch (error: any) {
-		console.error("[API_ERROR] /check-in (POST):", error.response?.data || error.message);
+		console.error("[API_ERROR] /attendances/history (GET):", error.message);
 		return NextResponse.json(
-			{ message: error.response?.data?.message || "Gagal melakukan check-in" },
+			{ message: "Gagal mengambil riwayat absensi" },
 			{ status: error.response?.status || 500 }
 		);
 	}
