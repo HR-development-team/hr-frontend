@@ -2,22 +2,11 @@
 
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
-import { DataTable, DataTablePageEvent } from "primereact/datatable";
+import { DataTable } from "primereact/datatable";
 import { Tag } from "primereact/tag";
 import React, { useState } from "react";
-import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 import { GetAllEmployeeData } from "@/lib/types/employee";
-
-interface DataTableEmployeesProp {
-	employees: GetAllEmployeeData[];
-	isLoading: boolean;
-	// lazyParams: { first: number; rows: number; page: number };
-	// totalItems: number;
-	// onPageChange: (event: DataTablePageEvent) => void;
-	onView: (employee: GetAllEmployeeData) => void;
-	onEdit: (employee: GetAllEmployeeData) => void;
-	onDelete: (employee: GetAllEmployeeData) => void;
-}
+import { DataTableEmployeesProp } from "@/lib/types/dataTable/dataTableEmployeeType";
 
 export default function DataTableEmployees({
 	employees,
@@ -36,7 +25,11 @@ export default function DataTableEmployees({
 		const severity =
 			rowData.employment_status === "aktif" ? "success" : "danger";
 
-		return <Tag value={rowData.employment_status} severity={severity} />;
+		const firstCharUppercase = rowData.employment_status.charAt(0).toUpperCase()
+
+		const restOfString = rowData.employment_status.slice(1)
+
+		return <Tag value={firstCharUppercase + restOfString} severity={severity} />;
 	};
 
 	const joinDateBodyTemplate = (rowData: GetAllEmployeeData) => {
@@ -82,33 +75,8 @@ export default function DataTableEmployees({
 				style={{ width: "25%" }}
 			/>
 			<Column
-				field="position_code"
-				header="Kode Posisi"
-				style={{ width: "25%" }}
-			/>
-			<Column
 				field="position_name"
 				header="Nama Posisi"
-				style={{ width: "25%" }}
-			/>
-			<Column
-				field="division_code"
-				header="Kode Divisi"
-				style={{ width: "25%" }}
-			/>
-			<Column
-				field="division_name"
-				header="Nama Divisi"
-				style={{ width: "25%" }}
-			/>
-			<Column
-				field="department_code"
-				header="Kode Departement"
-				style={{ width: "25%" }}
-			/>
-			<Column
-				field="department_name"
-				header="Nama Departement"
 				style={{ width: "25%" }}
 			/>
 			<Column

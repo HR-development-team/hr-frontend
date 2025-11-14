@@ -12,7 +12,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { ReactNode, useState } from "react";
-import { idText } from "typescript";
 
 interface ChildrenMenuItems {
 	label: string;
@@ -83,12 +82,16 @@ const menuItems: MenuItems[] = [
 		children: [
 			{
 				label: "Pengajuan Cuti",
-				href: "/admin/transaction/leave",
+				href: "/admin/transaction/leave-request",
 			},
 			{
-				label: "Pengajuan Lembur",
-				href: "#",
+				label: 'Manajemen Saldo Cuti',
+				href: '#'
 			},
+			// {
+			// 	label: "Pengajuan Lembur",
+			// 	href: "#",
+			// },
 		],
 	},
 	{

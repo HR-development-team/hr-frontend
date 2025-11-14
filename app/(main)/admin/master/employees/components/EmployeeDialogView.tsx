@@ -1,4 +1,3 @@
-import { GetAllEmployeeData, GetEmployeeByIdData } from "@/lib/types/employee";
 import { formatDateIDN } from "@/lib/utils/dateFormat";
 import { Briefcase, IdCard, Phone, User } from "lucide-react";
 import { Avatar } from "primereact/avatar";
@@ -6,12 +5,7 @@ import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
 import React from "react";
 import EmployeeDialogViewSkeleton from "./EmployeeDialogViewSkeleton";
-
-interface EmployeeViewProps {
-	employeeData: GetEmployeeByIdData | null;
-	isLoading: boolean;
-	dialogMode: "view" | "add" | "edit" | null;
-}
+import { EmployeeViewProps } from "@/lib/types/view/employeeViewTypes";
 
 export default function EmployeeDialogView({
 	employeeData,
@@ -30,8 +24,6 @@ export default function EmployeeDialogView({
 	if (isLoading) {
 		return <EmployeeDialogViewSkeleton />;
 	}
-
-	console.log(employeeData?.birth_date);
 
 	return (
 		<div className={`${isOnViewMode ? "text-800" : "hidden"}`}>
@@ -55,19 +47,34 @@ export default function EmployeeDialogView({
 							<Briefcase className="text-blue-500" />
 							<span className="text-800 font-medium">Status Pekerjaan</span>
 						</div>
-						<div className="flex align-items-center justify-content-between">
+						<div className="flex align-items-start justify-content-between">
 							<span>Departemen</span>
-							<p>{employeeData?.department_name}</p>
+							<div className="line-height-3">
+								<p>{employeeData?.department_name}</p>
+								<p className="text-sm font-light font-italic text-right">
+									{employeeData?.department_code}
+								</p>
+							</div>
 						</div>
 
-						<div className="flex align-items-center justify-content-between">
+						<div className="flex align-items-start justify-content-between">
 							<span>Divisi</span>
-							<p>{employeeData?.division_name} </p>
+							<div className="line-height-3">
+								<p>{employeeData?.division_name} </p>
+								<p className="text-sm font-light font-italic text-right">
+									{employeeData?.division_code}
+								</p>
+							</div>
 						</div>
 
-						<div className="flex align-items-center justify-content-between">
+						<div className="flex align-items-start justify-content-between">
 							<span>Posisi/Jabatan</span>
-							<p>{employeeData?.position_name} </p>
+							<div className="line-height-3">
+								<p>{employeeData?.position_name} </p>
+								<p className="text-sm font-light font-italic text-right">
+									{employeeData?.position_code}
+								</p>
+							</div>
 						</div>
 
 						<div className="flex align-items-center justify-content-between">
@@ -112,7 +119,11 @@ export default function EmployeeDialogView({
 								Jenis Kelamin
 							</span>
 							<p className="text-800 text-base font-medium">
-								{employeeData?.gender ? employeeData.gender : "-"}
+								{employeeData?.gender === "laki-laki"
+									? "Laki-laki"
+									: employeeData?.gender === "perempuan"
+									? "Perempuan"
+									: "-"}
 							</p>
 						</div>
 

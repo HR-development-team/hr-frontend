@@ -1,38 +1,26 @@
 "use client";
-import { PositionFormData, positionFormSchema } from "@/lib/schemas/positionFormSchema";
-import { DepartmentData } from "@/lib/types/department";
+import FormDropdown from "@/components/form/FormDropdown";
+import FormInputNumber from "@/components/form/FormInputNumber";
+import FormInputText from "@/components/form/FormInputText";
+import FormInputTextarea from "@/components/form/FormInputTextarea";
+import {
+	PositionFormData,
+	positionFormSchema,
+} from "@/lib/schemas/positionFormSchema";
+import { PositionFormProps } from "@/lib/types/form/positionFormType";
+import { positionDefaultValues } from "@/lib/values/positionDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
-import { Dropdown } from "primereact/dropdown";
-import {
-	InputNumber,
-	InputNumberValueChangeEvent,
-} from "primereact/inputnumber";
-import { InputText } from "primereact/inputtext";
-
-interface PositionFormProps {
-	divisionData: PositionFormData | null;
-	onSubmit: (formData: PositionFormData) => void;
-	departmentOptions: DepartmentData[];
-	isSubmitting: boolean;
-}
-
-const defaultValues: PositionFormData = {
-	position_code: "",
-	name: "",
-	base_salary: 0,
-	department_id: 0,
-};
+import { InputNumberValueChangeEvent } from "primereact/inputnumber";
 
 export default function PositionDialogForm({
-	divisionData,
+	positionData,
 	onSubmit,
-	departmentOptions,
+	divisionOptions,
 	isSubmitting,
 }: PositionFormProps) {
-
 	const formik = useFormik({
-		initialValues: divisionData || defaultValues,
+		initialValues: positionData || positionDefaultValues,
 		validate: (values) => {
 			const validation = positionFormSchema.safeParse(values);
 
@@ -68,76 +56,57 @@ export default function PositionDialogForm({
 
 	return (
 		<form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
-			<div className="w-full flex flex-column gap-2">
-				<label htmlFor="position_code">Kode Divisi</label>
-				<InputText
-					id="position_code"
-					name="position_code"
-					value={formik.values.position_code}
-					onChange={formik.handleChange}
-					onBlur={formik.handleBlur}
-					className={` ${isFieldInvalid("position_code") ? "p-invalid" : ""}`}
-				/>
-				{getFieldError("position_code") && (
-					<small className="p-error">{getFieldError("position_code")}</small>
-				)}
-			</div>
+			<FormInputText
+				props={{
+					...formik.getFieldProps("name"),
+				}}
+				fieldName={"name"}
+				label="Nama Posisi"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+			/>
 
-			<div className="w-full flex flex-column gap-2">
-				<label htmlFor="name">Nama Divisi</label>
-				<InputText
-					id="name"
-					name="name"
-					value={formik.values.name}
-					onChange={formik.handleChange}
-					onBlur={formik.handleBlur}
-					className={isFieldInvalid("name") ? "p-invalid" : ""}
-				/>
+			<FormDropdown
+				props={{
+					...formik.getFieldProps("division_code"),
+					options: divisionOptions,
+					optionLabel: "name",
+					optionValue: "division_code",
+					placeholder: "Pilih Divisi",
+					filter: true,
+					filterDelay: 400,
+				}}
+				fieldName={"division_code"}
+				label="Pilih Divisi"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+			/>
 
-				{getFieldError("name") && (
-					<small className="p-error">{getFieldError("name")}</small>
-				)}
-			</div>
-
-			<div className="w-full flex flex-column gap-2">
-				<label htmlFor="department_id">Berasal Dari Departement</label>
-				<Dropdown
-					id="department_id"
-					name="department_id"
-					value={formik.values.department_id}
-					options={departmentOptions}
-					optionLabel="name"
-					optionValue="id"
-					onChange={formik.handleChange}
-					onBlur={formik.handleBlur}
-					filter
-					filterDelay={400}
-					className={isFieldInvalid("department_id") ? "p-invalid" : ""}
-				/>
-
-				{getFieldError("department_id") && (
-					<small className="p-error">{getFieldError("department_id")}</small>
-				)}
-			</div>
-
-			<div className="w-full flex flex-column gap-2">
-				<label htmlFor="base_salary">Gaji Pokok</label>
-				<InputNumber
-					id="base_salary"
-					name="base_salary"
-					value={formik.values.base_salary}
-					onValueChange={(e: InputNumberValueChangeEvent) => {
+			<FormInputNumber
+				props={{
+					value: formik.values.base_salary,
+					onValueChange: (e: InputNumberValueChangeEvent) => {
 						formik.setFieldValue("base_salary", e.value);
-					}}
-					// onChange={formik.handleChange}
-					onBlur={formik.handleBlur}
-					className={isFieldInvalid("base_salary") ? "p-invalid" : ""}
-				/>
+					},
+					onBlur: formik.handleBlur,
+				}}
+				fieldName={"base_salary"}
+				label="Gaji Pokok"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+			/>
 
-				{getFieldError("base_salary") && (
-					<small className="p-error">{getFieldError("base_salary")}</small>
-				)}
-			</div>
+			<FormInputTextarea
+				props={{
+					...formik.getFieldProps("description"),
+					rows: 5,
+				}}
+				fieldName={"description"}
+				label="Deskripsi"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+				optional
+			/>
 
 			<div className="flex justify-content-end mt-4">
 				<Button

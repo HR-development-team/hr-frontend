@@ -15,18 +15,12 @@ import EmployeeDialogView from "./components/EmployeeDialogView";
 import { GetAllEmployeeData, GetEmployeeByIdData } from "@/lib/types/employee";
 import { GetAllPositionData } from "@/lib/types/position";
 import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
-import { vi } from "zod/v4/locales";
 import { format } from "date-fns";
-
-// interface CombinedEmployeeData extends EmployeeData {
-// 	division_name: string;
-// }
 
 export default function Employees() {
 	const toastRef = useRef<Toast>(null);
 	const isInitialLoad = useRef<boolean>(true);
 
-	// const [position, setPosition] = useState<PositionData[]>([]);
 	const [allEmployee, setAllEmployee] = useState<GetAllEmployeeData[]>([]);
 	const [viewEmployee, setViewEmployee] = useState<GetEmployeeByIdData | null>(
 		null
@@ -48,9 +42,6 @@ export default function Employees() {
 	const [dialogLabel, setDialogLabel] = useState<
 		"Lihat Data Karyawan" | "Edit Karyawan" | "Tambah Karyawan" | null
 	>(null);
-
-	const [selectedEmployee, setSelectedEmployee] =
-		useState<EmployeeFormData | null>(null);
 
 	const fetchAllEmployee = async () => {
 		setIsLoading(true);
@@ -151,12 +142,9 @@ export default function Employees() {
 			join_date,
 			birth_date,
 			resign_date,
-			// maritial_status,
 			profile_picture,
 			...cleanData
 		} = viewEmployee;
-
-		console.log(join_date);
 
 		return {
 			...cleanData,
@@ -213,7 +201,6 @@ export default function Employees() {
 					detail: response.message,
 					life: 3000,
 				});
-				// fetchAllData();
 				fetchAllEmployee();
 			} else {
 				toastRef.current?.show({
@@ -225,9 +212,7 @@ export default function Employees() {
 				});
 			}
 
-			// fetchAllData();
 			fetchAllEmployee();
-			setSelectedEmployee(null);
 			setDialogMode(null);
 			setIsDialogVisible(false);
 			setCurrentSelectedId(null);
@@ -254,7 +239,6 @@ export default function Employees() {
 	const handleEdit = (employee: GetAllEmployeeData) => {
 		setDialogMode("edit");
 		setIsDialogVisible(true);
-		// setSelectedEmployee();
 		setCurrentSelectedId(employee.id);
 		setDialogLabel("Edit Karyawan");
 		fetchEmployeeById(employee.id);
@@ -288,9 +272,7 @@ export default function Employees() {
 						life: 3000,
 					});
 
-					// fetchAllData();
 					fetchAllEmployee();
-					setSelectedEmployee(null);
 				} catch (error: any) {
 					toastRef.current?.show({
 						severity: "error",
@@ -306,7 +288,6 @@ export default function Employees() {
 	};
 
 	useEffect(() => {
-		// fetchAllData();
 		fetchAllEmployee();
 		fetchPosition();
 	}, []);
@@ -331,7 +312,7 @@ export default function Employees() {
 			<Card>
 				<div className="flex flex-column gap-4">
 					<div className="flex gap-2 align-items-center">
-						<User className="h-2" />
+						<Users className="h-2" />
 						<h2 className="text-base text-800">Master Data Karyawan</h2>
 					</div>
 
@@ -396,7 +377,6 @@ export default function Employees() {
 										setDialogMode("add");
 										setDialogLabel("Tambah Karyawan");
 										setIsDialogVisible(true);
-										setSelectedEmployee(null);
 										setCurrentSelectedId(null);
 									}}
 								/>
@@ -433,7 +413,6 @@ export default function Employees() {
 						}`}
 					>
 						<EmployeeDialogForm
-							// employeeData={selectedEmployee}
 							employeeData={cleanEmployeeDataForm}
 							dialogMode={dialogMode}
 							onSubmit={handleSubmit}

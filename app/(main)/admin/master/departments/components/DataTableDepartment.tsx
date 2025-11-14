@@ -1,23 +1,12 @@
 "use client";
 
+import { DataTableDepartmentProp } from "@/lib/types/dataTable/dataTableDepartmentType";
+import { GetAllDepartmentData } from "@/lib/types/department";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
-import { DataTable, DataTablePageEvent } from "primereact/datatable";
+import { DataTable } from "primereact/datatable";
 import { Tag } from "primereact/tag";
-import React, { useState } from "react";
-import { DepartementFormData } from "@/lib/schemas/departmentFormSchema";
-import { any } from "zod";
-import { DepartmentData } from "@/lib/types/department";
-
-interface DataTableDepartmentProp {
-	department: DepartmentData[];
-	isLoading: boolean;
-	// lazyParams: { first: number; rows: number; page: number };
-	// totalItems: number;
-	// onPageChange: (event: DataTablePageEvent) => void;
-	onEdit: (department: DepartmentData) => void;
-	onDelete: (department: DepartmentData) => void;
-}
+import React from "react";
 
 export default function DataTableDepartment({
 	department,
@@ -27,6 +16,7 @@ export default function DataTableDepartment({
 	// onPageChange,
 	onEdit,
 	onDelete,
+	onView
 }: DataTableDepartmentProp) {
 	const newLocal =
 		"border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
@@ -51,8 +41,17 @@ export default function DataTableDepartment({
 			<Column field="name" header="Nama Departemen" style={{ width: "25%" }} />
 			<Column
 				header="Aksi"
-				body={(row: DepartmentData) => (
+				body={(row: GetAllDepartmentData) => (
 					<div className="flex gap-2">
+						<Button
+							icon="pi pi-eye text-sm"
+							size="small"
+							severity="success"
+							onClick={() => {
+								onView(row);
+							}}
+						/>
+
 						<Button
 							icon="pi pi-pencil text-sm"
 							size="small"

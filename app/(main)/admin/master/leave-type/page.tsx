@@ -5,31 +5,41 @@ import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
 import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 import { Toast } from "primereact/toast";
-import { LeaveTypeData } from "@/lib/types/leaveType";
+import {
+	GetAllLeaveTypeData,
+	GetLeaveTypeByIdData,
+} from "@/lib/types/leaveType";
 import DataTableLeaveType from "./components/DataTableLeaveType";
 import { LeaveTypeFormData } from "@/lib/schemas/leaveTypeFormSchema";
 import LeaveTypeDialogForm from "./components/LeaveTypeDialogForm";
+import LeaveTYpeDialogView from "./components/LeaveTypeDialogView";
 
 export default function LeaveType() {
 	const toastRef = useRef<Toast>(null);
 	const isInitialLoad = useRef<boolean>(true);
 
-	const [leaveType, setLeaveType] = useState<LeaveTypeData[]>([]);
+	const [leaveType, setLeaveType] = useState<GetAllLeaveTypeData[]>([]);
+	const [viewLeaveType, setViewLeaveType] =
+		useState<GetLeaveTypeByIdData | null>(null);
 
 	const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+	const [dialogLabel, setDialogLabel] = useState<
+		"Lihat Data Tipe Cuti" | "Edit Tipe Cuti" | "Tambah Tipe Cuti" | null
+	>(null);
+
 	const [isSaving, setIsSaving] = useState<boolean>(false);
 
-	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
-	const [selectedLeaveType, setSelectedLeaveType] =
-		useState<LeaveTypeFormData | null>(null);
+	const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
+		null
+	);
 
 	const fetchLeaveType = async () => {
 		setIsLoading(true);
@@ -71,6 +81,47 @@ export default function LeaveType() {
 		}
 	};
 
+	const fetchLeaveTypeById = async (id: number) => {
+		setIsLoading(true);
+		try {
+			const res = await fetch(`/api/admin/master/leave-type/${id}`);
+
+			if (!res.ok) throw new Error("Gagal mendapatkan user berdasarkan id");
+
+			const leaveTypeData = await res.json();
+
+			console.log(leaveTypeData.message);
+
+			if (leaveTypeData && leaveTypeData.status === "00") {
+				setViewLeaveType(leaveTypeData.leave_types || null);
+			} else {
+				setViewLeaveType(null);
+			}
+		} catch (error) {
+			setViewLeaveType(null);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const cleanLeaveTypeDataForm = useMemo(() => {
+		if (!viewLeaveType) {
+			return null	
+		}
+
+		const {
+			id,
+			type_code,
+			created_at,
+			updated_at,
+			...cleanData
+		} = viewLeaveType
+
+		return {
+			...cleanData
+		}
+	}, [viewLeaveType])
+
 	const handleSubmit = async (formData: LeaveTypeFormData) => {
 		try {
 			const method = dialogMode === "add" ? "POST" : "PUT";
@@ -99,7 +150,6 @@ export default function LeaveType() {
 			});
 
 			fetchLeaveType();
-			setSelectedLeaveType(null);
 			setDialogMode(null);
 			setIsDialogVisible(false);
 			setCurrentEditedId(null);
@@ -113,22 +163,26 @@ export default function LeaveType() {
 		}
 	};
 
-	const handleEdit = (leaveType: LeaveTypeData) => {
-		setDialogMode("edit");
+	const handleView = (leaveType: GetAllLeaveTypeData) => {
+		setDialogMode("view");
 		setIsDialogVisible(true);
-		setSelectedLeaveType({
-			name: leaveType.name,
-			deduction: parseFloat(leaveType.deduction),
-			description: leaveType.description || "",
-		});
-		setCurrentEditedId(leaveType.id);
+		setDialogLabel("Lihat Data Tipe Cuti");
+		fetchLeaveTypeById(leaveType.id);
 	};
 
-	const handleDelete = (leaveType: LeaveTypeData) => {
+	const handleEdit = (leaveType: GetAllLeaveTypeData) => {
+		setDialogMode("edit");
+		setIsDialogVisible(true);
+		setCurrentEditedId(leaveType.id);
+		setDialogLabel("Edit Tipe Cuti");
+		fetchLeaveTypeById(leaveType.id);
+	};
+
+	const handleDelete = (leaveType: GetAllLeaveTypeData) => {
 		confirmDialog({
 			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
 			header: "Konfirmasi Hapus",
-			message: `Yakin ingin menghapus karyawan ${leaveType.name}`,
+			message: `Yakin ingin menghapus Tipe Cuti ${leaveType.name}`,
 			acceptLabel: "Hapus",
 			rejectLabel: "Batal",
 			acceptClassName: "p-button-danger",
@@ -157,7 +211,6 @@ export default function LeaveType() {
 					});
 
 					fetchLeaveType();
-					setSelectedLeaveType(null);
 				} catch (error: any) {
 					toastRef.current?.show({
 						severity: "error",
@@ -259,7 +312,7 @@ export default function LeaveType() {
 									}}
 									onClick={() => {
 										setDialogMode("add");
-										setSelectedLeaveType(null);
+										setDialogLabel("Tambah Tipe Cuti");
 										setCurrentEditedId(null);
 										setIsDialogVisible(true);
 									}}
@@ -272,6 +325,7 @@ export default function LeaveType() {
 					<DataTableLeaveType
 						leaveType={leaveType}
 						isLoading={isLoading}
+						onView={handleView}
 						onEdit={handleEdit}
 						onDelete={handleDelete}
 					/>
@@ -280,17 +334,31 @@ export default function LeaveType() {
 				<ConfirmDialog />
 
 				<Dialog
-					header={dialogMode === "edit" ? "Edit Karyawan" : "Tambah Karyawan"}
+					header={dialogLabel}
 					visible={isDialogVisible}
-					onHide={() => setIsDialogVisible(false)}
+					onHide={() => {
+						setDialogLabel(null);
+						setIsDialogVisible(false);
+						setViewLeaveType(null);
+					}}
 					modal
-					className="w-full md:w-6"
+					className="w-full md:w-4"
 				>
-					<LeaveTypeDialogForm
-						leaveType={selectedLeaveType}
-						onSubmit={handleSubmit}
-						isSubmitting={isSaving}
-					/>
+					<div className={dialogMode === 'edit' || dialogMode === 'add' ? 'block' : 'hidden'}>
+						<LeaveTypeDialogForm
+							leaveType={cleanLeaveTypeDataForm}
+							onSubmit={handleSubmit}
+							isSubmitting={isSaving}
+						/>
+					</div>
+
+					<div className={dialogMode === 'view' ? 'block' : 'hidden'}>
+						<LeaveTYpeDialogView
+							leaveTypeData={viewLeaveType}	
+							isLoading={isLoading}
+							dialogMode={dialogMode}
+						/>
+					</div>
 				</Dialog>
 			</Card>
 		</div>

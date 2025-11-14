@@ -13,7 +13,7 @@ import { UserFormData } from "@/lib/schemas/userFormSchema";
 import DataTableUser from "./components/DataTableUser";
 import { Toast } from "primereact/toast";
 import { UserData } from "@/lib/types/user";
-import { EmployeeData } from "@/lib/types/employee";
+import { GetAllEmployeeData } from "@/lib/types/employee";
 
 interface CombinedUserData extends UserData {
 	employee_first_name: string;
@@ -23,7 +23,7 @@ export default function UserPage() {
 	const toastRef = useRef<Toast>(null);
 	const isInitialLoad = useRef<boolean>(true);
 
-	const [employee, setEmployee] = useState<EmployeeData[]>([]);
+	const [employee, setEmployee] = useState<GetAllEmployeeData[]>([]);
 	const [user, setUser] = useState<UserData[]>([]);
 
 	const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
@@ -35,7 +35,7 @@ export default function UserPage() {
 	const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
 	const [selecteduser, setSelectedUser] = useState<UserFormData | null>(null);
 
-	const fetchAllData = async () => {
+	const fetchAllUserData = async () => {
 		setIsLoading(true);
 		try {
 			const [employeeRes, userRes] = await Promise.all([
@@ -43,20 +43,16 @@ export default function UserPage() {
 				fetch("/api/admin/master/user"),
 			]);
 
-			if (!employeeRes.ok || !userRes.ok)
-				throw new Error("Gagal mendapatkan data dari server");
+			// const res = await fetch("/api/admin/master/user");
 
-			const employeeData = await employeeRes.json();
-			const userData = await userRes.json();
+			if (!employeeRes.ok || !userRes.ok) throw new Error("Gagal mendapatkan data user dari server");
 
-			console.log(userData.message);
+			const [employeeData, userData] = await Promise.all([
+				employeeRes.json(),
+				userRes.json()
+			])
 
-			if (
-				employeeData &&
-				userData &&
-				employeeData.status === "00" &&
-				userData.status === "00"
-			) {
+			if (employeeData && userData && employeeData.status === '00' && userData.status === "00") {
 				if (isInitialLoad.current) {
 					toastRef.current?.show({
 						severity: "success",
@@ -67,7 +63,7 @@ export default function UserPage() {
 
 					isInitialLoad.current = false;
 				}
-				setEmployee(employeeData.master_employees || []);
+				setEmployee(employeeData.master_employees || [])
 				setUser(userData.users || []);
 			} else {
 				toastRef.current?.show({
@@ -76,12 +72,11 @@ export default function UserPage() {
 					detail: userData.message,
 					life: 3000,
 				});
-
-				setEmployee([]);
+				setEmployee([])
 				setUser([]);
 			}
 		} catch (error: any) {
-			setEmployee([]);
+			setEmployee([])
 			setUser([]);
 		} finally {
 			setIsLoading(false);
@@ -114,7 +109,7 @@ export default function UserPage() {
 					detail: response.message,
 					life: 3000,
 				});
-				fetchAllData();
+				fetchAllUserData();
 			} else {
 				toastRef.current?.show({
 					severity: "error",
@@ -124,7 +119,7 @@ export default function UserPage() {
 				});
 			}
 
-			fetchAllData();
+			fetchAllUserData();
 			setSelectedUser(null);
 			setDialogMode(null);
 			setIsDialogVisible(false);
@@ -145,13 +140,6 @@ export default function UserPage() {
 	const handleEdit = (user: UserData) => {
 		setDialogMode("edit");
 		setIsDialogVisible(true);
-		setSelectedUser({
-			email: user.email,
-			password: user.password,
-			role: user.role,
-			employee_id: user.employee_id,
-		});
-
 		setCurrentEditedId(user.id);
 	};
 
@@ -183,7 +171,7 @@ export default function UserPage() {
 						life: 3000,
 					});
 
-					fetchAllData();
+					fetchAllUserData();
 					setSelectedUser(null);
 				} catch (error: any) {
 					toastRef.current?.show({
@@ -200,28 +188,8 @@ export default function UserPage() {
 	};
 
 	useEffect(() => {
-		fetchAllData();
+		fetchAllUserData();
 	}, []);
-
-	const employeeMap = useMemo(() => {
-		const map = new Map<number, string>();
-		employee.forEach((depth) => {
-			map.set(depth.id, depth.first_name);
-		});
-		return map;
-	}, [employee]);
-
-	const combinedUserData: CombinedUserData[] = useMemo(() => {
-		return user.map((user) => {
-			const employeeFirstName =
-				employeeMap.get(user.employee_id) || "Tidak diketahui";
-
-			return {
-				...user,
-				employee_first_name: employeeFirstName,
-			};
-		});
-	}, [user, employeeMap]);
 
 	return (
 		<div>
@@ -315,7 +283,7 @@ export default function UserPage() {
 
 					{/* data table */}
 					<DataTableUser
-						user={combinedUserData}
+						user={user}
 						isLoading={isLoading}
 						onEdit={handleEdit}
 						onDelete={handleDelete}
@@ -329,7 +297,7 @@ export default function UserPage() {
 					visible={isDialogVisible}
 					onHide={() => setIsDialogVisible(false)}
 					modal
-					className="w-full md:w-6"
+					className="w-full md:w-4"
 				>
 					<UserDialogForm
 						userData={selecteduser}

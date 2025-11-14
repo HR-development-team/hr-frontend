@@ -1,37 +1,16 @@
 "use client";
 
-import {
-	EmployeeFormData,
-	employeeFormSchema,
-} from "@/lib/schemas/employeeFormSchema";
+import FormDropdown from "@/components/form/FormDropdown";
+import FormInputText from "@/components/form/FormInputText";
+import FormPassword from "@/components/form/FormPassword";
 import { UserFormData, userFormSchema } from "@/lib/schemas/userFormSchema";
-import { EmployeeData } from "@/lib/types/employee";
+import { UserFormProps } from "@/lib/types/form/userFormType";
+import { roleOptions, UserDefaultValues } from "@/lib/values/userDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
-import { InputText } from "primereact/inputtext";
 import { useState } from "react";
 
-// status
-const roleOptions = [
-	{ label: "Admin", value: "admin" },
-	{ label: "Karyawan", value: "employee" },
-];
-
-interface UserFormProps {
-	userData: UserFormData | null;
-	onSubmit: (formData: UserFormData) => void;
-	dialogMode: "add" | "edit" | null;
-	employeeOptions: EmployeeData[];
-	isSubmitting: boolean;
-}
-
-const defaultValues: UserFormData = {
-	email: "",
-	password: "",
-	employee_id: 0,
-	role: "employee",
-};
 
 export default function UserDialogForm({
 	userData,
@@ -42,7 +21,7 @@ export default function UserDialogForm({
 	const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
 
 	const formik = useFormik({
-		initialValues: userData || defaultValues,
+		initialValues: userData || UserDefaultValues,
 		validate: (values) => {
 			const validation = userFormSchema.safeParse(values);
 
@@ -78,61 +57,38 @@ export default function UserDialogForm({
 
 	return (
 		<form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
-			<div className="flex flex-column md:flex-row gap-2">
-				<div className="w-full flex flex-column gap-2">
-					<label htmlFor="email">Email</label>
-					<InputText
-						id="email"
-						name="email"
-						value={formik.values.email}
-						onChange={formik.handleChange}
-						onBlur={formik.handleBlur}
-						className={` ${isFieldInvalid("email") ? "p-invalid" : ""}`}
-						placeholder="ex: budi@example.com"
-					/>
-					{getFieldError("email") && (
-						<small className="p-error">{getFieldError("email")}</small>
-					)}
-				</div>
+			<FormInputText
+				props={{
+					...formik.getFieldProps("email"),
+					placeholder: "ex: budi@example.com",
+				}}
+				fieldName={"email"}
+				label="Email"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+			/>
 
-				<div className="w-full flex flex-column gap-2">
-					<label htmlFor="password">Password</label>
-					<div className="p-inputgroup w-full">
-						<InputText
-							id="password"
-							name="password"
-							type={passwordVisible ? "text" : "password"}
-							value={formik.values.password}
-							onChange={formik.handleChange}
-							onBlur={formik.handleBlur}
-							placeholder="Masukkan Kassword"
-							className={isFieldInvalid("password") ? "p-invalid" : ""}
-						/>
+			<div className="w-full flex flex-column gap-2">
+				<FormPassword
+					props={{
+						...formik.getFieldProps("password"),
+						placeholder: "Masukkan Password",
+					}}
+					fieldName={"password"}
+					label="Password"
+					isFieldInvalid={isFieldInvalid}
+					getFieldError={getFieldError}
+				/>
 
-						<Button
-							type="button"
-							icon={passwordVisible ? "pi pi-eye-slash" : "pi pi-eye"}
-							className="p-button-secondary p-button-text p-button-plain border-1 border-gray-400"
-							onClick={() => setPasswordVisible(!passwordVisible)}
-						/>
+				<div className="p-3 bg-gray-50 border-round mt-2">
+					<div className="font-bold mb-1 text-sm text-700">
+						Password harus berisi:
 					</div>
-
-					{getFieldError("password") && (
-						<small className="p-error">{getFieldError("password")}</small>
-					)}
-
-					<div className="p-3 bg-gray-50 border-round mt-2">
-						<div className="font-bold mb-1 text-sm text-700">
-							Password harus berisi:
-						</div>
-						<ul className="pl-3 mt-1 line-height-3 text-sm text-500">
-							<li>Setidaknya mengandung 1 huruf kecil</li>
-							<li>Setidaknya mengandung 1 huruf besar</li>
-							<li>Setidaknya mengandung 1 angka</li>
-							<li>Setidaknya mengandung 1 karakter spesial</li>
-							<li>Minimal 8 karakter</li>
-						</ul>
-					</div>
+					<ul className="pl-3 mt-1 line-height-3 text-sm text-500">
+						<li>Setidaknya mengandung 1 huruf kecil</li>
+						<li>Setidaknya mengandung 1 huruf besar</li>
+						<li>Minimal 8 karakter</li>
+					</ul>
 				</div>
 			</div>
 
@@ -158,22 +114,19 @@ export default function UserDialogForm({
 				)}
 			</div>
 
-			<div className="flex flex-column gap-2">
-				<label htmlFor="role">Role</label>
-				<Dropdown
-					id="role"
-					name="role"
-					value={formik.values.role}
-					options={roleOptions}
-					onChange={formik.handleChange}
-					onBlur={formik.handleBlur}
-					className={isFieldInvalid("role") ? "p-invalid" : ""}
-				/>
-
-				{getFieldError("role") && (
-					<small className="p-error">{getFieldError("role")}</small>
-				)}
-			</div>
+			<FormDropdown
+				props={{
+					...formik.getFieldProps("role"),
+					options: roleOptions,
+					optionLabel: "label",
+					optionValue: "value",
+					placeholder: "Pilih Role",
+				}}
+				fieldName={"role"}
+				label="Role"
+				isFieldInvalid={isFieldInvalid}
+				getFieldError={getFieldError}
+			/>
 
 			<div className="flex justify-content-end mt-4">
 				<Button

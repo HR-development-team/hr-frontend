@@ -1,7 +1,6 @@
 import { API_ENDPOINTS } from "@/app/api/api";
 import { getAuthToken } from "@/lib/utils/authUtils";
 import { Axios } from "@/lib/utils/axios";
-import { log } from "console";
 import { NextRequest, NextResponse } from "next/server";
 
 interface paramsProp {

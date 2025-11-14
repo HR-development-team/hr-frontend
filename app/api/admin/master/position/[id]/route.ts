@@ -30,7 +30,7 @@ export const GET = async (request: NextRequest, { params }: paramsProp) => {
 	}
 
 	try {
-		const response = await Axios.get(API_ENDPOINTS.GETDIVISIONBYID(params.id), {
+		const response = await Axios.get(API_ENDPOINTS.GETPOSITIONBYID(params.id), {
 			headers: {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
@@ -66,7 +66,7 @@ export const PUT = async (request: NextRequest, { params }: paramsProp) => {
 		const body = await request.json();
 
 		const response = await Axios.put(
-			API_ENDPOINTS.EDITDIVISION(params.id),
+			API_ENDPOINTS.EDITPOSITION(params.id),
 			body,
 			{
 				headers: {
@@ -101,7 +101,7 @@ export const DELETE = async (request: NextRequest, { params }: paramsProp) => { 
 
 	try {
 		const response = await Axios.delete(
-			API_ENDPOINTS.DELETEDIVISION(params.id),
+			API_ENDPOINTS.DELETEPOSITION(params.id),
 			{
 				headers: {
 					"Content-Type": "application/json",
