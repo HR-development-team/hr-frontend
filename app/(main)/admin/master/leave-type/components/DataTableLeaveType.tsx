@@ -2,22 +2,12 @@
 
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
-import { DataTable, DataTablePageEvent } from "primereact/datatable";
+import { DataTable } from "primereact/datatable";
 import { Tag } from "primereact/tag";
-import React, { useState } from "react";
-import { LeaveTypeFormData } from "@/lib/schemas/leaveTypeFormSchema";
-import { LeaveTypeData } from "@/lib/types/leaveType";
+import React from "react";
+import { GetAllLeaveTypeData } from "@/lib/types/leaveType";
 import { formatRupiah } from "@/lib/utils/formatRupiah";
-
-interface DataTableLeaveTypeProp {
-	leaveType: LeaveTypeData[];
-	isLoading: boolean;
-	// lazyParams: { first: number; rows: number; page: number };
-	// totalItems: number;
-	// onPageChange: (event: DataTablePageEvent) => void;
-	onEdit: (leaveType: LeaveTypeData) => void;
-	onDelete: (leaveType: LeaveTypeData) => void;
-}
+import { DataTableLeaveTypeProp } from "@/lib/types/dataTable/dataTableLeaveTypesType";
 
 export default function DataTableLeaveType({
 	leaveType,
@@ -25,6 +15,7 @@ export default function DataTableLeaveType({
 	// lazyParams,
 	// totalItems,
 	// onPageChange,
+	onView,
 	onEdit,
 	onDelete,
 }: DataTableLeaveTypeProp) {
@@ -37,17 +28,6 @@ export default function DataTableLeaveType({
 		return <Tag value={rowData.status} severity={severity} />;
 	};
 
-	// const joinDateBodyTemplate = (rowData: EmployeeFormData) => {
-	// 	if (
-	// 		rowData.join_date &&
-	// 		typeof rowData.join_date.toLocaleString === "function"
-	// 	) {
-	// 		return rowData.join_date.toLocaleDateString("id-ID");
-	// 	}
-
-	// 	return null;
-	// };
-
 	return (
 		<DataTable
 			value={leaveType}
@@ -56,26 +36,28 @@ export default function DataTableLeaveType({
 			rows={5}
 			rowsPerPageOptions={[5, 10, 25, 50]}
 			className={newLocal}
-			// style={{ minWidth: "50rem" }}
 		>
-			{/* <Column field="id" header="ID" style={{ width: "25%" }} /> */}
+			<Column field="type_code" header="Kode" style={{ width: "25%" }} />
 			<Column field="name" header="Tipe Cuti" style={{ width: "25%" }} />
-
 			<Column
 				field="deduction"
 				header="Pengurangan Gaji"
-				body={(row: LeaveTypeData) => formatRupiah(row.deduction)}
-				style={{ width: "25%" }}
-			/>
-			<Column
-				field="description"
-				header="Deskripsi Cuti"
+				body={(row: GetAllLeaveTypeData) => formatRupiah(row.deduction)}
 				style={{ width: "25%" }}
 			/>
 			<Column
 				header="Aksi"
-				body={(row: LeaveTypeData) => (
+				body={(row: GetAllLeaveTypeData) => (
 					<div className="flex gap-2">
+						<Button
+							icon="pi pi-eye text-sm"
+							size="small"
+							severity="success"
+							onClick={() => {
+								onView(row);
+							}}
+						/>
+
 						<Button
 							icon="pi pi-pencil text-sm"
 							size="small"

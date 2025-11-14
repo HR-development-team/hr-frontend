@@ -11,13 +11,13 @@ const passwordSchema = z
 	.regex(/[A-Z]/, "Password harus memiliki setidaknya satu huruf besar")
 
 	// must use number
-	.regex(/[0-9]/, "Password harus memiliki setidaknya satu angka")
+	// .regex(/[0-9]/, "Password harus memiliki setidaknya satu angka")
 
 	// must use special character
-	.regex(
-		/[^a-zA-Z0-9]/,
-		"Password harus memiliki setidaknya satu karakter spesial"
-	);
+	// .regex(
+	// 	/[^a-zA-Z0-9]/,
+	// 	"Password harus memiliki setidaknya satu karakter spesial"
+	// );
 
 export const userFormSchema = z.object({
 	email: z.email().nonempty("Email user tidak boleh kosong"),
