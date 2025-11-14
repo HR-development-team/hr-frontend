@@ -1,7 +1,7 @@
 // app/api/users/route.ts
 import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "../../api";
+import { API_ENDPOINTS } from "@/api/api";
 import { getAuthToken } from "@/lib/utils/authUtils";
 
 export const GET = async (request: NextRequest) => {

@@ -55,15 +55,20 @@ export const PUT = async (request: NextRequest) => {
     const profile_image = formData.get("profile_image") as File | null;
 
     const backendData = new FormData();
-    if (contact_phone) backendData.append("contact_phone", contact_phone.toString());
+    if (contact_phone)
+      backendData.append("contact_phone", contact_phone.toString());
     if (address) backendData.append("address", address.toString());
     if (profile_image) backendData.append("profile_image", profile_image);
 
-    const response = await Axios.put(API_ENDPOINTS.UPDATEUSERPROFILE, backendData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await Axios.put(
+      API_ENDPOINTS.UPDATEUSERPROFILE,
+      backendData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     return NextResponse.json(response.data, { status: 200 });
   } catch (error: any) {

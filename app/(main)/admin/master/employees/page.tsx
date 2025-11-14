@@ -18,418 +18,418 @@ import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 import { format } from "date-fns";
 
 export default function Employees() {
-	const toastRef = useRef<Toast>(null);
-	const isInitialLoad = useRef<boolean>(true);
+  const toastRef = useRef<Toast>(null);
+  const isInitialLoad = useRef<boolean>(true);
 
-	const [allEmployee, setAllEmployee] = useState<GetAllEmployeeData[]>([]);
-	const [viewEmployee, setViewEmployee] = useState<GetEmployeeByIdData | null>(
-		null
-	);
+  const [allEmployee, setAllEmployee] = useState<GetAllEmployeeData[]>([]);
+  const [viewEmployee, setViewEmployee] = useState<GetEmployeeByIdData | null>(
+    null
+  );
 
-	const [position, setPosition] = useState<GetAllPositionData[]>([]);
+  const [position, setPosition] = useState<GetAllPositionData[]>([]);
 
-	const [currentSelectedId, setCurrentSelectedId] = useState<number | null>(
-		null
-	);
+  const [currentSelectedId, setCurrentSelectedId] = useState<number | null>(
+    null
+  );
 
-	const [isLoading, setIsLoading] = useState<boolean>(false);
-	const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-	const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
-	const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
-		null
-	);
-	const [dialogLabel, setDialogLabel] = useState<
-		"Lihat Data Karyawan" | "Edit Karyawan" | "Tambah Karyawan" | null
-	>(null);
+  const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
+    null
+  );
+  const [dialogLabel, setDialogLabel] = useState<
+    "Lihat Data Karyawan" | "Edit Karyawan" | "Tambah Karyawan" | null
+  >(null);
 
-	const fetchAllEmployee = async () => {
-		setIsLoading(true);
-		try {
-			const res = await fetch("/api/admin/master/employee");
+  const fetchAllEmployee = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/admin/master/employee");
 
-			if (!res.ok) {
-				throw new Error("Gagal mendapatkan data semua karyawan");
-			}
+      if (!res.ok) {
+        throw new Error("Gagal mendapatkan data semua karyawan");
+      }
 
-			const responseData = await res.json();
+      const responseData = await res.json();
 
-			if (responseData && responseData.status === "00") {
-				if (isInitialLoad.current) {
-					toastRef.current?.show({
-						severity: "success",
-						summary: "Sukses",
-						detail: responseData.message,
-						life: 3000,
-					});
-					isInitialLoad.current = false;
-				}
-				setAllEmployee(responseData.master_employees || []);
-			}
-		} catch (error: any) {
-			setAllEmployee([]);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+      if (responseData && responseData.status === "00") {
+        if (isInitialLoad.current) {
+          toastRef.current?.show({
+            severity: "success",
+            summary: "Sukses",
+            detail: responseData.message,
+            life: 3000,
+          });
+          isInitialLoad.current = false;
+        }
+        setAllEmployee(responseData.master_employees || []);
+      }
+    } catch (error: any) {
+      setAllEmployee([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-	const fetchEmployeeById = async (id: number) => {
-		setIsLoading(true);
-		try {
-			const res = await fetch(`/api/admin/master/employee/${id}`);
+  const fetchEmployeeById = async (id: number) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/admin/master/employee/${id}`);
 
-			if (!res.ok) {
-				throw new Error("Gagal mendapatkan data karyawan berdasarkan id");
-			}
+      if (!res.ok) {
+        throw new Error("Gagal mendapatkan data karyawan berdasarkan id");
+      }
 
-			const responseData = await res.json();
+      const responseData = await res.json();
 
-			if (responseData && responseData.status === "00") {
-				if (isInitialLoad.current) {
-					toastRef.current?.show({
-						severity: "success",
-						summary: "Sukses",
-						detail: responseData.message,
-						life: 3000,
-					});
-					isInitialLoad.current = false;
-				}
-				setViewEmployee(responseData.master_employees || null);
-			}
-		} catch (error: any) {
-			setViewEmployee(null);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+      if (responseData && responseData.status === "00") {
+        if (isInitialLoad.current) {
+          toastRef.current?.show({
+            severity: "success",
+            summary: "Sukses",
+            detail: responseData.message,
+            life: 3000,
+          });
+          isInitialLoad.current = false;
+        }
+        setViewEmployee(responseData.master_employees || null);
+      }
+    } catch (error: any) {
+      setViewEmployee(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-	const fetchPosition = async () => {
-		try {
-			const res = await fetch("/api/admin/master/position");
+  const fetchPosition = async () => {
+    try {
+      const res = await fetch("/api/admin/master/position");
 
-			if (!res.ok) {
-				throw new Error("Gagal mendapatkan data posisi");
-			}
+      if (!res.ok) {
+        throw new Error("Gagal mendapatkan data posisi");
+      }
 
-			const responseData = await res.json();
+      const responseData = await res.json();
 
-			if (responseData && responseData.status === "00") {
-				setPosition(responseData.master_positions || []);
-			} else {
-				setPosition([]);
-			}
-		} catch (error) {
-			setPosition([]);
-		}
-	};
+      if (responseData && responseData.status === "00") {
+        setPosition(responseData.master_positions || []);
+      } else {
+        setPosition([]);
+      }
+    } catch (error) {
+      setPosition([]);
+    }
+  };
 
-	const cleanEmployeeDataForm = useMemo(() => {
-		if (!viewEmployee) {
-			return null;
-		}
+  const cleanEmployeeDataForm = useMemo(() => {
+    if (!viewEmployee) {
+      return null;
+    }
 
-		const {
-			id,
-			employee_code,
-			position_name,
-			division_code,
-			division_name,
-			department_code,
-			department_name,
-			updated_at,
-			created_at,
+    const {
+      id,
+      employee_code,
+      position_name,
+      division_code,
+      division_name,
+      department_code,
+      department_name,
+      updated_at,
+      created_at,
 
-			join_date,
-			birth_date,
-			resign_date,
-			profile_picture,
-			...cleanData
-		} = viewEmployee;
+      join_date,
+      birth_date,
+      resign_date,
+      profile_picture,
+      ...cleanData
+    } = viewEmployee;
 
-		return {
-			...cleanData,
+    return {
+      ...cleanData,
 
-			join_date: new Date(join_date),
-			birth_date: birth_date ? new Date(birth_date) : null,
-			profile_picture:
-				typeof profile_picture === "string" ? profile_picture : null,
-		};
-	}, [viewEmployee]);
+      join_date: new Date(join_date),
+      birth_date: birth_date ? new Date(birth_date) : null,
+      profile_picture:
+        typeof profile_picture === "string" ? profile_picture : null,
+    };
+  }, [viewEmployee]);
 
-	const handleSubmit = async (formData: EmployeeFormData) => {
-		setIsSaving(true);
-		setIsLoading(true);
+  const handleSubmit = async (formData: EmployeeFormData) => {
+    setIsSaving(true);
+    setIsLoading(true);
 
-		const { join_date, contact_phone, birth_date, ...restOfValues } = formData;
+    const { join_date, contact_phone, birth_date, ...restOfValues } = formData;
 
-		const formattedBirthDate = birth_date
-			? format(birth_date, "yyyy-MM-dd")
-			: null;
+    const formattedBirthDate = birth_date
+      ? format(birth_date, "yyyy-MM-dd")
+      : null;
 
-		console.log(`Format birth date: ${formattedBirthDate}`);
+    console.log(`Format birth date: ${formattedBirthDate}`);
 
-		const payload: any = {
-			...restOfValues,
-			
-			contact_phone: contact_phone?.toString(),
-			birth_date: formattedBirthDate,
-		};
+    const payload: any = {
+      ...restOfValues,
 
-		if (dialogMode !== "edit") {
-			payload.join_date = join_date.toISOString().split("T")[0];
-		}
+      contact_phone: contact_phone?.toString(),
+      birth_date: formattedBirthDate,
+    };
 
-		const url =
-			dialogMode === "edit"
-				? `/api/admin/master/employee/${currentSelectedId}`
-				: "/api/admin/master/employee";
+    if (dialogMode !== "edit") {
+      payload.join_date = join_date.toISOString().split("T")[0];
+    }
 
-		const method = dialogMode === "edit" ? "PUT" : "POST";
+    const url =
+      dialogMode === "edit"
+        ? `/api/admin/master/employee/${currentSelectedId}`
+        : "/api/admin/master/employee";
 
-		try {
-			const res = await fetch(url, {
-				method: method,
-				body: JSON.stringify(payload),
-			});
+    const method = dialogMode === "edit" ? "PUT" : "POST";
 
-			const response = await res.json();
+    try {
+      const res = await fetch(url, {
+        method: method,
+        body: JSON.stringify(payload),
+      });
 
-			if (response && response.status === "00") {
-				toastRef.current?.show({
-					severity: "success",
-					summary: "Sukses",
-					detail: response.message,
-					life: 3000,
-				});
-				fetchAllEmployee();
-			} else {
-				toastRef.current?.show({
-					severity: "error",
-					summary: "Gagal",
-					detail:
-						response?.errors?.[0]?.message || "Gagal menyimpan data karyawan",
-					life: 3000,
-				});
-			}
+      const response = await res.json();
 
-			fetchAllEmployee();
-			setDialogMode(null);
-			setIsDialogVisible(false);
-			setCurrentSelectedId(null);
-		} catch (error: any) {
-			toastRef.current?.show({
-				severity: "error",
-				summary: "Error",
-				detail: error,
-				life: 3000,
-			});
-		} finally {
-			setIsSaving(false);
-			setIsLoading(false);
-		}
-	};
+      if (response && response.status === "00") {
+        toastRef.current?.show({
+          severity: "success",
+          summary: "Sukses",
+          detail: response.message,
+          life: 3000,
+        });
+        fetchAllEmployee();
+      } else {
+        toastRef.current?.show({
+          severity: "error",
+          summary: "Gagal",
+          detail:
+            response?.errors?.[0]?.message || "Gagal menyimpan data karyawan",
+          life: 3000,
+        });
+      }
 
-	const handleView = (employee: GetAllEmployeeData) => {
-		setDialogMode("view");
-		setIsDialogVisible(true);
-		setDialogLabel("Lihat Data Karyawan");
-		fetchEmployeeById(employee.id);
-	};
+      fetchAllEmployee();
+      setDialogMode(null);
+      setIsDialogVisible(false);
+      setCurrentSelectedId(null);
+    } catch (error: any) {
+      toastRef.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: error,
+        life: 3000,
+      });
+    } finally {
+      setIsSaving(false);
+      setIsLoading(false);
+    }
+  };
 
-	const handleEdit = (employee: GetAllEmployeeData) => {
-		setDialogMode("edit");
-		setIsDialogVisible(true);
-		setCurrentSelectedId(employee.id);
-		setDialogLabel("Edit Karyawan");
-		fetchEmployeeById(employee.id);
-	};
+  const handleView = (employee: GetAllEmployeeData) => {
+    setDialogMode("view");
+    setIsDialogVisible(true);
+    setDialogLabel("Lihat Data Karyawan");
+    fetchEmployeeById(employee.id);
+  };
 
-	const handleDelete = (employee: GetAllEmployeeData) => {
-		confirmDialog({
-			icon: "pi pi-exclamation-triangle text-red-400 mr-2",
-			header: "Konfirmasi Hapus",
-			message: `Yakin ingin menghapus karyawan ${employee.full_name}`,
-			acceptLabel: "Hapus",
-			rejectLabel: "Batal",
-			acceptClassName: "p-button-danger",
-			accept: async () => {
-				try {
-					const res = await fetch(`/api/admin/master/employee/${employee.id}`, {
-						method: "DELETE",
-					});
+  const handleEdit = (employee: GetAllEmployeeData) => {
+    setDialogMode("edit");
+    setIsDialogVisible(true);
+    setCurrentSelectedId(employee.id);
+    setDialogLabel("Edit Karyawan");
+    fetchEmployeeById(employee.id);
+  };
 
-					const responseData = await res.json();
+  const handleDelete = (employee: GetAllEmployeeData) => {
+    confirmDialog({
+      icon: "pi pi-exclamation-triangle text-red-400 mr-2",
+      header: "Konfirmasi Hapus",
+      message: `Yakin ingin menghapus karyawan ${employee.full_name}`,
+      acceptLabel: "Hapus",
+      rejectLabel: "Batal",
+      acceptClassName: "p-button-danger",
+      accept: async () => {
+        try {
+          const res = await fetch(`/api/admin/master/employee/${employee.id}`, {
+            method: "DELETE",
+          });
 
-					if (!res.ok)
-						throw new Error(
-							responseData.message || "Terjadi kesalahan koneksi"
-						);
+          const responseData = await res.json();
 
-					toastRef.current?.show({
-						severity: "success",
-						summary: "Sukses",
-						detail: responseData.message || "Data berhasil dihapus",
-						life: 3000,
-					});
+          if (!res.ok)
+            throw new Error(
+              responseData.message || "Terjadi kesalahan koneksi"
+            );
 
-					fetchAllEmployee();
-				} catch (error: any) {
-					toastRef.current?.show({
-						severity: "error",
-						summary: "Gagal",
-						detail: error.message,
-						life: 3000,
-					});
-				} finally {
-					setCurrentSelectedId(null);
-				}
-			},
-		});
-	};
+          toastRef.current?.show({
+            severity: "success",
+            summary: "Sukses",
+            detail: responseData.message || "Data berhasil dihapus",
+            life: 3000,
+          });
 
-	useEffect(() => {
-		fetchAllEmployee();
-		fetchPosition();
-	}, []);
+          fetchAllEmployee();
+        } catch (error: any) {
+          toastRef.current?.show({
+            severity: "error",
+            summary: "Gagal",
+            detail: error.message,
+            life: 3000,
+          });
+        } finally {
+          setCurrentSelectedId(null);
+        }
+      },
+    });
+  };
 
-	return (
-		<div>
-			<Toast ref={toastRef} />
-			<div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
-				<div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
-					<Users className="w-2rem h-2rem" />
-				</div>
-				<div>
-					<h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-						Master Data Karyawan
-					</h1>
-					<p className="text-sm md:text-md text-gray-500">
-						Kelola data diri dan informasi karyawan
-					</p>
-				</div>
-			</div>
+  useEffect(() => {
+    fetchAllEmployee();
+    fetchPosition();
+  }, []);
 
-			<Card>
-				<div className="flex flex-column gap-4">
-					<div className="flex gap-2 align-items-center">
-						<Users className="h-2" />
-						<h2 className="text-base text-800">Master Data Karyawan</h2>
-					</div>
+  return (
+    <div>
+      <Toast ref={toastRef} />
+      <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
+        <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
+          <Users className="w-2rem h-2rem" />
+        </div>
+        <div>
+          <h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
+            Master Data Karyawan
+          </h1>
+          <p className="text-sm md:text-md text-gray-500">
+            Kelola data diri dan informasi karyawan
+          </p>
+        </div>
+      </div>
 
-					{/* filters */}
-					<div className="flex flex-column md:flex-row md:justify-content-between md:align-items-end gap-3">
-						{/* calendar */}
-						<form className="flex flex-column md:flex-row md:align-items-end gap-3">
-							<div className="flex flex-column md:flex-row gap-2">
-								{/* start date */}
-								<div className="flex flex-column gap-2">
-									<label htmlFor="startDate">Dari</label>
-									<Calendar
-										id="startDate"
-										placeholder="Mulai"
-										showIcon
-										style={{ width: "10rem" }}
-									/>
-								</div>
+      <Card>
+        <div className="flex flex-column gap-4">
+          <div className="flex gap-2 align-items-center">
+            <Users className="h-2" />
+            <h2 className="text-base text-800">Master Data Karyawan</h2>
+          </div>
 
-								{/* end date */}
-								<div className="flex flex-column gap-2">
-									<label htmlFor="endDate">Sampai</label>
-									<Calendar
-										id="startDate"
-										placeholder="Selesai"
-										showIcon
-										style={{ width: "10rem" }}
-									/>
-								</div>
-							</div>
+          {/* filters */}
+          <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-end gap-3">
+            {/* calendar */}
+            <form className="flex flex-column md:flex-row md:align-items-end gap-3">
+              <div className="flex flex-column md:flex-row gap-2">
+                {/* start date */}
+                <div className="flex flex-column gap-2">
+                  <label htmlFor="startDate">Dari</label>
+                  <Calendar
+                    id="startDate"
+                    placeholder="Mulai"
+                    showIcon
+                    style={{ width: "10rem" }}
+                  />
+                </div>
 
-							{/* submit button */}
-							<div className="flex flex-column gap-2">
-								<span>Terapkan</span>
-								<div className="flex align-items-center gap-3">
-									<Button icon="pi pi-check" type="submit" severity="info" />
+                {/* end date */}
+                <div className="flex flex-column gap-2">
+                  <label htmlFor="endDate">Sampai</label>
+                  <Calendar
+                    id="startDate"
+                    placeholder="Selesai"
+                    showIcon
+                    style={{ width: "10rem" }}
+                  />
+                </div>
+              </div>
 
-									<Button icon="pi pi-times" severity="secondary" />
-								</div>
-							</div>
-						</form>
+              {/* submit button */}
+              <div className="flex flex-column gap-2">
+                <span>Terapkan</span>
+                <div className="flex align-items-center gap-3">
+                  <Button icon="pi pi-check" type="submit" severity="info" />
 
-						{/* search filter and add button */}
-						<div className="flex flex-column md:flex-row gap-3">
-							{/* search */}
-							<InputTextComponent
-								icon="pi pi-search"
-								placeholder="Cari berdasarkan ID atau nama"
-								className="w-full"
-							/>
+                  <Button icon="pi pi-times" severity="secondary" />
+                </div>
+              </div>
+            </form>
 
-							{/* add button */}
-							<div>
-								<Button
-									icon="pi pi-plus"
-									label="Tambah"
-									severity="info"
-									pt={{
-										icon: { className: "mr-2" },
-									}}
-									onClick={() => {
-										setDialogMode("add");
-										setDialogLabel("Tambah Karyawan");
-										setIsDialogVisible(true);
-										setCurrentSelectedId(null);
-									}}
-								/>
-							</div>
-						</div>
-					</div>
+            {/* search filter and add button */}
+            <div className="flex flex-column md:flex-row gap-3">
+              {/* search */}
+              <InputTextComponent
+                icon="pi pi-search"
+                placeholder="Cari berdasarkan ID atau nama"
+                className="w-full"
+              />
 
-					{/* data table */}
-					<DataTableEmployees
-						employees={allEmployee}
-						isLoading={isLoading}
-						onView={handleView}
-						onEdit={handleEdit}
-						onDelete={handleDelete}
-					/>
-				</div>
+              {/* add button */}
+              <div>
+                <Button
+                  icon="pi pi-plus"
+                  label="Tambah"
+                  severity="info"
+                  pt={{
+                    icon: { className: "mr-2" },
+                  }}
+                  onClick={() => {
+                    setDialogMode("add");
+                    setDialogLabel("Tambah Karyawan");
+                    setIsDialogVisible(true);
+                    setCurrentSelectedId(null);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
 
-				<ConfirmDialog />
+          {/* data table */}
+          <DataTableEmployees
+            employees={allEmployee}
+            isLoading={isLoading}
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </div>
 
-				<Dialog
-					header={dialogLabel}
-					visible={isDialogVisible}
-					onHide={() => {
-						setDialogLabel(null);
-						setIsDialogVisible(false);
-						setViewEmployee(null);
-					}}
-					modal
-					className={`w-full ${dialogMode === "view" ? "md:w-9" : "md:w-4"}`}
-				>
-					<div
-						className={`${
-							dialogMode === "edit" || dialogMode === "add" ? "block" : "hidden"
-						}`}
-					>
-						<EmployeeDialogForm
-							employeeData={cleanEmployeeDataForm}
-							dialogMode={dialogMode}
-							onSubmit={handleSubmit}
-							positionOptions={position}
-							isSubmitting={isSaving}
-						/>
-					</div>
+        <ConfirmDialog />
 
-					<div className={`${dialogMode === "view" ? "block" : "hidden"}`}>
-						<EmployeeDialogView
-							employeeData={viewEmployee}
-							isLoading={isLoading}
-							dialogMode={dialogMode}
-						/>
-					</div>
-				</Dialog>
-			</Card>
-		</div>
-	);
+        <Dialog
+          header={dialogLabel}
+          visible={isDialogVisible}
+          onHide={() => {
+            setDialogLabel(null);
+            setIsDialogVisible(false);
+            setViewEmployee(null);
+          }}
+          modal
+          className={`w-full ${dialogMode === "view" ? "md:w-9" : "md:w-4"}`}
+        >
+          <div
+            className={`${
+              dialogMode === "edit" || dialogMode === "add" ? "block" : "hidden"
+            }`}
+          >
+            <EmployeeDialogForm
+              employeeData={cleanEmployeeDataForm}
+              dialogMode={dialogMode}
+              onSubmit={handleSubmit}
+              positionOptions={position}
+              isSubmitting={isSaving}
+            />
+          </div>
+
+          <div className={`${dialogMode === "view" ? "block" : "hidden"}`}>
+            <EmployeeDialogView
+              employeeData={viewEmployee}
+              isLoading={isLoading}
+              dialogMode={dialogMode}
+            />
+          </div>
+        </Dialog>
+      </Card>
+    </div>
+  );
 }

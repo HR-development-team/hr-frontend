@@ -1,22 +1,48 @@
 export default function Organization() {
   const departments = [
-    { name: 'IT Department', head: 'Budi Santoso', employees: 15, color: 'bg-blue-500' },
-    { name: 'HR Department', head: 'Siti Rahayu', employees: 8, color: 'bg-green-500' },
-    { name: 'Marketing', head: 'Ahmad Fauzi', employees: 12, color: 'bg-purple-500' },
-    { name: 'Finance', head: 'Dewi Lestari', employees: 10, color: 'bg-yellow-500' }
-  ]
+    {
+      name: "IT Department",
+      head: "Budi Santoso",
+      employees: 15,
+      color: "bg-blue-500",
+    },
+    {
+      name: "HR Department",
+      head: "Siti Rahayu",
+      employees: 8,
+      color: "bg-green-500",
+    },
+    {
+      name: "Marketing",
+      head: "Ahmad Fauzi",
+      employees: 12,
+      color: "bg-purple-500",
+    },
+    {
+      name: "Finance",
+      head: "Dewi Lestari",
+      employees: 10,
+      color: "bg-yellow-500",
+    },
+  ];
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Struktur Organisasi</h1>
-        <p className="text-gray-600">Kelola struktur departemen dan hierarki perusahaan</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Struktur Organisasi
+        </h1>
+        <p className="text-gray-600">
+          Kelola struktur departemen dan hierarki perusahaan
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {departments.map((dept, index) => (
           <div key={index} className="bg-white rounded-lg shadow-sm border p-6">
-            <div className={`w-12 h-12 ${dept.color} rounded-lg flex items-center justify-center text-white text-xl mb-4`}>
+            <div
+              className={`w-12 h-12 ${dept.color} rounded-lg flex items-center justify-center text-white text-xl mb-4`}
+            >
               {dept.name.charAt(0)}
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">{dept.name}</h3>
@@ -29,7 +55,9 @@ export default function Organization() {
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="p-6 border-b">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Diagram Struktur Organisasi</h2>
+            <h2 className="text-lg font-semibold">
+              Diagram Struktur Organisasi
+            </h2>
             <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
               Edit Struktur
             </button>
@@ -65,5 +93,5 @@ export default function Organization() {
         </div>
       </div>
     </div>
-  )
+  );
 }
