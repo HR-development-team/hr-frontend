@@ -1,6 +1,6 @@
 import { Axios } from "@/lib/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "@/app/api/api";
+import { API_ENDPOINTS } from "@/api/api";
 import { cookies } from "next/headers";
 
 // FUNGSI GET ANDA (TETAP SAMA)
