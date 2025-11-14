@@ -312,7 +312,7 @@ export default function Employees() {
 			<Card>
 				<div className="flex flex-column gap-4">
 					<div className="flex gap-2 align-items-center">
-						<User className="h-2" />
+						<Users className="h-2" />
 						<h2 className="text-base text-800">Master Data Karyawan</h2>
 					</div>
 

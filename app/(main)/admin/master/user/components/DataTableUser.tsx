@@ -1,20 +1,12 @@
 "use client";
 
+import { DataTableUserProp } from "@/lib/types/dataTable/dataTableUserType";
 import { UserData } from "@/lib/types/user";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import React from "react";
 
-interface DataTableUserProp {
-	user: UserData[];
-	isLoading: boolean;
-	// lazyParams: { first: number; rows: number; page: number };
-	// totalItems: number;
-	// onPageChange: (event: DataTablePageEvent) => void;
-	onEdit: (user: UserData) => void;
-	onDelete: (user: UserData) => void;
-}
 
 export default function DataTableUser({
 	user,
@@ -44,25 +36,11 @@ export default function DataTableUser({
 				header="Nama Karyawan"
 				style={{ width: "25%" }}
 			/>
-			<Column
-				field="employee_code"
-				header="Kode Karyawan"
-				style={{ width: "25%" }}
-			/>
 			<Column field="role" header="Role User" style={{ width: "25%" }} />
 			<Column
 				header="Aksi"
 				body={(row: UserData) => (
 					<div className="flex gap-2">
-						<Button
-							icon="pi pi-eye text-sm"
-							size="small"
-							severity="success"
-							onClick={() => {
-								onEdit(row);
-							}}
-						/>
-
 						<Button
 							icon="pi pi-pencil text-sm"
 							size="small"

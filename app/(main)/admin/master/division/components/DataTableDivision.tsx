@@ -39,11 +39,6 @@ export default function DataTableDivision({
 				style={{ width: "25%" }}
 			/>
 			<Column
-				field="department_code"
-				header="Kode Departemen"
-				style={{ width: "25%" }}
-			/>
-			<Column
 				field="department_name"
 				header="Nama Departemen"
 				style={{ width: "25%" }}

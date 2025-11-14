@@ -31,11 +31,7 @@ export default function DataTablePosition({
 			className={newLocal}
 		>
 			<Column field="position_code" header="Kode" style={{ width: "25%" }} />
-			<Column
-				field="name"
-				header="Nama Posisi"
-				style={{ width: "25%" }}
-			/>
+			<Column field="name" header="Nama Posisi" style={{ width: "25%" }} />
 			<Column
 				field="base_salary"
 				header="Gaji Pokok"
@@ -43,18 +39,8 @@ export default function DataTablePosition({
 				style={{ width: "25%" }}
 			/>
 			<Column
-				field="division_code"
-				header="Kode Divisi"
-				style={{ width: "25%" }}
-			/>
-			<Column
 				field="division_name"
 				header="Nama Divisi"
-				style={{ width: "25%" }}
-			/>
-			<Column
-				field="department_code"
-				header="Kode Departemen"
 				style={{ width: "25%" }}
 			/>
 			<Column
