@@ -1,4 +1,4 @@
-import { API_ENDPOINTS } from "@/app/api/api";
+import { API_ENDPOINTS } from "@/api/api";
 import { getAuthToken } from "@/lib/utils/authUtils";
 import { Axios } from "@/lib/utils/axios";
 import { NextResponse } from "next/server";

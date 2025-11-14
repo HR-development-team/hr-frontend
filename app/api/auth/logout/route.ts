@@ -1,9 +1,7 @@
 import { Axios } from "@/lib/utils/axios";
-import { request } from "http";
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "../../api";
-import { cookies, headers } from "next/dist/client/components/headers";
-import { Message } from "primereact/message";
+import { cookies } from "next/dist/client/components/headers";
+import { API_ENDPOINTS } from "@/api/api";
 
 export const DELETE = async (request: NextRequest) => {
 	const tokenCookie = cookies().get("token");
