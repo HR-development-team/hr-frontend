@@ -191,26 +191,6 @@ export default function UserPage() {
 		fetchAllUserData();
 	}, []);
 
-	// const employeeMap = useMemo(() => {
-	// 	const map = new Map<number, string>();
-	// 	employee.forEach((depth) => {
-	// 		map.set(depth.id, depth.first_name);
-	// 	});
-	// 	return map;
-	// }, [employee]);
-
-	// const combinedUserData: CombinedUserData[] = useMemo(() => {
-	// 	return user.map((user) => {
-	// 		const employeeFirstName =
-	// 			employeeMap.get(user.employee_id) || "Tidak diketahui";
-
-	// 		return {
-	// 			...user,
-	// 			employee_first_name: employeeFirstName,
-	// 		};
-	// 	});
-	// }, [user, employeeMap]);
-
 	return (
 		<div>
 			<Toast ref={toastRef} />
