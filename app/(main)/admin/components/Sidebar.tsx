@@ -82,7 +82,7 @@ const menuItems: MenuItems[] = [
 		children: [
 			{
 				label: "Pengajuan Cuti",
-				href: "/admin/transaction/leave",
+				href: "/admin/transaction/leave-request",
 			},
 			{
 				label: 'Manajemen Saldo Cuti',
