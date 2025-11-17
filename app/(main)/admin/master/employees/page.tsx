@@ -1,6 +1,6 @@
 "use client";
 
-import { Flashlight, User, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { Card } from "primereact/card";
 import DataTableEmployees from "./components/DataTableEmployees";
 import { Calendar } from "primereact/calendar";
@@ -16,6 +16,7 @@ import { GetAllEmployeeData, GetEmployeeByIdData } from "@/lib/types/employee";
 import { GetAllPositionData } from "@/lib/types/position";
 import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 import { format } from "date-fns";
+import { GetAllUserData } from "@/lib/types/user";
 
 export default function Employees() {
   const toastRef = useRef<Toast>(null);
@@ -27,6 +28,7 @@ export default function Employees() {
   );
 
   const [position, setPosition] = useState<GetAllPositionData[]>([]);
+  const [user, setUser] = useState<GetAllUserData[]>([]);
 
   const [currentSelectedId, setCurrentSelectedId] = useState<number | null>(
     null
@@ -85,15 +87,6 @@ export default function Employees() {
       const responseData = await res.json();
 
       if (responseData && responseData.status === "00") {
-        if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message,
-            life: 3000,
-          });
-          isInitialLoad.current = false;
-        }
         setViewEmployee(responseData.master_employees || null);
       }
     } catch (error: any) {
@@ -103,23 +96,35 @@ export default function Employees() {
     }
   };
 
-  const fetchPosition = async () => {
+  const fetchPositionAndUser = async () => {
     try {
-      const res = await fetch("/api/admin/master/position");
+      const [positionRes, userRes] = await Promise.all([
+        fetch("/api/admin/master/position"),
+        fetch("/api/admin/master/user"),
+      ]);
 
-      if (!res.ok) {
+      if (!positionRes.ok || !userRes.ok) {
         throw new Error("Gagal mendapatkan data posisi");
       }
 
-      const responseData = await res.json();
+      const positionData = await positionRes.json();
+      const userData = await userRes.json();
 
-      if (responseData && responseData.status === "00") {
-        setPosition(responseData.master_positions || []);
+      if (
+        positionData &&
+        userData &&
+        positionData.status === "00" &&
+        userData.status === "00"
+      ) {
+        setPosition(positionData.master_positions || []);
+        setUser(userData.users || []);
       } else {
         setPosition([]);
+        setUser([]);
       }
     } catch (error) {
       setPosition([]);
+      setUser([]);
     }
   };
 
@@ -289,7 +294,7 @@ export default function Employees() {
 
   useEffect(() => {
     fetchAllEmployee();
-    fetchPosition();
+    fetchPositionAndUser();
   }, []);
 
   return (
@@ -386,7 +391,7 @@ export default function Employees() {
 
           {/* data table */}
           <DataTableEmployees
-            employees={allEmployee}
+            data={allEmployee}
             isLoading={isLoading}
             onView={handleView}
             onEdit={handleEdit}
@@ -417,13 +422,14 @@ export default function Employees() {
               dialogMode={dialogMode}
               onSubmit={handleSubmit}
               positionOptions={position}
+              userOptions={user}
               isSubmitting={isSaving}
             />
           </div>
 
           <div className={`${dialogMode === "view" ? "block" : "hidden"}`}>
             <EmployeeDialogView
-              employeeData={viewEmployee}
+              data={viewEmployee}
               isLoading={isLoading}
               dialogMode={dialogMode}
             />

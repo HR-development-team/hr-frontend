@@ -1,4 +1,4 @@
-import { API_URL } from "@/app/api/api";
+import { API_URL } from "@/api/api";
 import axios from "axios";
 
 export const Axios = axios.create({

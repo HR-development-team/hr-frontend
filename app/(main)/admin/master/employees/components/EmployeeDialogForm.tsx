@@ -24,6 +24,7 @@ export default function EmployeeDialogForm({
   onSubmit,
   dialogMode,
   positionOptions,
+  userOptions,
   isSubmitting,
 }: EmployeeFormProps) {
   const formik = useFormik({
@@ -104,6 +105,22 @@ export default function EmployeeDialogForm({
         }}
         fieldName={"position_code"}
         label="Jabatan"
+        isFieldInvalid={isFieldInvalid}
+        getFieldError={getFieldError}
+      />
+
+      <FormDropdown
+        props={{
+          ...formik.getFieldProps("user_code"),
+          options: userOptions,
+          optionLabel: "email",
+          optionValue: "user_code",
+          placeholder: "Pilih User",
+          filter: true,
+          filterDelay: 400,
+        }}
+        fieldName={"user_code"}
+        label="User Karyawan"
         isFieldInvalid={isFieldInvalid}
         getFieldError={getFieldError}
       />

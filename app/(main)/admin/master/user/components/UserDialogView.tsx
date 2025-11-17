@@ -1,48 +1,47 @@
-import { DepartmentViewProps } from "@/lib/types/view/departmentViewTypes";
-import { Building } from "lucide-react";
+import { User } from "lucide-react";
 import { Card } from "primereact/card";
-import DepartmentDialogViewSkeleton from "./DepartmentDialogViewSkeleton";
 import { formatDateIDN } from "@/lib/utils/dateFormat";
+import { UserViewProps } from "@/lib/types/view/userViewPropsTypes";
+import UserDialogViewSkeleton from "./UserDialogViewSkeleton";
 import { ViewMasterPropsTypes } from "@/lib/types/view/viewMasterPropsTypes";
-import { GetDepartmentByIdData } from "@/lib/types/department";
+import { GetUserByIdData } from "@/lib/types/user";
 
-export default function DepartmentDialogView({
+export default function UserDialogView({
   data,
   isLoading,
   dialogMode,
-}: ViewMasterPropsTypes<GetDepartmentByIdData>) {
+}: ViewMasterPropsTypes<GetUserByIdData>) {
   const isOnViewMode = dialogMode === "view" ? true : false;
 
+  const role = data?.role === "admin" ? "Admin" : "Karyawan";
+
+  // isLoading = true;
+
   if (isLoading) {
-    return <DepartmentDialogViewSkeleton />;
+    return <UserDialogViewSkeleton />;
   }
+
   return (
     <div className={`${isOnViewMode ? "text-800" : "hidden"}`}>
       <Card className="line-height-3">
         <div className="flex align-items-center gap-2 mb-4">
-          <Building className="text-blue-500" />
-          <span className="font-medium text-800">Detail Departemen</span>
+          <User className="text-blue-500" />
+          <span className="font-medium text-800">Detail User</span>
         </div>
         <div className="grid">
-          <div className="col-12 flex justify-content-between border-bottom-1 border-gray-400 py-4">
+          <div className="col-12 flex justify-content-between gap-4 border-bottom-1 border-gray-400 py-4">
             <div className="text-base font-medium">
-              <span className="text-500">ID Departemen</span>
+              <span className="text-500">Email User</span>
+              <p>{data?.email ? data.email : "-"}</p>
               <p className="font-light font-italic">
-                {data?.department_code ? data.department_code : "-"}
+                {data?.user_code ? data.user_code : "-"}
               </p>
             </div>
 
-            <div className="text-base font-medium">
-              <span className="text-500">Nama Departemen</span>
-              <p>{data?.name ? data.name : "-"}</p>
+            <div className="text-base font-medium flex-1">
+              <span className="text-500">Role User</span>
+              <p>{data?.role ? role : "Belum diberi role"}</p>
             </div>
-          </div>
-
-          <div className="text-base font-medium col-12 p-3 bg-gray-100 border-round-xl mt-3">
-            <span>Deskripsi Departemen</span>
-            <p className="text-500 font-italic">
-              {data?.description ? data.description : "-"}
-            </p>
           </div>
         </div>
 

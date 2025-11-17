@@ -10,20 +10,49 @@ const passwordSchema = z
   // must use uppercase
   .regex(/[A-Z]/, "Password harus memiliki setidaknya satu huruf besar");
 
-// must use number
-// .regex(/[0-9]/, "Password harus memiliki setidaknya satu angka")
-
-// must use special character
-// .regex(
-// 	/[^a-zA-Z0-9]/,
-// 	"Password harus memiliki setidaknya satu karakter spesial"
-// );
-
-export const userFormSchema = z.object({
-  email: z.email().nonempty("Email user tidak boleh kosong"),
-  password: passwordSchema,
-  employee_id: z.number().min(1, "Belum memilih karyawan"),
+export const baseSchema = z.object({
+  email: z.email("Email tidak valid").nonempty("Email user tidak boleh kosong"),
   role: z.enum(["admin", "employee"]),
 });
 
-export type UserFormData = z.infer<typeof userFormSchema>;
+export const getUserSchema = (mode: "view" | "add" | "edit" | null) => {
+  if (mode === "add") {
+    return baseSchema
+      .extend({
+        password: passwordSchema,
+        confirmPassword: z.string().min(1, "Konfirmasi password"),
+      })
+      .refine((data) => data.password === data.confirmPassword, {
+        message: "Password tidak sama",
+        path: ["confirmPassword"],
+      });
+  }
+
+  // if (mode === "edit") {
+  return baseSchema
+    .extend({
+      password: passwordSchema.optional().or(z.literal("")),
+      confirmPassword: z.string().min(1).optional().or(z.literal("")),
+    })
+    .refine(
+      (data) => {
+        if (data.password && data.password.length > 0) {
+          return data.password === data.confirmPassword;
+        }
+
+        return true;
+      },
+      {
+        message: "Password tidak cocok",
+        path: ["confirmPassword"],
+      }
+    );
+  // }
+};
+
+const addSchemaStructure = baseSchema.extend({
+  password: z.string(),
+  confirmPassword: z.string(),
+});
+
+export type UserFormData = z.infer<typeof addSchemaStructure>;

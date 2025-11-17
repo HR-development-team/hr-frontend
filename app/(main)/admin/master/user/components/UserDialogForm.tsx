@@ -3,7 +3,7 @@
 import FormDropdown from "@/components/form/FormDropdown";
 import FormInputText from "@/components/form/FormInputText";
 import FormPassword from "@/components/form/FormPassword";
-import { UserFormData, userFormSchema } from "@/lib/schemas/userFormSchema";
+import { getUserSchema, UserFormData } from "@/lib/schemas/userFormSchema";
 import { UserFormProps } from "@/lib/types/form/userFormType";
 import { roleOptions, UserDefaultValues } from "@/lib/values/userDefaultValue";
 import { useFormik } from "formik";
@@ -15,14 +15,22 @@ export default function UserDialogForm({
   userData,
   onSubmit,
   employeeOptions,
+  dialogMode,
   isSubmitting,
 }: UserFormProps) {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
 
+  const placeholder =
+    dialogMode === "add" ? "Masukkan Password" : "Isi Password Untuk Update";
+
+  const isOnAddMode = dialogMode === "add" ? true : false;
+
   const formik = useFormik({
     initialValues: userData || UserDefaultValues,
     validate: (values) => {
-      const validation = userFormSchema.safeParse(values);
+      const schema = getUserSchema(dialogMode);
+
+      const validation = schema.safeParse(values);
 
       if (validation.success) {
         return {};
@@ -71,12 +79,13 @@ export default function UserDialogForm({
         <FormPassword
           props={{
             ...formik.getFieldProps("password"),
-            placeholder: "Masukkan Password",
+            placeholder: placeholder,
           }}
           fieldName={"password"}
           label="Password"
           isFieldInvalid={isFieldInvalid}
           getFieldError={getFieldError}
+          optional={!isOnAddMode}
         />
 
         <div className="p-3 bg-gray-50 border-round mt-2">
@@ -91,7 +100,19 @@ export default function UserDialogForm({
         </div>
       </div>
 
-      <div className="flex flex-column gap-2">
+      <FormPassword
+        props={{
+          ...formik.getFieldProps("confirmPassword"),
+          placeholder: "Konfirmasi Password",
+        }}
+        fieldName={"confirmPassword"}
+        label="Konfirmasi Password"
+        isFieldInvalid={isFieldInvalid}
+        getFieldError={getFieldError}
+        optional={!isOnAddMode}
+      />
+
+      {/* <div className="flex flex-column gap-2">
         <label htmlFor="employee_id">Nama Karyawan</label>
         <Dropdown
           id="employee_id"
@@ -111,7 +132,7 @@ export default function UserDialogForm({
         {getFieldError("employee_id") && (
           <small className="p-error">{getFieldError("employee_id")}</small>
         )}
-      </div>
+      </div> */}
 
       <FormDropdown
         props={{

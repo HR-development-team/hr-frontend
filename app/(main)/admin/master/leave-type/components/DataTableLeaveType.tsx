@@ -7,10 +7,10 @@ import { Tag } from "primereact/tag";
 import React from "react";
 import { GetAllLeaveTypeData } from "@/lib/types/leaveType";
 import { formatRupiah } from "@/lib/utils/formatRupiah";
-import { DataTableLeaveTypeProp } from "@/lib/types/dataTable/dataTableLeaveTypesType";
+import { DataTableMasterPropsTypes } from "@/lib/types/dataTable/dataTableMasterPropsType";
 
 export default function DataTableLeaveType({
-  leaveType,
+  data,
   isLoading,
   // lazyParams,
   // totalItems,
@@ -18,7 +18,7 @@ export default function DataTableLeaveType({
   onView,
   onEdit,
   onDelete,
-}: DataTableLeaveTypeProp) {
+}: DataTableMasterPropsTypes<GetAllLeaveTypeData>) {
   const newLocal =
     "border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
@@ -30,7 +30,7 @@ export default function DataTableLeaveType({
 
   return (
     <DataTable
-      value={leaveType}
+      value={data}
       loading={isLoading}
       paginator
       rows={5}
