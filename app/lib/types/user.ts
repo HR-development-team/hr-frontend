@@ -1,9 +1,13 @@
-export interface UserData {
+export interface GetAllUserData {
   id: number;
   user_code: string;
   email: string;
-  password: string;
   role: "admin" | "employee";
-  employee_code: string;
-  employee_name: string;
+  employee_name: string | null;
+}
+
+export interface GetUserByIdData extends GetAllUserData {
+  password: string;
+  created_at: string;
+  updated_at: string;
 }

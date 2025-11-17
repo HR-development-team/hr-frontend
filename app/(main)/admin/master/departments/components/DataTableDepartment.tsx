@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTableDepartmentProp } from "@/lib/types/dataTable/dataTableDepartmentType";
+import { DataTableMasterPropsTypes } from "@/lib/types/dataTable/dataTableMasterPropsType";
 import { GetAllDepartmentData } from "@/lib/types/department";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
@@ -9,7 +9,7 @@ import { Tag } from "primereact/tag";
 import React from "react";
 
 export default function DataTableDepartment({
-  department,
+  data,
   isLoading,
   // lazyParams,
   // totalItems,
@@ -17,7 +17,7 @@ export default function DataTableDepartment({
   onEdit,
   onDelete,
   onView,
-}: DataTableDepartmentProp) {
+}: DataTableMasterPropsTypes<GetAllDepartmentData>) {
   const newLocal =
     "border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
@@ -29,7 +29,7 @@ export default function DataTableDepartment({
 
   return (
     <DataTable
-      value={department}
+      value={data}
       loading={isLoading}
       paginator
       rows={5}

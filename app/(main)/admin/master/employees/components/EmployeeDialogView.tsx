@@ -6,19 +6,20 @@ import { Tag } from "primereact/tag";
 import React from "react";
 import EmployeeDialogViewSkeleton from "./EmployeeDialogViewSkeleton";
 import { EmployeeViewProps } from "@/lib/types/view/employeeViewTypes";
+import { ViewMasterPropsTypes } from "@/lib/types/view/viewMasterPropsTypes";
+import { GetEmployeeByIdData } from "@/lib/types/employee";
 
 export default function EmployeeDialogView({
-  employeeData,
+  data,
   isLoading,
   dialogMode,
-}: EmployeeViewProps) {
+}: ViewMasterPropsTypes<GetEmployeeByIdData>) {
   const isOnViewMode = dialogMode === "view" ? true : false;
 
   const statusBodyTemplate = () => {
-    const severity =
-      employeeData?.employment_status === "aktif" ? "success" : "danger";
+    const severity = data?.employment_status === "aktif" ? "success" : "danger";
 
-    return <Tag value={employeeData?.employment_status} severity={severity} />;
+    return <Tag value={data?.employment_status} severity={severity} />;
   };
 
   if (isLoading) {
@@ -35,9 +36,9 @@ export default function EmployeeDialogView({
               <span>N/A</span>
             </Avatar>
             <div className="">
-              <p className="text-xl font-bold">{employeeData?.full_name}</p>
+              <p className="text-xl font-bold">{data?.full_name}</p>
               <p className="text-600 text-md font-semibold">
-                {employeeData?.employee_code}
+                {data?.employee_code}
               </p>
             </div>
           </Card>
@@ -50,9 +51,9 @@ export default function EmployeeDialogView({
             <div className="flex align-items-start justify-content-between">
               <span>Departemen</span>
               <div className="line-height-3">
-                <p>{employeeData?.department_name}</p>
+                <p>{data?.department_name}</p>
                 <p className="text-sm font-light font-italic text-right">
-                  {employeeData?.department_code}
+                  {data?.department_code}
                 </p>
               </div>
             </div>
@@ -60,9 +61,9 @@ export default function EmployeeDialogView({
             <div className="flex align-items-start justify-content-between">
               <span>Divisi</span>
               <div className="line-height-3">
-                <p>{employeeData?.division_name} </p>
+                <p>{data?.division_name} </p>
                 <p className="text-sm font-light font-italic text-right">
-                  {employeeData?.division_code}
+                  {data?.division_code}
                 </p>
               </div>
             </div>
@@ -70,9 +71,9 @@ export default function EmployeeDialogView({
             <div className="flex align-items-start justify-content-between">
               <span>Posisi/Jabatan</span>
               <div className="line-height-3">
-                <p>{employeeData?.position_name} </p>
+                <p>{data?.position_name} </p>
                 <p className="text-sm font-light font-italic text-right">
-                  {employeeData?.position_code}
+                  {data?.position_code}
                 </p>
               </div>
             </div>
@@ -84,12 +85,12 @@ export default function EmployeeDialogView({
 
             <div className="flex align-items-center justify-content-between">
               <span>Tanggal Gabung</span>
-              <p>{formatDateIDN(employeeData?.join_date)}</p>
+              <p>{formatDateIDN(data?.join_date)}</p>
             </div>
 
             <div className="flex align-items-center justify-content-between">
               <span>Tanggal Resign</span>
-              <p>{formatDateIDN(employeeData?.resign_date)}</p>
+              <p>{formatDateIDN(data?.resign_date)}</p>
             </div>
           </Card>
         </div>
@@ -110,7 +111,7 @@ export default function EmployeeDialogView({
                 Nama Lengkap
               </span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.full_name}
+                {data?.full_name}
               </p>
             </div>
 
@@ -119,9 +120,9 @@ export default function EmployeeDialogView({
                 Jenis Kelamin
               </span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.gender === "laki-laki"
+                {data?.gender === "laki-laki"
                   ? "Laki-laki"
-                  : employeeData?.gender === "perempuan"
+                  : data?.gender === "perempuan"
                     ? "Perempuan"
                     : "-"}
               </p>
@@ -132,7 +133,7 @@ export default function EmployeeDialogView({
                 Tempat Lahir
               </span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.birth_place ? employeeData.birth_place : "-"}
+                {data?.birth_place ? data.birth_place : "-"}
               </p>
             </div>
 
@@ -141,7 +142,7 @@ export default function EmployeeDialogView({
                 Tanggal Lahir
               </span>
               <p className="text-800 text-base font-medium">
-                {formatDateIDN(employeeData?.birth_date)}
+                {formatDateIDN(data?.birth_date)}
               </p>
             </div>
 
@@ -150,14 +151,14 @@ export default function EmployeeDialogView({
                 Golongan Darah
               </span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.blood_type ? employeeData.blood_type : "-"}
+                {data?.blood_type ? data.blood_type : "-"}
               </p>
             </div>
 
             <div className="col-12 md:col-6">
               <span className="text-500 text-base font-medium">Agama</span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.religion ? employeeData.religion : "-"}
+                {data?.religion ? data.religion : "-"}
               </p>
             </div>
 
@@ -166,23 +167,21 @@ export default function EmployeeDialogView({
                 Status Pernikahan
               </span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.maritial_status
-                  ? employeeData.maritial_status
-                  : "-"}
+                {data?.maritial_status ? data.maritial_status : "-"}
               </p>
             </div>
 
             <div className="col-12 md:col-6">
               <span className="text-500 text-base font-medium">Pendidikan</span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.education ? employeeData.education : "-"}
+                {data?.education ? data.education : "-"}
               </p>
             </div>
 
             <div className="col-12 md:col-6">
               <span className="text-500 text-base font-medium">Alamat</span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.address ? employeeData.address : "-"}
+                {data?.address ? data.address : "-"}
               </p>
             </div>
           </div>
@@ -204,7 +203,7 @@ export default function EmployeeDialogView({
                 No. Telepon
               </span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.contact_phone ? employeeData.contact_phone : "-"}
+                {data?.contact_phone ? data.contact_phone : "-"}
               </p>
             </div>
           </div>
@@ -218,14 +217,14 @@ export default function EmployeeDialogView({
             <div className="col-12 md:col-6">
               <span className="text-500 text-base font-medium">No. KTP</span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.ktp_number ? employeeData.ktp_number : "-"}
+                {data?.ktp_number ? data.ktp_number : "-"}
               </p>
             </div>
 
             <div className="col-12 md:col-6">
               <span className="text-500 text-base font-medium">No. NPWP</span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.npwp ? employeeData.npwp : "-"}
+                {data?.npwp ? data.npwp : "-"}
               </p>
             </div>
 
@@ -234,9 +233,7 @@ export default function EmployeeDialogView({
                 No. BPJS Ketenagakerjaan
               </span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.bpjs_ketenagakerjaan
-                  ? employeeData.bpjs_ketenagakerjaan
-                  : "-"}
+                {data?.bpjs_ketenagakerjaan ? data.bpjs_ketenagakerjaan : "-"}
               </p>
             </div>
 
@@ -245,9 +242,7 @@ export default function EmployeeDialogView({
                 No. BPJS Kesehatan
               </span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.bpjs_kesehatan
-                  ? employeeData.bpjs_kesehatan
-                  : "-"}
+                {data?.bpjs_kesehatan ? data.bpjs_kesehatan : "-"}
               </p>
             </div>
 
@@ -256,7 +251,7 @@ export default function EmployeeDialogView({
                 No. Rekening Bank
               </span>
               <p className="text-800 text-base font-medium">
-                {employeeData?.bank_account ? employeeData.bank_account : "-"}
+                {data?.bank_account ? data.bank_account : "-"}
               </p>
             </div>
           </div>

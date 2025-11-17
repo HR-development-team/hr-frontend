@@ -2,14 +2,14 @@
 
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
-import { DataTable, DataTablePageEvent } from "primereact/datatable";
-import React, { useState } from "react";
+import { DataTable } from "primereact/datatable";
+import React from "react";
 import { formatRupiah } from "@/lib/utils/formatRupiah";
 import { GetAllPositionData } from "@/lib/types/position";
-import { DataTablePositionProp } from "@/lib/types/dataTable/dataTablePositionType";
+import { DataTableMasterPropsTypes } from "@/lib/types/dataTable/dataTableMasterPropsType";
 
 export default function DataTablePosition({
-  position,
+  data,
   isLoading,
   // lazyParams,
   // totalItems,
@@ -17,13 +17,13 @@ export default function DataTablePosition({
   onEdit,
   onDelete,
   onView,
-}: DataTablePositionProp) {
+}: DataTableMasterPropsTypes<GetAllPositionData>) {
   const newLocal =
     "border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
   return (
     <DataTable
-      value={position}
+      value={data}
       loading={isLoading}
       paginator
       rows={5}
