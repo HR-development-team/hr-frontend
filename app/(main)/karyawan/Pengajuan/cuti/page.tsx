@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import "primereact/resources/themes/lara-light-purple/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+import "primeflex/primeflex.css";
+
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
@@ -13,7 +18,19 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { InputText } from "primereact/inputtext";
 import { Skeleton } from "primereact/skeleton";
 import { Chart } from "primereact/chart";
-import type { ChartData, ChartOptions } from "chart.js";
+
+// ANIMATION WRAPPERS
+const fadeInUp = "animate__animated animate__fadeInUp animate__faster";
+const fadeIn = "animate__animated animate__fadeIn animate__faster";
+const zoomIn = "animate__animated animate__zoomIn";
+
+interface LeaveType {
+  id: number;
+  type_code: string;
+  name: string;
+  deduction: string;
+  description: string;
+}
 
 interface LeaveRequest {
   id: string | number;
@@ -24,24 +41,11 @@ interface LeaveRequest {
   alasan: string;
 }
 
-interface LeaveType {
-  id: number;
-  name: string;
-  deduction: string;
-  description: string;
-}
-
 const JATAH_CUTI_TAHUNAN = 12;
-
-// 🔹 Ganti ini dengan user ID yang sedang login
-// Idealnya, ini didapat dari session/konteks, bukan hardcode
-const currentUserId = 11;
 
 const API_URLS = {
   leaveTypes: "/api/admin/master/leave-type",
-  // --- [FIX 1 - REVERT] ---
-  // Kita kembalikan ke cara lama Anda, karena API Utama tidak punya .../user/[id]
-  leaveHistory: "/api/karyawan/leave-request",
+  leaveHistory: "/api/karyawan/leave-request/current-employee",
   submit: "/api/karyawan/leave-request",
 };
 
@@ -51,8 +55,8 @@ export default function PengajuanCutiPage() {
   const [history, setHistory] = useState<LeaveRequest[]>([]);
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
   const [sisaCuti, setSisaCuti] = useState(0);
-  const [chartData, setChartData] = useState<ChartData | null>(null);
-  const [chartOptions, setChartOptions] = useState<ChartOptions | null>(null);
+  const [chartData, setChartData] = useState<any>(null);
+  const [chartOptions, setChartOptions] = useState<any>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   const [jenisCuti, setJenisCuti] = useState<LeaveType | null>(null);
@@ -61,110 +65,127 @@ export default function PengajuanCutiPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [globalFilter, setGlobalFilter] = useState("");
-  const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [filterJenisCuti, setFilterJenisCuti] = useState<LeaveType | null>(
+    null
+  );
+  const [filterTanggalMulai, setFilterTanggalMulai] = useState<Date | null>(
+    null
+  );
+  const [filterTanggalSelesai, setFilterTanggalSelesai] = useState<Date | null>(
+    null
+  );
 
-  // --- LOAD DATA DARI API ---
+  // State untuk toggle filter di mobile
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
+
+  const filteredHistory = useMemo(() => {
+    let data = history;
+
+    // Filter berdasarkan Jenis Cuti
+    if (filterJenisCuti) {
+      data = data.filter((item) => item.jenisCuti === filterJenisCuti.name);
+    }
+
+    // Filter berdasarkan Tanggal Mulai
+    if (filterTanggalMulai) {
+      const filterDate = new Date(filterTanggalMulai);
+      filterDate.setHours(0, 0, 0, 0);
+      data = data.filter((item) => {
+        const itemDate = new Date(item.tanggalMulai);
+        itemDate.setHours(0, 0, 0, 0);
+        return itemDate >= filterDate;
+      });
+    }
+
+    // Filter berdasarkan Tanggal Selesai
+    if (filterTanggalSelesai) {
+      const filterDate = new Date(filterTanggalSelesai);
+      filterDate.setHours(0, 0, 0, 0);
+      data = data.filter((item) => {
+        const itemDate = new Date(item.tanggalSelesai);
+        itemDate.setHours(0, 0, 0, 0);
+        return itemDate <= filterDate;
+      });
+    }
+
+    return data;
+  }, [history, filterJenisCuti, filterTanggalMulai, filterTanggalSelesai]);
+
   useEffect(() => {
     const loadData = async () => {
-      try {
-        setIsLoadingData(true);
+      setIsLoadingData(true);
+      let leaveTypesData: LeaveType[] = [];
+      let mappedHistory: LeaveRequest[] = [];
 
-        // 1️⃣ Fetch jenis cuti
-        const resLeaveType = await fetch(API_URLS.leaveTypes);
-        const dataType = await resLeaveType.json();
-        let leaveTypesData: LeaveType[] = [];
-        if (dataType.status === "00") {
-          leaveTypesData = dataType.leave_types;
+      try {
+        const res = await fetch(API_URLS.leaveTypes);
+        const data = await res.json();
+        if (data.status === "00") {
+          leaveTypesData = data.leave_types;
           setLeaveTypes(leaveTypesData);
         }
+      } catch (err) {}
 
-        // 2️⃣ Fetch riwayat cuti
-        // --- [FIX 1 - REVERT] ---
-        // Memanggil endpoint GET /api/karyawan/leave-request (ambil semua)
-        const resHistory = await fetch(API_URLS.leaveHistory);
-        const dataHistory = await resHistory.json();
-        let mappedHistory: LeaveRequest[] = [];
-
-        if (dataHistory.status === "00") {
-          // --- [FIX 1 - REVERT] ---
-          // Kita filter di frontend, seperti kode asli Anda
-          mappedHistory = dataHistory.leave_requests
-            .filter((item: any) => item.employee_id === currentUserId) // <-- Filter di frontend
-            .map((item: any) => ({
-              id: item.id,
-              jenisCuti:
-                leaveTypesData.find((lt) => lt.id === item.leave_type_id)
-                  ?.name || "Lainnya",
-              tanggalMulai: item.start_date.split("T")[0],
-              tanggalSelesai: item.end_date.split("T")[0],
-              alasan: item.reason,
-              status: item.status,
-            }));
+      try {
+        const res = await fetch(API_URLS.leaveHistory);
+        const data = await res.json();
+        if (data.status === "00") {
+          mappedHistory = data.leave_requests.map((item: any) => ({
+            id: item.id,
+            jenisCuti:
+              leaveTypesData.find((lt) => lt.type_code === item.type_code)
+                ?.name || "Lainnya",
+            tanggalMulai: item.start_date.split("T")[0],
+            tanggalSelesai: item.end_date.split("T")[0],
+            alasan: item.reason,
+            status: item.status,
+          }));
           setHistory(mappedHistory);
         }
+      } catch (err) {}
 
-        // 3️⃣ Hitung sisa cuti dan chart (Logika Anda sudah benar)
-        const cutiTerpakai: { [key: string]: number } = {};
-        let totalTahunan = 0;
-
-        mappedHistory.forEach((item) => {
+      const cutiTerpakai_Approved: { [key: string]: number } = {};
+      let totalTahunan_Approved = 0;
+      mappedHistory.forEach((item) => {
+        if (item.jenisCuti === "Cuti Tahunan" && item.status === "Approved") {
+          totalTahunan_Approved++;
+        }
+        if (item.status === "Approved") {
           const jenis = item.jenisCuti || "Lainnya";
-          cutiTerpakai[jenis] = (cutiTerpakai[jenis] || 0) + 1;
-          if (jenis === "Cuti Tahunan" && item.status === "Approved") {
-            totalTahunan++;
-          }
-        });
+          cutiTerpakai_Approved[jenis] =
+            (cutiTerpakai_Approved[jenis] || 0) + 1;
+        }
+      });
 
-        const sisa = JATAH_CUTI_TAHUNAN - totalTahunan;
-        setSisaCuti(sisa);
-
-        const chartJSData = {
-          labels: Object.keys(cutiTerpakai),
-          datasets: [
-            {
-              data: Object.values(cutiTerpakai),
-              backgroundColor: ["#42A5F5", "#FFCA28", "#66BB6A", "#FF7043"],
-              hoverBackgroundColor: [
-                "#64B5F6",
-                "#FFD54F",
-                "#81C784",
-                "#FF8A65",
-              ],
-            },
-          ],
-        };
-
-        const chartJSOptions = {
-          cutout: "60%",
-          responsive: true,
-          plugins: {
-            legend: { position: "bottom" as const },
+      setSisaCuti(JATAH_CUTI_TAHUNAN - totalTahunan_Approved);
+      setChartData({
+        labels: Object.keys(cutiTerpakai_Approved),
+        datasets: [
+          {
+            data: Object.values(cutiTerpakai_Approved),
+            backgroundColor: ["#6366F1", "#818CF8", "#A5B4FC", "#C7D2FE"],
+            hoverBackgroundColor: ["#4F46E5", "#6366F1", "#818CF8", "#A5B4FC"],
+            borderWidth: 0,
           },
-        };
+        ],
+      });
+      setChartOptions({
+        cutout: "75%",
+        plugins: {
+          legend: { position: "bottom" },
+        },
+        animation: {
+          animateScale: true,
+          animateRotate: true,
+        },
+      });
 
-        setChartData(chartJSData);
-        setChartOptions(chartJSOptions);
-      } catch (err) {
-        console.error(err);
-        toast.current?.show({
-          severity: "error",
-          summary: "Gagal Memuat",
-          detail: "Tidak dapat mengambil data dari server",
-        });
-      } finally {
-        setIsLoadingData(false);
-      }
+      setIsLoadingData(false);
     };
 
     loadData();
   }, []);
 
-  useEffect(() => {
-    if (isSearchVisible) searchInputRef.current?.focus();
-  }, [isSearchVisible]);
-
-  // --- SUBMIT CUTI ---
   const handleSubmitCuti = async () => {
     if (!jenisCuti || !tanggal?.[0] || !tanggal?.[1] || !alasan) {
       toast.current?.show({
@@ -174,29 +195,12 @@ export default function PengajuanCutiPage() {
       });
       return;
     }
-
-    // --- [DEBUG] TAMBAHKAN INI ---
-    // Kita perlu melihat apa isi 'jenisCuti' sebelum kita mengirim ID-nya
-    console.log("DEBUG: Isi 'jenisCuti' state:", jenisCuti);
-    // --- BATAS DEBUG ---
-
     const payload = {
-      leave_type_id: jenisCuti.id,
+      type_code: jenisCuti.type_code,
       start_date: tanggal[0].toISOString().split("T")[0],
       end_date: tanggal[1].toISOString().split("T")[0],
       reason: alasan,
-      // --- [FIX 2 - TERAPKAN] ---
-      // Menghapus 'deduction' dari payload
-      // deduction: jenisCuti.deduction,
     };
-
-    // --- [DEBUG] TAMBAHKAN INI JUGA ---
-    console.log(
-      "DEBUG: Payload yang dikirim:",
-      JSON.stringify(payload, null, 2)
-    );
-    // --- BATAS DEBUG ---
-
     try {
       setIsSubmitting(true);
       const res = await fetch(API_URLS.submit, {
@@ -205,141 +209,153 @@ export default function PengajuanCutiPage() {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-
       if (data.status === "00") {
         toast.current?.show({
           severity: "success",
           summary: "Berhasil",
-          detail: data.message || "Pengajuan cuti berhasil dikirim!", // Ambil pesan dari API
+          detail: data.message,
         });
         setJenisCuti(null);
         setTanggal(null);
         setAlasan("");
-
-        // --- Refresh data otomatis setelah submit ---
-        // --- [FIX 1 - REVERT] ---
-        // Refresh juga menggunakan cara lama (ambil semua, filter)
-        const resHistory = await fetch(API_URLS.leaveHistory);
-        const dataHistory = await resHistory.json();
-        if (dataHistory.status === "00") {
-          const mappedHistory = dataHistory.leave_requests
-            .filter((item: any) => item.employee_id === currentUserId) // <-- Filter di frontend
-            .map((item: any) => ({
-              id: item.id,
-              jenisCuti:
-                leaveTypes.find((lt) => lt.id === item.leave_type_id)?.name ||
-                "Lainnya",
-              tanggalMulai: item.start_date.split("T")[0],
-              tanggalSelesai: item.end_date.split("T")[0],
-              alasan: item.reason,
-              status: item.status,
-            }));
-          setHistory(mappedHistory);
-        }
-      } else {
-        // Menampilkan pesan error dari API (misal: "ID Tipe Cuti tidak valid")
-        toast.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: data.message || "Terjadi kesalahan.",
-        });
+        // TODO: Panggil loadData() lagi di sini untuk refresh
       }
-    } catch (e) {
+    } catch (err: any) {
       toast.current?.show({
         severity: "error",
         summary: "Error",
-        detail: "Tidak dapat mengirim ke server",
+        detail: err.message,
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // --- SISA KODE ANDA (Render, Template, dll.) ---
-  // Tidak ada perubahan di bawah sini, semua sudah benar.
-
   const statusBodyTemplate = (req: LeaveRequest) => {
-    const severityMap: { [key: string]: "success" | "warning" | "danger" } = {
+    const severity: any = {
       Approved: "success",
       Pending: "warning",
       Rejected: "danger",
     };
-    return <Tag value={req.status} severity={severityMap[req.status]} />;
+    return (
+      <Tag
+        value={req.status}
+        severity={severity[req.status]}
+      />
+    );
   };
 
+  // Ini adalah fungsi header yang telah diperbaiki
   const renderHistoryHeader = () => (
-    <div className="flex justify-content-between align-items-center">
-      {!isSearchVisible && <h5 className="m-0">Riwayat Pengajuan Cuti</h5>}
-      {isSearchVisible && (
-        <span className="p-input-icon-left w-full">
+    <div>
+      {/* Tombol Toggle Filter (Hanya Mobile) */}
+      <Button
+        label="Filter"
+        icon="pi pi-filter"
+        className="p-button-sm p-button-outlined mb-3 md:hidden"
+        onClick={() => setIsFilterVisible(!isFilterVisible)}
+      />
+
+      {/* Kontainer Filter (Responsive) */}
+      <div
+        className={`
+          flex-column md:flex-row md:align-items-center gap-3
+          ${isFilterVisible ? "flex" : "hidden"} 
+          md:flex
+        `}
+      >
+        {/* Filter Jenis Cuti */}
+        <span className="p-input-icon-left w-full md:w-auto">
+          <i className="pi pi-filter" />
+          <Dropdown
+            value={filterJenisCuti}
+            options={leaveTypes}
+            optionLabel="name"
+            onChange={(e) => setFilterJenisCuti(e.value)}
+            placeholder="Filter Jenis Cuti"
+            className="p-inputtext-sm w-full"
+            showClear
+          />
+        </span>
+
+        {/* Filter Tanggal Mulai */}
+        <Calendar
+          value={filterTanggalMulai}
+          onChange={(e) => setFilterTanggalMulai(e.value as any)}
+          placeholder="Filter Tgl Mulai"
+          className="p-inputtext-sm w-full md:w-auto"
+          showIcon
+        />
+
+        {/* Filter Tanggal Selesai */}
+        <Calendar
+          value={filterTanggalSelesai}
+          onChange={(e) => setFilterTanggalSelesai(e.value as any)}
+          placeholder="Filter Tgl Selesai"
+          className="p-inputtext-sm w-full md:w-auto"
+          showIcon
+        />
+
+        {/* Filter Global (Search) - Pindah ke paling kanan di desktop */}
+        <span className="p-input-icon-left w-full md:w-auto md:ml-auto">
           <i className="pi pi-search" />
           <InputText
-            ref={searchInputRef}
             type="search"
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
             placeholder="Cari..."
-            className="w-full"
-            onBlur={() => {
-              if (!globalFilter) setIsSearchVisible(false);
-            }}
+            className="p-inputtext-sm w-full"
           />
         </span>
-      )}
-      <Button
-        icon={isSearchVisible ? "pi pi-times" : "pi pi-search"}
-        className="p-button-text p-button-rounded ml-2"
-        onClick={() => {
-          setIsSearchVisible(!isSearchVisible);
-          if (isSearchVisible) setGlobalFilter("");
-        }}
-      />
+      </div>
     </div>
   );
 
-  const historyHeader = renderHistoryHeader();
-
   return (
-    <div className="grid">
+    <div className="grid px-0 md:px-4 py-4" style={{ animation: "fadeIn 0.5s ease" }}>
       <Toast ref={toast} />
 
-      {/* --- KIRI: FORM --- */}
-      <div className="col-12 md:col-8">
-        <Card title="Formulir Pengajuan Cuti" className="shadow-1 h-full">
+      {/* FORM */}
+      <div className={`col-12 md:col-8 ${fadeInUp}`}>
+        <Card
+          title="Formulir Pengajuan Cuti"
+          className="shadow-3 border-round-xl h-full"
+        >
           {isLoadingData ? (
             <Skeleton height="12rem" />
           ) : (
             <div className="p-fluid grid">
               <div className="field col-12 md:col-6">
-                <label className="font-semibold block mb-2">Jenis Cuti</label>
+                <label htmlFor="jenisCuti">Jenis Cuti</label>
                 <Dropdown
+                  id="jenisCuti"
                   value={jenisCuti}
                   options={leaveTypes}
-                  onChange={(e) => setJenisCuti(e.value)}
                   optionLabel="name"
+                  onChange={(e) => setJenisCuti(e.value)}
                   placeholder="Pilih Jenis Cuti"
                 />
               </div>
 
               <div className="field col-12 md:col-6">
-                <label className="font-semibold block mb-2">Tanggal Cuti</label>
+                <label htmlFor="tanggal">Tanggal Cuti</label>
                 <Calendar
+                  id="tanggal"
                   value={tanggal}
                   onChange={(e) => setTanggal(e.value as any)}
                   selectionMode="range"
                   readOnlyInput
-                  placeholder="Pilih rentang tanggal"
                   showIcon
                 />
               </div>
 
               <div className="field col-12">
-                <label className="font-semibold block mb-2">Alasan</label>
+                <label htmlFor="alasan">Alasan</label>
                 <InputTextarea
-                  rows={4}
+                  id="alasan"
                   value={alasan}
                   onChange={(e) => setAlasan(e.target.value)}
-                  placeholder="Tuliskan alasan cuti..."
+                  rows={4}
                   autoResize
                 />
               </div>
@@ -348,9 +364,9 @@ export default function PengajuanCutiPage() {
                 <Button
                   label="Kirim Pengajuan"
                   icon="pi pi-send"
-                  onClick={handleSubmitCuti}
                   loading={isSubmitting}
-                  className="w-full md:w-auto"
+                  className="p-button-rounded"
+                  onClick={handleSubmitCuti}
                 />
               </div>
             </div>
@@ -358,61 +374,68 @@ export default function PengajuanCutiPage() {
         </Card>
       </div>
 
-      {/* --- KANAN: CHART --- */}
-      <div className="col-12 md:col-4">
-        <Card title="Ringkasan Cuti Anda" className="shadow-1 h-full">
+      {/* CHART */}
+      <div className={`col-1v2 md:col-4 ${zoomIn}`}>
+        <Card
+          title="Ringkasan Cuti Anda"
+          className="shadow-3 border-round-xl h-full"
+        >
           {isLoadingData ? (
             <Skeleton height="300px" />
           ) : (
-            <div className="relative">
+            <div className="relative" style={{ height: "350px" }}>
               <div
-                className="absolute flex align-items-center justify-content-center w-full"
+                className="absolute flex flex-column align-items-center justify-content-center"
                 style={{
                   top: "50%",
                   left: "50%",
                   transform: "translate(-50%, -50%)",
-                  zIndex: 1,
+                  zIndex: 9,
                   pointerEvents: "none",
                 }}
               >
-                <div className="text-center">
-                  <span className="text-xl text-color-secondary">
-                    Sisa Cuti
-                  </span>
-                  <h1
-                    className="m-0"
-                    style={{ fontSize: "4rem", color: "var(--blue-500)" }}
-                  >
-                    {sisaCuti}
-                  </h1>
-                  <span className="text-lg text-color-secondary">Hari</span>
-                </div>
+                <span className="text-xl">Sisa Cuti Tahunan</span>
+                <h1
+                  className="m-0"
+                  style={{
+                    fontSize: "3.5rem",
+                    color: "#6366F1",
+                  }}
+                >
+                  {sisaCuti}
+                </h1>
+                <span className="text-lg">Hari</span>
               </div>
+
               <Chart
                 type="doughnut"
-                data={chartData!}
-                options={chartOptions!}
-                style={{ height: "300px" }}
+                data={chartData}
+                options={chartOptions}
+                style={{ height: "350px" }}
               />
             </div>
           )}
         </Card>
       </div>
 
-      {/* --- RIWAYAT --- */}
-      <div className="col-12 mt-4">
-        <Card className="shadow-1">
+      {/* HISTORY TABLE */}
+      <div className={`col-12 mt-4 ${fadeIn}`}>
+        <Card
+          title="Riwayat Pengajuan Cuti"
+          className="shadow-3 border-round-xl"
+        >
           {isLoadingData ? (
             <Skeleton height="200px" />
           ) : (
             <DataTable
-              value={history}
-              header={historyHeader}
+              value={filteredHistory}
+              header={renderHistoryHeader()}
               globalFilter={globalFilter}
+              globalFilterFields={["jenisCuti", "alasan", "status"]}
               paginator
               rows={5}
+              className="p-datatable-striped"
               responsiveLayout="stack"
-              emptyMessage="Belum ada riwayat pengajuan cuti."
             >
               <Column field="jenisCuti" header="Jenis Cuti" sortable />
               <Column field="tanggalMulai" header="Mulai" />

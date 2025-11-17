@@ -12,6 +12,7 @@ import { Divider } from "primereact/divider";
 import { Toast } from "primereact/toast";
 import { Skeleton } from "primereact/skeleton";
 import { useAuth } from "@/components/AuthContext";
+import { profile } from "console";
 
 // --- Tipe Data ---
 interface RingkasanStats {
@@ -30,7 +31,8 @@ interface PengajuanPending {
 // --- [PERBAIKAN] Endpoint API ---
 const API_URLS = {
 	dashboard: "/api/karyawan/dashboard",
-	leaveRequests: "/api/karyawan/leave-request"
+	profile: "/api/karyawan/profile",
+	leaveRequests: "/api/karyawan/leave-request/current-employee"
 };
 
 // --- (Data Mock dihapus, kita akan fetch) ---
