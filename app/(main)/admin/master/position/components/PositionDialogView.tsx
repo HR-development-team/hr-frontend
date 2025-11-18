@@ -4,12 +4,14 @@ import { formatRupiah } from "@/lib/utils/formatRupiah";
 import { Building, UserCheck } from "lucide-react";
 import { Card } from "primereact/card";
 import PositionDialogViewSkeleton from "./PositionDialogViewSkeleton";
+import { ViewMasterPropsTypes } from "@/lib/types/view/viewMasterPropsTypes";
+import { GetPositionByIdData } from "@/lib/types/position";
 
 export default function PositionDialogView({
-  positionData,
+  data,
   isLoading,
   dialogMode,
-}: PositionViewProps) {
+}: ViewMasterPropsTypes<GetPositionByIdData>) {
   const isOnViewMode = dialogMode === "view" ? true : false;
   if (isLoading) {
     return <PositionDialogViewSkeleton />;
@@ -27,19 +29,15 @@ export default function PositionDialogView({
           <div className="flex flex-column gap-3 xl:flex-row border-bottom-1 border-gray-400 py-4">
             <div className="w-full text-base font-medium">
               <span className="text-500">Nama Posisi</span>
-              <p>{positionData?.name ? positionData.name : "-"}</p>
+              <p>{data?.name ? data.name : "-"}</p>
               <p className="text-sm font-light font-italic">
-                {positionData?.position_code ? positionData.position_code : "-"}
+                {data?.position_code ? data.position_code : "-"}
               </p>
             </div>
 
             <div className="text-base font-medium">
               <span className="text-500">Gaji Pokok</span>
-              <p>
-                {positionData?.base_salary
-                  ? formatRupiah(positionData.base_salary)
-                  : "-"}
-              </p>
+              <p>{data?.base_salary ? formatRupiah(data.base_salary) : "-"}</p>
             </div>
           </div>
 
@@ -47,9 +45,7 @@ export default function PositionDialogView({
             <div className="text-base font-medium col-12 p-3 bg-gray-100 border-round-xl">
               <span>Deskripsi Posisi</span>
               <p className="text-500 font-italic">
-                {positionData?.description
-                  ? positionData.description
-                  : "Belum ada deskripsi"}
+                {data?.description ? data.description : "Belum ada deskripsi"}
               </p>
             </div>
           </div>
@@ -64,25 +60,17 @@ export default function PositionDialogView({
           <div className="flex justify-content-between gap-4">
             <div className="w-full text-base font-medium bg-gray-100 p-3 border-round-xl md:w-6">
               <span className="text-500">Departemen</span>
-              <p>
-                {positionData?.department_name
-                  ? positionData.department_name
-                  : "-"}
-              </p>
+              <p>{data?.department_name ? data.department_name : "-"}</p>
               <p className="text-sm text-500 font-light font-italic">
-                {positionData?.department_code
-                  ? positionData.department_code
-                  : "-"}
+                {data?.department_code ? data.department_code : "-"}
               </p>
             </div>
 
             <div className="w-full text-base font-medium bg-gray-100 p-3 border-round-xl md:w-6">
               <span className="text-500">Divisi</span>
-              <p>
-                {positionData?.division_name ? positionData.division_name : "-"}
-              </p>
+              <p>{data?.division_name ? data.division_name : "-"}</p>
               <p className="text-sm text-500 font-light font-italic">
-                {positionData?.division_code ? positionData.division_code : "-"}
+                {data?.division_code ? data.division_code : "-"}
               </p>
             </div>
           </div>
@@ -90,12 +78,12 @@ export default function PositionDialogView({
           <div className="mt-4 flex flex-column xl:flex-row xl:align-items-center justify-content-between font-italic text-xs">
             <div className="font-light flex align-items-center gap-2 text-500">
               <span className="">Diperbarui:</span>
-              <span>{formatDateIDN(positionData?.updated_at)}</span>
+              <span>{formatDateIDN(data?.updated_at)}</span>
             </div>
 
             <div className="font-light flex align-items-center gap-2 text-500">
               <span className="">Ditambahkan:</span>
-              <span>{formatDateIDN(positionData?.created_at)}</span>
+              <span>{formatDateIDN(data?.created_at)}</span>
             </div>
           </div>
         </div>

@@ -15,6 +15,7 @@ export const employeeFormSchema = z.object({
         : "Format tanggal tidak valid",
   }),
   position_code: z.string("Posisi wajib dipilih"),
+  user_code: z.string("User wajib dipilih"),
   employment_status: z
     .enum(["aktif", "inaktif"], "Status wajib diisi")
     .default("aktif"),

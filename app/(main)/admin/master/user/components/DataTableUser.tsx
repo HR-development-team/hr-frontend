@@ -1,27 +1,28 @@
 "use client";
 
-import { DataTableUserProp } from "@/lib/types/dataTable/dataTableUserType";
-import { UserData } from "@/lib/types/user";
+import { DataTableMasterPropsTypes } from "@/lib/types/dataTable/dataTableMasterPropsType";
+import { GetAllUserData } from "@/lib/types/user";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import React from "react";
 
 export default function DataTableUser({
-  user,
+  data,
   isLoading,
   // lazyParams,
   // totalItems,
   // onPageChange,
+  onView,
   onEdit,
   onDelete,
-}: DataTableUserProp) {
+}: DataTableMasterPropsTypes<GetAllUserData>) {
   const newLocal =
     "border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
   return (
     <DataTable
-      value={user}
+      value={data}
       loading={isLoading}
       paginator
       rows={5}
@@ -38,8 +39,17 @@ export default function DataTableUser({
       <Column field="role" header="Role User" style={{ width: "25%" }} />
       <Column
         header="Aksi"
-        body={(row: UserData) => (
+        body={(row: GetAllUserData) => (
           <div className="flex gap-2">
+            <Button
+              icon="pi pi-eye text-sm"
+              size="small"
+              severity="success"
+              onClick={() => {
+                onView(row);
+              }}
+            />
+
             <Button
               icon="pi pi-pencil text-sm"
               size="small"

@@ -2,16 +2,13 @@
 
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
-import { DataTable, DataTablePageEvent } from "primereact/datatable";
-import React, { useState } from "react";
-import { formatRupiah } from "@/lib/utils/formatRupiah";
-import { GetAllPositionData } from "@/lib/types/position";
-import { DataTablePositionProp } from "@/lib/types/dataTable/dataTablePositionType";
-import { DataTableDivisionProp } from "@/lib/types/dataTable/dataTableDivisionType";
+import { DataTable } from "primereact/datatable";
+import React from "react";
 import { GetAllDivisionData } from "@/lib/types/division";
+import { DataTableMasterPropsTypes } from "@/lib/types/dataTable/dataTableMasterPropsType";
 
 export default function DataTableDivision({
-  division,
+  data,
   isLoading,
   // lazyParams,
   // totalItems,
@@ -19,13 +16,13 @@ export default function DataTableDivision({
   onEdit,
   onDelete,
   onView,
-}: DataTableDivisionProp) {
+}: DataTableMasterPropsTypes<GetAllDivisionData>) {
   const newLocal =
     "border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
   return (
     <DataTable
-      value={division}
+      value={data}
       loading={isLoading}
       paginator
       rows={5}

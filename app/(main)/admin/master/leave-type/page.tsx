@@ -8,7 +8,6 @@ import InputTextComponent from "@/components/Input";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 import { Toast } from "primereact/toast";
 import {
   GetAllLeaveTypeData,
@@ -17,7 +16,7 @@ import {
 import DataTableLeaveType from "./components/DataTableLeaveType";
 import { LeaveTypeFormData } from "@/lib/schemas/leaveTypeFormSchema";
 import LeaveTypeDialogForm from "./components/LeaveTypeDialogForm";
-import LeaveTYpeDialogView from "./components/LeaveTypeDialogView";
+import LeaveTypeDialogView from "./components/LeaveTypeDialogView";
 
 export default function LeaveType() {
   const toastRef = useRef<Toast>(null);
@@ -89,8 +88,6 @@ export default function LeaveType() {
       if (!res.ok) throw new Error("Gagal mendapatkan user berdasarkan id");
 
       const leaveTypeData = await res.json();
-
-      console.log(leaveTypeData.message);
 
       if (leaveTypeData && leaveTypeData.status === "00") {
         setViewLeaveType(leaveTypeData.leave_types || null);
@@ -318,7 +315,7 @@ export default function LeaveType() {
 
           {/* data table */}
           <DataTableLeaveType
-            leaveType={leaveType}
+            data={leaveType}
             isLoading={isLoading}
             onView={handleView}
             onEdit={handleEdit}
@@ -352,8 +349,8 @@ export default function LeaveType() {
           </div>
 
           <div className={dialogMode === "view" ? "block" : "hidden"}>
-            <LeaveTYpeDialogView
-              leaveTypeData={viewLeaveType}
+            <LeaveTypeDialogView
+              data={viewLeaveType}
               isLoading={isLoading}
               dialogMode={dialogMode}
             />

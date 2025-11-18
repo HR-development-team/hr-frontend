@@ -4,12 +4,12 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Tag } from "primereact/tag";
-import React, { useState } from "react";
+import React from "react";
 import { GetAllEmployeeData } from "@/lib/types/employee";
-import { DataTableEmployeesProp } from "@/lib/types/dataTable/dataTableEmployeeType";
+import { DataTableMasterPropsTypes } from "@/lib/types/dataTable/dataTableMasterPropsType";
 
 export default function DataTableEmployees({
-  employees,
+  data,
   isLoading,
   // lazyParams,
   // totalItems,
@@ -17,7 +17,7 @@ export default function DataTableEmployees({
   onView,
   onEdit,
   onDelete,
-}: DataTableEmployeesProp) {
+}: DataTableMasterPropsTypes<GetAllEmployeeData>) {
   const newLocal =
     "border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
@@ -47,7 +47,7 @@ export default function DataTableEmployees({
 
   return (
     <DataTable
-      value={employees}
+      value={data}
       loading={isLoading}
       paginator
       rows={5}

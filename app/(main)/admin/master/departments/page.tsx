@@ -5,7 +5,7 @@ import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DepartementFormData } from "@/lib/schemas/departmentFormSchema";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import DataTableDepartment from "./components/DataTableDepartment";
@@ -140,6 +140,19 @@ export default function Department() {
       throw error;
     }
   };
+
+  const cleanDepartmentData = useMemo(() => {
+    if (!viewDepartment) {
+      return null;
+    }
+
+    const { id, department_code, created_at, updated_at, ...cleanData } =
+      viewDepartment;
+
+    return {
+      ...cleanData,
+    };
+  }, [viewDepartment]);
 
   const handleView = (department: GetAllDepartmentData) => {
     setDialogMode("view");
@@ -302,7 +315,7 @@ export default function Department() {
 
           {/* data table */}
           <DataTableDepartment
-            department={department}
+            data={department}
             isLoading={isLoading}
             onEdit={handleEdit}
             onDelete={handleDelete}
@@ -329,7 +342,7 @@ export default function Department() {
             }`}
           >
             <DepartmentDialogForm
-              departmentData={viewDepartment}
+              departmentData={cleanDepartmentData}
               dialogMode={dialogMode}
               onSubmit={handleSubmit}
             />
@@ -337,7 +350,7 @@ export default function Department() {
 
           <div className={`${dialogMode === "view" ? "block" : "hidden"}`}>
             <DepartmentDialogView
-              departmentData={viewDepartment}
+              data={viewDepartment}
               isLoading={isLoading}
               dialogMode={dialogMode}
             />

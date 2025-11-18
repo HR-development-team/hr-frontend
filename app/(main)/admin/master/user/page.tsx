@@ -12,28 +12,36 @@ import UserDialogForm from "./components/UserDialogForm";
 import { UserFormData } from "@/lib/schemas/userFormSchema";
 import DataTableUser from "./components/DataTableUser";
 import { Toast } from "primereact/toast";
-import { UserData } from "@/lib/types/user";
 import { GetAllEmployeeData } from "@/lib/types/employee";
+import { GetAllUserData, GetUserByIdData } from "@/lib/types/user";
+import { da, vi } from "date-fns/locale";
+import UserDialogView from "./components/UserDialogView";
 
-interface CombinedUserData extends UserData {
-  employee_first_name: string;
-}
+// interface CombinedUserData extends UserData {
+//   employee_first_name: string;
+// }
 
 export default function UserPage() {
   const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
   const [employee, setEmployee] = useState<GetAllEmployeeData[]>([]);
-  const [user, setUser] = useState<UserData[]>([]);
+  const [user, setUser] = useState<GetAllUserData[]>([]);
+  const [viewUser, setViewUser] = useState<GetUserByIdData | null>(null);
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+  const [dialogLabel, setDialogLabel] = useState<
+    "Lihat Data User" | "Edit User" | "Tambah User" | null
+  >(null);
+
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
-  const [selecteduser, setSelectedUser] = useState<UserFormData | null>(null);
+  const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
+    null
+  );
 
   const fetchAllUserData = async () => {
     setIsLoading(true);
@@ -89,6 +97,49 @@ export default function UserPage() {
     }
   };
 
+  const fetchUserById = async (id: number) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/admin/master/user/${id}`);
+
+      if (!res.ok) {
+        throw new Error("Gagal mendapatkan user bredasarkan id");
+      }
+
+      const responseData = await res.json();
+
+      if (responseData && responseData.status === "00") {
+        setViewUser(responseData.users || null);
+      } else {
+        setViewUser(null);
+      }
+    } catch (error: any) {
+      setViewUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const cleanUserDataForm = useMemo(() => {
+    if (!viewUser) {
+      return null;
+    }
+
+    const {
+      id,
+      user_code,
+      password,
+      created_at,
+      updated_at,
+      employee_name,
+      ...cleanData
+    } = viewUser;
+
+    return {
+      ...cleanData,
+    };
+  }, [viewUser]);
+
   const handleSubmit = async (formData: UserFormData) => {
     setIsSaving(true);
     setIsLoading(true);
@@ -100,10 +151,12 @@ export default function UserPage() {
 
     const method = dialogMode === "edit" ? "PUT" : "POST";
 
+    const { confirmPassword, ...payload } = formData;
+
     try {
       const res = await fetch(url, {
         method: method,
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const response = await res.json();
@@ -126,7 +179,6 @@ export default function UserPage() {
       }
 
       fetchAllUserData();
-      setSelectedUser(null);
       setDialogMode(null);
       setIsDialogVisible(false);
       setCurrentEditedId(null);
@@ -143,23 +195,32 @@ export default function UserPage() {
     }
   };
 
-  const handleEdit = (user: UserData) => {
-    setDialogMode("edit");
+  const handleView = (data: GetAllUserData) => {
+    setDialogMode("view");
     setIsDialogVisible(true);
-    setCurrentEditedId(user.id);
+    setDialogLabel("Lihat Data User");
+    fetchUserById(data.id);
   };
 
-  const handleDelete = (user: UserData) => {
+  const handleEdit = (data: GetAllUserData) => {
+    setDialogMode("edit");
+    setIsDialogVisible(true);
+    setCurrentEditedId(data.id);
+    setDialogLabel("Edit User");
+    fetchUserById(data.id);
+  };
+
+  const handleDelete = (data: GetAllUserData) => {
     confirmDialog({
       icon: "pi pi-exclamation-triangle text-red-400 mr-2",
       header: "Konfirmasi Hapus",
-      message: `Yakin ingin menghapus user ${user.email}`,
+      message: `Yakin ingin menghapus user ${data.email}`,
       acceptLabel: "Hapus",
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
         try {
-          const res = await fetch(`/api/admin/master/user/${user.id}`, {
+          const res = await fetch(`/api/admin/master/user/${data.id}`, {
             method: "DELETE",
           });
 
@@ -178,7 +239,6 @@ export default function UserPage() {
           });
 
           fetchAllUserData();
-          setSelectedUser(null);
         } catch (error: any) {
           toastRef.current?.show({
             severity: "error",
@@ -281,6 +341,8 @@ export default function UserPage() {
                   onClick={() => {
                     setDialogMode("add");
                     setIsDialogVisible(true);
+                    setDialogLabel("Tambah User");
+                    setCurrentEditedId(null);
                   }}
                 />
               </div>
@@ -289,8 +351,9 @@ export default function UserPage() {
 
           {/* data table */}
           <DataTableUser
-            user={user}
+            data={user}
             isLoading={isLoading}
+            onView={handleView}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
@@ -299,19 +362,35 @@ export default function UserPage() {
         <ConfirmDialog />
 
         <Dialog
-          header={dialogMode === "edit" ? "Edit User" : "Tambah User"}
+          header={dialogLabel}
           visible={isDialogVisible}
-          onHide={() => setIsDialogVisible(false)}
+          onHide={() => {
+            setIsDialogVisible(false);
+            setDialogLabel(null);
+            setViewUser(null);
+          }}
           modal
           className="w-full md:w-4"
         >
-          <UserDialogForm
-            userData={selecteduser}
-            onSubmit={handleSubmit}
-            dialogMode={dialogMode}
-            employeeOptions={employee}
-            isSubmitting={isSaving}
-          />
+          <div
+            className={`${dialogMode === "edit" || dialogMode === "add" ? "block" : "hidden"}`}
+          >
+            <UserDialogForm
+              userData={cleanUserDataForm}
+              onSubmit={handleSubmit}
+              dialogMode={dialogMode}
+              employeeOptions={employee}
+              isSubmitting={isSaving}
+            />
+          </div>
+
+          <div className={`${dialogMode === "view" ? "block" : "hidden"}`}>
+            <UserDialogView
+              data={viewUser}
+              isLoading={isLoading}
+              dialogMode={dialogMode}
+            />
+          </div>
         </Dialog>
       </Card>
     </div>

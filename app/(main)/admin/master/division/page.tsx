@@ -336,7 +336,7 @@ export default function Position() {
 
           {/* data table */}
           <DataTableDivision
-            division={division}
+            data={division}
             isLoading={isLoading}
             onEdit={handleEdit}
             onDelete={handleDelete}
@@ -372,7 +372,7 @@ export default function Position() {
 
           <div className={dialogMode === "view" ? "block" : "hidden"}>
             <DivisionDialogView
-              divisionData={viewDivision}
+              data={viewDivision}
               isLoading={isLoading}
               dialogMode={dialogMode}
             />
