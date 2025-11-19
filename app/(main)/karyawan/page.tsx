@@ -1,305 +1,282 @@
 "use client";
 
-import React, { useState, useRef, useEffect, use } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Panel } from "primereact/panel";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import { Tag } from "primereact/tag";
-import Link from "next/link";
 import { Divider } from "primereact/divider";
 import { Toast } from "primereact/toast";
 import { Skeleton } from "primereact/skeleton";
+import Link from "next/link";
 import { useAuth } from "@/components/AuthContext";
 
-// --- Tipe Data ---
-interface RingkasanStats {
-	totalHadir: number;
-	totalTidakHadir: number;
-	sisaCuti: number;
-}
-
-interface PengajuanPending {
-	id: string;
-	jenis: "Cuti" | "Lembur";
-	tanggal: string;
-	status: "Pending" | "Approved" | "Rejected";
-}
-
-// --- [PERBAIKAN] Endpoint API ---
+// 🔗 API
 const API_URLS = {
-	dashboard: "/api/karyawan/dashboard",
-	leaveRequests: "/api/karyawan/leave-request"
+    dashboard: "/api/karyawan/dashboard",
+    history: "/api/karyawan/attendances/history"
 };
 
-// --- (Data Mock dihapus, kita akan fetch) ---
-// const mockStats: RingkasanStats = { ... };
-// const mockPending: PengajuanPending[] = [ ... ];
+// 🎨 CARD STYLE
+const cardStyle = {
+    borderRadius: "18px",
+    padding: "1.2rem",
+    boxShadow: "0 4px 18px rgba(0,0,0,0.08)",
+    border: "1px solid rgba(0,0,0,0.03)",
+    transition: "0.25s",
+};
 
+const cardHover = {
+    transform: "translateY(-4px)",
+    boxShadow: "0 10px 22px rgba(0,0,0,0.12)",
+};
+
+interface RingkasanStats {
+    totalHadir: number;
+    totalTidakHadir: number;
+    sisaCuti: number;
+}
 
 export default function DashboardRingkasanPage() {
-	const toast = useRef<Toast>(null);
-	const { user } = useAuth();
+    const toast = useRef<Toast>(null);
+    const { user } = useAuth();
 
-	const [stats, setStats] = useState<RingkasanStats | null>(null);
-	const [pendingList, setPendingList] = useState<PengajuanPending[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
+    const [stats, setStats] = useState<RingkasanStats | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-	// --- [PERBAIKAN] useEffect untuk memuat data dari API ---
-	useEffect(() => {
-		const loadDashboardData = async () => {
-			setIsLoading(true);
-			try {
-				// Panggil kedua endpoint secara paralel
-				const [resDashboard, resLeave] = await Promise.all([
-					fetch(API_URLS.dashboard),
-					fetch(API_URLS.leaveRequests)
-				]);
+    const [checkInStatus, setCheckInStatus] = useState<string>("Belum Check-in");
+    const [checkOutStatus, setCheckOutStatus] = useState<string>("Belum Check-out");
 
-				if (!resDashboard.ok) {
-					throw new Error("Gagal memuat data statistik dashboard");
-				}
-				if (!resLeave.ok) {
-					throw new Error("Gagal memuat data pengajuan cuti");
-				}
+    // Convert ISO date "2025-11-19T08:30:39.000Z" → "08:30"
+    const formatTime = (iso: string | null) => {
+        if (!iso) return null;
+        const d = new Date(iso);
+        return d.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
 
-				const dataDashboard = await resDashboard.json();
-				const dataLeave = await resLeave.json();
+    useEffect(() => {
+        const loadData = async () => {
+            setIsLoading(true);
 
-				// 1. Proses Data Statistik (dari JSON Anda)
-				if (dataDashboard.status === "00" && dataDashboard.master_employees) {
-					setStats({
-						totalHadir: dataDashboard.master_employees.totalAttendance,
-						totalTidakHadir: dataDashboard.master_employees.totalNotAttend,
-						// TODO: API dasbor tidak menyediakan sisa cuti.
-						// Ganti angka '8' ini jika Anda punya API untuk sisa cuti.
-						sisaCuti: 8, 
-					});
-				} else {
-					throw new Error(dataDashboard.message || "Data statistik tidak valid");
-				}
+            try {
+                const [resDashboard, resHistory] = await Promise.all([
+                    fetch(API_URLS.dashboard),
+                    fetch(API_URLS.history),
+                ]);
 
-				// 2. Proses Data Pengajuan Pending (dari API Cuti)
-				if (dataLeave.status === "00" && Array.isArray(dataLeave.leave_requests)) {
-					const pending = dataLeave.leave_requests
-						.filter((p: any) => p.status === "Pending")
-						.map((p: any): PengajuanPending => ({
-							id: p.id,
-							jenis: "Cuti", // Asumsi, karena hanya ada data cuti
-							tanggal: new Date(p.created_at).toLocaleDateString("id-ID", {
-								day: 'numeric',
-								month: 'short',
-								year: 'numeric'
-							}),
-							status: "Pending"
-						}));
-					setPendingList(pending);
-				} else {
-					throw new Error(dataLeave.message || "Data pengajuan tidak valid");
-				}
+                // --- DASHBOARD ---
+                if (!resDashboard.ok) throw new Error("Gagal memuat data dashboard");
+                const dataDashboard = await resDashboard.json();
 
-			} catch (error) {
-				console.error(error);
-				toast.current?.show({
-					severity: "error",
-					summary: "Error",
-					detail: (error as Error).message || "Gagal memuat data dashboard",
-					life: 3000,
-				});
-			} finally {
-				setIsLoading(false);
-			}
-		};
+                if (dataDashboard.status === "00") {
+                    setStats({
+                        totalHadir: dataDashboard.master_employees.totalAttendance,
+                        totalTidakHadir: dataDashboard.master_employees.totalNotAttend,
+                        sisaCuti: 8,
+                    });
+                }
 
-		loadDashboardData();
-	}, []);
-	// --- [BATAS PERBAIKAN] ---
+                // --- HISTORY ABSENSI HARI INI ---
+                if (!resHistory.ok) throw new Error("Gagal memuat data absensi hari ini");
 
+                const dataHistory = await resHistory.json();
 
-	// --- Template status untuk tabel ---
-	const statusBodyTemplate = (rowData: PengajuanPending) => {
-		const severityMap: { [key: string]: "warning" | "success" | "danger" } = {
-			Pending: "warning",
-			Approved: "success",
-			Rejected: "danger",
-		};
-		return (
-			<Tag value={rowData.status} severity={severityMap[rowData.status]} />
-		);
-	};
+                if (dataHistory.status === "03") {
+                    // Tidak ada absensi hari ini
+                    setCheckInStatus("Belum Check-in");
+                    setCheckOutStatus("Belum Check-out");
+                } else if (dataHistory.status === "00") {
+                    // Ada data absensi
+                    const record = dataHistory.attendances?.[0];
 
-	// --- Loading Skeleton ---
-	if (isLoading) {
-		return (
-			<div>
-				<div className="mb-4">
-					<Skeleton width="20rem" height="2.5rem" className="mb-2"></Skeleton>
-					<Skeleton width="15rem" height="1.5rem"></Skeleton>
-				</div>
-				<Divider className="mb-4" />
-				<div className="grid">
-					{[1, 2, 3].map((i) => (
-						<div key={i} className="col-12 md:col-4">
-							<Card className="shadow-1 h-full">
-								<div className="flex align-items-center">
-									<Skeleton
-										shape="circle"
-										size="3rem"
-										className="mr-3"
-									></Skeleton>
-									<div>
-										<Skeleton
-											width="10rem"
-											height="1rem"
-											className="mb-2"
-										></Skeleton>
-										<Skeleton width="5rem" height="1.5rem"></Skeleton>
-									</div>
-								</div>
-							</Card>
-						</div>
-					))}
-				</div>
-				<div className="grid mt-3">
-					<div className="col-12 lg:col-8">
-						<Panel header="Memuat Pengajuan...">
-							<Skeleton height="150px"></Skeleton>
-						</Panel>
-					</div>
-					<div className="col-12 lg:col-4">
-						<Panel header="Memuat Akses Cepat...">
-							<Skeleton height="150px"></Skeleton>
-						</Panel>
-					</div>
-				</div>
-			</div>
-		);
-	}
+                    if (record) {
+                        const checkIn = formatTime(record.check_in_time);
+                        const checkOut = formatTime(record.check_out_time);
 
-	// --- Jika data gagal ---
-	// [PERBAIKAN] Skeleton akan menangani 'isLoading', kita cek 'stats' setelahnya
-	if (!stats) {
-		return (
-			<div>
-				<Toast ref={toast} />
-				<Card title="Gagal Memuat Data">
-					<p>
-						Terjadi kesalahan saat mengambil data dashboard. Silakan coba muat
-						ulang halaman.
-					</p>
-				</Card>
-			</div>
-		);
-	}
+                        setCheckInStatus(checkIn ?? "Belum Check-in");
+                        setCheckOutStatus(checkOut ?? "Belum Check-out");
+                    }
+                }
 
-	// --- Tampilan Utama ---
-	return (
-		<div>
-			<Toast ref={toast} />
+            } catch (error) {
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Error",
+                    detail: (error as Error).message,
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-			{/* Header Sambutan */}
-			<div className="mb-4">
-				<h2 className="m-0 text-4xl font-bold text-900">
-					{user ? `Selamat Datang, ${user.full_name}` : "Selamat Datang"}
-				</h2>
-				<p className="text-color-secondary text-lg">
-					Berikut adalah ringkasan aktivitas Anda hari ini.
-				</p>
-			</div>
-			<Divider className="mb-4" />
+        loadData();
+    }, []);
 
-			{/* Ringkasan Absensi */}
-			<div className="grid">
-				<div className="col-12 md:col-4">
-					<Card className="shadow-1 h-full hover:shadow-4 transition-duration-200 cursor-pointer">
-						<div className="flex align-items-center">
-							<i className="pi pi-check-circle text-3xl text-green-500 mr-3"></i>
-							<div>
-								<span className="text-color-secondary">
-									Total Hadir Bulan Ini
-								</span>
-								<h3 className="m-0 mt-1">{stats.totalHadir} Hari</h3>
-							</div>
-						</div>
-					</Card>
-				</div>
-				<div className="col-12 md:col-4">
-					<Card className="shadow-1 h-full hover:shadow-4 transition-duration-200 cursor-pointer">
-						<div className="flex align-items-center">
-							<i className="pi pi-exclamation-triangle text-3xl text-orange-500 mr-3"></i>
-							<div>
-								<span className="text-color-secondary">Total Tidak Hadir</span>
-								<h3 className="m-0 mt-1">{stats.totalTidakHadir} Hari</h3>
-							</div>
-						</div>
-					</Card>
-				</div>
-				<div className="col-12 md:col-4">
-					<Card className="shadow-1 h-full hover:shadow-4 transition-duration-200 cursor-pointer">
-						<div className="flex align-items-center">
-							<i className="pi pi-calendar text-3xl text-blue-500 mr-3"></i>
-							<div>
-								<span className="text-color-secondary">Sisa Cuti Tahunan</span>
-								<h3 className="m-0 mt-1">{stats.sisaCuti} Hari</h3>
-							</div>
-						</div>
-					</Card>
-				</div>
-			</div>
+    // LOADING UI
+    if (isLoading) {
+        return (
+            <div>
+                <Skeleton width="18rem" height="2.2rem" className="mb-3" />
+                <Skeleton width="14rem" height="1.5rem" />
 
-			{/* Ringkasan Menu */}
-			<div className="grid mt-3">
-				<div className="col-12 lg:col-8">
-					<Panel header="Ringkasan Pengajuan (Tertunda)">
-						{pendingList.length > 0 ? (
-							<DataTable
-								value={pendingList}
-								responsiveLayout="stack"
-								size="small"
-							>
-								<Column field="jenis" header="Jenis Pengajuan" />
-								<Column field="tanggal" header="Tanggal Diajukan" />
-								<Column header="Status" body={statusBodyTemplate} />
-							</DataTable>
-						) : (
-							<p className="m-0">
-								Tidak ada pengajuan yang tertunda. Kerja bagus!
-							</p>
-						)}
-					</Panel>
-				</div>
+                <div className="grid mt-3">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="col-12 md:col-4">
+                            <Card style={cardStyle}>
+                                <Skeleton width="100%" height="80px" />
+                            </Card>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
-				<div className="col-12 lg:col-4">
-					<Panel header="Akses Cepat">
-						<div className="flex flex-column gap-3">
-							<Link href="/karyawan/Absensi" passHref>
-								<Button
-									label="Lakukan Absensi"
-									icon="pi pi-clock"
-									className="w-full p-button-success p-button-raised"
-								/>
-							</Link>
-							<Link href="/karyawan/Pengajuan/cuti" passHref>
-								<Button
-									label="Buat Pengajuan Baru"
-									icon="pi pi-file-edit"
-									className="w-full"
-									outlined
-								/>
-							</Link>
-							<Link href="/karyawan/Profil" passHref>
-								<Button
-									label="Lihat Profil Saya"
-									icon="pi pi-user"
-									className="w-full p-button-secondary"
-									outlined
-								/>
-							</Link>
-						</div>
-					</Panel>
-				</div>
-			</div>
-		</div>
-	);
+    if (!stats) return null;
+
+    return (
+        <div>
+            <Toast ref={toast} />
+
+            {/* HEADER */}
+            <div className="w-full rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 p-[1px] shadow-lg mb-4">
+                <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            Selamat Datang,{" "}
+                            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                {user?.full_name ?? "Karyawan"}
+                            </span>{" "}
+                            👋
+                        </h1>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+                            Berikut ringkasan aktivitas terbaru Anda ✨
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <Divider />
+
+            {/* STAT CARDS */}
+            <div className="grid">
+                <div className="col-12 md:col-4">
+                    <Card
+                        style={cardStyle}
+                        className="cursor-pointer"
+                        onMouseEnter={(e) => Object.assign(e.currentTarget.style, cardHover)}
+                        onMouseLeave={(e) => Object.assign(e.currentTarget.style, cardStyle)}
+                    >
+                        <div className="flex align-items-center">
+                            <div className="bg-green-100 p-3 border-circle mr-3">
+                                <i className="pi pi-check-circle text-green-600 text-2xl"></i>
+                            </div>
+                            <div>
+                                <span className="text-600">Total Hadir</span>
+                                <h2 className="m-0 mt-1 text-2xl font-semibold">{stats.totalHadir} Hari</h2>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+
+                <div className="col-12 md:col-4">
+                    <Card
+                        style={cardStyle}
+                        className="cursor-pointer"
+                        onMouseEnter={(e) => Object.assign(e.currentTarget.style, cardHover)}
+                        onMouseLeave={(e) => Object.assign(e.currentTarget.style, cardStyle)}
+                    >
+                        <div className="flex align-items-center">
+                            <div className="bg-orange-100 p-3 border-circle mr-3">
+                                <i className="pi pi-times-circle text-orange-600 text-2xl"></i>
+                            </div>
+                            <div>
+                                <span className="text-600">Tidak Hadir</span>
+                                <h2 className="m-0 mt-1 text-2xl font-semibold">{stats.totalTidakHadir} Hari</h2>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+
+                <div className="col-12 md:col-4">
+                    <Card
+                        style={cardStyle}
+                        className="cursor-pointer"
+                        onMouseEnter={(e) => Object.assign(e.currentTarget.style, cardHover)}
+                        onMouseLeave={(e) => Object.assign(e.currentTarget.style, cardStyle)}
+                    >
+                        <div className="flex align-items-center">
+                            <div className="bg-blue-100 p-3 border-circle mr-3">
+                                <i className="pi pi-calendar text-blue-600 text-2xl"></i>
+                            </div>
+                            <div>
+                                <span className="text-600">Sisa Cuti</span>
+                                <h2 className="m-0 mt-1 text-2xl font-semibold">{stats.sisaCuti} Hari</h2>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            </div>
+
+            {/* STATUS ABSENSI HARI INI */}
+            <div className="grid mt-4">
+                <div className="col-12 lg:col-8">
+                    <Panel header="🟩 Status Absensi Hari Ini" className="shadow-2 border-round-xl">
+                        <div className="grid">
+                            {/* CHECK-IN */}
+                            <div className="col-12 md:col-6">
+                                <Card className="border-round-xl shadow-1 p-3">
+                                    <div className="flex align-items-center gap-3">
+                                        <span className="bg-green-100 text-green-600 p-3 border-circle">
+                                            <i className="pi pi-sign-in text-xl"></i>
+                                        </span>
+                                        <div>
+                                            <p className="m-0 text-sm text-gray-600">Check-in</p>
+                                            <h2 className="m-0 text-xl font-semibold">{checkInStatus}</h2>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </div>
+
+                            {/* CHECK-OUT */}
+                            <div className="col-12 md:col-6">
+                                <Card className="border-round-xl shadow-1 p-3">
+                                    <div className="flex align-items-center gap-3">
+                                        <span className="bg-blue-100 text-blue-600 p-3 border-circle">
+                                            <i className="pi pi-sign-out text-xl"></i>
+                                        </span>
+                                        <div>
+                                            <p className="m-0 text-sm text-gray-600">Check-out</p>
+                                            <h2 className="m-0 text-xl font-semibold">{checkOutStatus}</h2>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </div>
+                        </div>
+                    </Panel>
+                </div>
+
+                {/* AKSES CEPAT */}
+                <div className="col-12 lg:col-4">
+                    <Panel header="Akses Cepat" className="shadow-2 border-round-xl">
+                        <div className="flex flex-column gap-3">
+                            <Link href="/karyawan/Absensi">
+                                <Button label="Lakukan Absensi" icon="pi pi-clock" className="w-full p-button-primary p-button-raised" />
+                            </Link>
+
+                            <Link href="/karyawan/Pengajuan/cuti">
+                                <Button label="Ajukan Cuti" icon="pi pi-file-edit" className="w-full p-button-outlined" />
+                            </Link>
+
+                            <Link href="/karyawan/Profil">
+                                <Button label="Lihat Profil" icon="pi pi-user" className="w-full p-button-secondary p-button-outlined" />
+                            </Link>
+                        </div>
+                    </Panel>
+                </div>
+            </div>
+        </div>
+    );
 }
