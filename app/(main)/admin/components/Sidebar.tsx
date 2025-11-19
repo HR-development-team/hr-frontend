@@ -73,6 +73,10 @@ const menuItems: MenuItems[] = [
         label: "Monitoring Kehadiran",
         href: "/admin/attendance",
       },
+      {
+        label: "Sesi Absensi",
+        href: "/admin/attendance/session",
+      },
     ],
   },
   {

@@ -72,7 +72,7 @@ export const API_ENDPOINTS = {
   DELETEATTENDANCESESSION: (id: string) =>
     `${API_URL}/attendance-sessions/${id}`, // Delete Attendance Session By Id
   CLOSEATTENDANCESESSION: (id: string) =>
-    `${API_URL}/attendance-sessions/${id}/close`, // Closed Attendance Session
+    `${API_URL}/attendance-sessions/${id}/status`, // Closed Attendance Session
 
   // --- INI TAMBAHAN: Attendances ---
   EMPLOYEECHECKIN: `${API_URL}/attendances/check-in`, // Employee Check In
