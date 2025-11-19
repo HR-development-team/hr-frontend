@@ -8,18 +8,13 @@ import { UserFormProps } from "@/lib/types/form/userFormType";
 import { roleOptions, UserDefaultValues } from "@/lib/values/userDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
-import { Dropdown } from "primereact/dropdown";
-import { useState } from "react";
 
 export default function UserDialogForm({
   userData,
   onSubmit,
-  employeeOptions,
   dialogMode,
   isSubmitting,
 }: UserFormProps) {
-  const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
-
   const placeholder =
     dialogMode === "add" ? "Masukkan Password" : "Isi Password Untuk Update";
 

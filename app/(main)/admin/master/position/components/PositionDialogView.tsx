@@ -1,4 +1,3 @@
-import { PositionViewProps } from "@/lib/types/view/positionViewTypes";
 import { formatDateIDN } from "@/lib/utils/dateFormat";
 import { formatRupiah } from "@/lib/utils/formatRupiah";
 import { Building, UserCheck } from "lucide-react";

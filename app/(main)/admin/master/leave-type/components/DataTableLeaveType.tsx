@@ -3,7 +3,6 @@
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
-import { Tag } from "primereact/tag";
 import React from "react";
 import { GetAllLeaveTypeData } from "@/lib/types/leaveType";
 import { formatRupiah } from "@/lib/utils/formatRupiah";
@@ -21,12 +20,6 @@ export default function DataTableLeaveType({
 }: DataTableMasterPropsTypes<GetAllLeaveTypeData>) {
   const newLocal =
     "border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
-
-  const statusBodyTemplate = (rowData: any) => {
-    const severity = rowData.status === "Aktif" ? "success" : "danger";
-
-    return <Tag value={rowData.status} severity={severity} />;
-  };
 
   return (
     <DataTable

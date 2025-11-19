@@ -1,7 +1,6 @@
 import { formatDateIDN } from "@/lib/utils/dateFormat";
 import { Card } from "primereact/card";
 import DivisionDialogViewSkeleton from "./DivisionDialogViewSkeleton";
-import { DivisionViewProps } from "@/lib/types/view/divisionViewTypes";
 import { GitFork } from "lucide-react";
 import { ViewMasterPropsTypes } from "@/lib/types/view/viewMasterPropsTypes";
 import { GetDivisionByIdData } from "@/lib/types/division";

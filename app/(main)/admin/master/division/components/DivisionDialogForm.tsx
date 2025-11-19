@@ -1,18 +1,15 @@
 "use client";
 import FormDropdown from "@/components/form/FormDropdown";
-import FormInputNumber from "@/components/form/FormInputNumber";
 import FormInputText from "@/components/form/FormInputText";
 import FormInputTextarea from "@/components/form/FormInputTextarea";
 import {
   DivisionFormData,
   divisionFormSchema,
 } from "@/lib/schemas/divisionFormSchema";
-import { positionFormSchema } from "@/lib/schemas/positionFormSchema";
 import { DivisionFormProps } from "@/lib/types/form/divisionFormType";
 import { divisionDefaultValue } from "@/lib/values/divisionDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
-import { InputNumberValueChangeEvent } from "primereact/inputnumber";
 
 export default function DivisionDialogForm({
   divisionData,

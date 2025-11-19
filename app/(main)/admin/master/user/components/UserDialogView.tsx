@@ -1,7 +1,6 @@
 import { User } from "lucide-react";
 import { Card } from "primereact/card";
 import { formatDateIDN } from "@/lib/utils/dateFormat";
-import { UserViewProps } from "@/lib/types/view/userViewPropsTypes";
 import UserDialogViewSkeleton from "./UserDialogViewSkeleton";
 import { ViewMasterPropsTypes } from "@/lib/types/view/viewMasterPropsTypes";
 import { GetUserByIdData } from "@/lib/types/user";
@@ -14,8 +13,6 @@ export default function UserDialogView({
   const isOnViewMode = dialogMode === "view" ? true : false;
 
   const role = data?.role === "admin" ? "Admin" : "Karyawan";
-
-  // isLoading = true;
 
   if (isLoading) {
     return <UserDialogViewSkeleton />;

@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import { Toast } from "primereact/toast";
 import { useAuth } from "@/components/AuthContext";
 import { Skeleton } from "primereact/skeleton";
-import { CircleAlert } from "lucide-react";
 
 const getMenuitems = (logoutHandler: () => void): MenuItem[] => [
   {
@@ -144,7 +143,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
                     ? "Admin"
                     : user?.role === "employee"
                       ? "Karyawan"
-                      : "Perlu Login"}
+                      : "Admin"}
                 </p>
               )}
             </div>
@@ -182,7 +181,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
                   ) : (
                     <>
                       <span className="font-semibold text-base">
-                        {user?.full_name ? user.full_name : "Perlu Login"}
+                        {user?.full_name ? user.full_name : "Logout"}
                       </span>
                       <span className="text-xs">{user?.email}</span>
                     </>

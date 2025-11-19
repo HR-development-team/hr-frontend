@@ -2,7 +2,7 @@ import { UserFormData } from "@/lib/schemas/userFormSchema";
 import { GetAllEmployeeData } from "../employee";
 
 export interface UserFormProps {
-  userData: UserFormData | null;
+  userData: Omit<UserFormData, "password" | "confirmPassword"> | null;
   onSubmit: (formData: UserFormData) => void;
   dialogMode: "view" | "add" | "edit" | null;
   employeeOptions: GetAllEmployeeData[];
