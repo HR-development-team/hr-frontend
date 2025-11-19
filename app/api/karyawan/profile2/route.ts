@@ -16,7 +16,7 @@ export const GET = async (request: NextRequest) => {
   }
 
   try {
-    const response = await Axios.get(API_ENDPOINTS.GETUSERPROFILE, {
+    const response = await Axios.get(API_ENDPOINTS.GETUSER, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

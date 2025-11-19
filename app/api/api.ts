@@ -50,7 +50,7 @@ export const API_ENDPOINTS = {
 
   // --- Dashboard ---
   GETADMINDASHBOARD: `${API_URL}/admin/dashboard/metrics`, // Get Admin Dashboard Data
-  GETEMPLOYEEDASHBOARD: `${API_URL}/employee/dashboard/metrics`, // INI TAMBAHAN: Get Employee Dashboard Data
+  GETEMPLOYEEDASHBOARD: `${API_URL}/employees/dashboard/metrics`, // INI TAMBAHAN: Get Employee Dashboard Data
 
   // --- Profiles ---
   GETPROFILES: `${API_URL}/profiles`, // Get Profile
@@ -59,10 +59,9 @@ export const API_ENDPOINTS = {
   // --- Leave Request ---
   POSTLEAVEREQUEST: `${API_URL}/leave-requests`, // Submit Leave Request (Menggantikan POSTREQUEST)
   GETALLLEAVEREQUEST: `${API_URL}/leave-requests`, // Get All Leave Request (Menggantikan GETALLREQUEST)
-  UPDATELEAVEREQUESTSTATUS: (id: string) =>
-    `${API_URL}/leave-requests/${id}/status`, // INI TAMBAHAN: Update Leave Request Status
+  UPDATELEAVEREQUESTSTATUS: (id: string) =>`${API_URL}/leave-requests/${id}/status`, // INI TAMBAHAN: Update Leave Request Status
   GETLEAVEBYUSER: (id: string) => `${API_URL}/leave-requests/user/${id}`, // Ini dari kode Anda
-
+  GETLEAVEBYEMPLOYEE: `${API_URL}/leave-requests/me`,
   // --- INI TAMBAHAN: Attendance Session ---
   ADDATTENDANCESESSION: `${API_URL}/attendance-sessions`, // Create New Attendance Session
   GETALLATTENDANCESESSION: `${API_URL}/attendance-sessions`, // Get All Attendance Session
