@@ -13,22 +13,23 @@ export interface GetAllEmployeeData {
 }
 
 export interface GetEmployeeByIdData extends GetAllEmployeeData {
-  ktp_number: string;
-  birth_place: string;
-  birth_date: string;
-  gender: "laki-laki" | "perempuan";
-  address: string | "";
-  contact_phone: string;
-  religion: string;
-  maritial_status: "Belum Menikah" | "Menikah";
-  resign_date: string;
-  education: string;
-  blood_type: string;
-  profile_picture: string;
-  bpjs_ketenagakerjaan: string;
-  bpjs_kesehatan: string;
-  npwp: string;
-  bank_account: string;
+  user_code: string;
+  ktp_number: string | null;
+  birth_place: string | null;
+  birth_date: string | null;
+  gender: "laki-laki" | "perempuan" | null;
+  address: string | null;
+  contact_phone: string | null;
+  religion: string | null;
+  maritial_status: "Belum Menikah" | "Menikah" | null;
+  resign_date: string | null;
+  education: string | null;
+  blood_type: string | null;
+  profile_picture: string | null;
+  bpjs_ketenagakerjaan: string | null;
+  bpjs_kesehatan: string | null;
+  npwp: string | null;
+  bank_account: string | null;
   created_at: string;
   updated_at: string;
 }

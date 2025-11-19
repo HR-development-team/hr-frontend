@@ -3,24 +3,15 @@
 import { TicketsPlane } from "lucide-react";
 import { Card } from "primereact/card";
 import { Toast } from "primereact/toast";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import DataTableLeaveRequest from "./components/DataTableLeaveRequest";
-import { GetAllLeaveTypeData } from "@/lib/types/leaveType";
 import { GetAllLeaveRequestData } from "@/lib/types/leaveRequest";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-import { stat } from "fs";
-
-// interface CombinedLeaveRequestData extends LeaveRequestData {
-// 	employee_name: string;
-// 	leave_type_name: string;
-// }
 
 export default function Leave() {
   const toasRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
-  // const [employee, setEmployee] = useState<GetAllEmployeeData[]>([]);
-  const [leaveType, setLeaveType] = useState<GetAllLeaveTypeData[]>([]);
   const [leaveRequest, setLeaveRequest] = useState<GetAllLeaveRequestData[]>(
     []
   );
@@ -59,13 +50,12 @@ export default function Leave() {
           detail: leaveRequestData.message,
           life: 3000,
         });
-        // setEmployee([]);
-        setLeaveType([]);
         setLeaveRequest([]);
       }
     } catch (error: any) {
+      console.log(error.message);
+
       // setEmployee([]);
-      setLeaveType([]);
       setLeaveRequest([]);
     } finally {
       setIsLoading(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import { GitFork, UserCheck } from "lucide-react";
+import { UserCheck } from "lucide-react";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
@@ -63,6 +63,8 @@ export default function Position() {
         setPosition(responseData.master_positions || []);
       }
     } catch (error: any) {
+      console.log(error.message);
+
       setPosition([]);
     } finally {
       setIsLoading(false);
@@ -87,6 +89,8 @@ export default function Position() {
 
       console.log(viewPosition);
     } catch (error: any) {
+      console.log(error.message);
+
       setViewPosition(null);
     } finally {
       setIsLoading(false);
@@ -106,7 +110,9 @@ export default function Position() {
       if (responseData && responseData.status === "00") {
         setDivision(responseData.master_divisions || []);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.log(error.message);
+
       setDivision([]);
     }
   };
@@ -116,19 +122,11 @@ export default function Position() {
       return null;
     }
 
-    const {
-      id,
-      position_code,
-      created_at,
-      updated_at,
-      division_name,
-      department_code,
-      department_name,
-      ...cleanData
-    } = viewPosition;
-
     return {
-      ...cleanData,
+      name: viewPosition.name,
+      base_salary: viewPosition.base_salary,
+      description: viewPosition.description,
+      division_code: viewPosition.division_code,
     };
   }, [viewPosition]);
 
@@ -178,7 +176,7 @@ export default function Position() {
       toastRef.current?.show({
         severity: "error",
         summary: "Error",
-        detail: "Terjadi kesalahan koneksi",
+        detail: error.message || "Terjadi kesalahan koneksi",
         life: 3000,
       });
     } finally {
@@ -235,7 +233,7 @@ export default function Position() {
           toastRef.current?.show({
             severity: "error",
             summary: "Gagal",
-            detail: error.message,
+            detail: error.message || "Terjadi kesalahan koneksi",
             life: 3000,
           });
         } finally {

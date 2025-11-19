@@ -300,7 +300,7 @@ export default function Employees() {
   return (
     <div>
       <Toast ref={toastRef} />
-      <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
+      <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <Users className="w-2rem h-2rem" />
         </div>

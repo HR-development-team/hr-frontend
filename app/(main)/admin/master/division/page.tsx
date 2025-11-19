@@ -1,6 +1,6 @@
 "use client";
 
-import { GitFork, UserCheck } from "lucide-react";
+import { GitFork } from "lucide-react";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
@@ -103,7 +103,9 @@ export default function Position() {
       if (responseData && responseData.status === "00") {
         setDepartment(responseData.master_departments || []);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.log(error.message);
+
       setDepartment([]);
     }
   };
@@ -113,17 +115,10 @@ export default function Position() {
       return null;
     }
 
-    const {
-      id,
-      created_at,
-      updated_at,
-      department_name,
-      division_code,
-      ...cleanData
-    } = viewDivision;
-
     return {
-      ...cleanData,
+      department_code: viewDivision.department_code,
+      name: viewDivision.name,
+      description: viewDivision.description,
     };
   }, [viewDivision]);
 

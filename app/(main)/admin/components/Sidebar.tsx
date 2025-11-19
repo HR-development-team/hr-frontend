@@ -6,7 +6,6 @@ import {
   FileText,
   LayoutDashboard,
   MonitorCheck,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -86,7 +85,7 @@ const menuItems: MenuItems[] = [
       },
       {
         label: "Manajemen Saldo Cuti",
-        href: "#",
+        href: "/admin/transaction/leave-balance-management",
       },
       // {
       // 	label: "Pengajuan Lembur",
@@ -198,7 +197,7 @@ export default function SidebarPopup({
 
   return (
     <aside
-      className={`h-sidebar-calc fixed left-0 top-auto bottom-0 md:relative z-4 w-16rem bg-white shadow-2 px-3 transition-transform animation-duration-300 animation-ease-in-out md:translate-x-0 ${
+      className={`h-sidebar-calc fixed left-0 top-auto bottom-0 overflow-y-auto md:relative z-4 w-16rem bg-white shadow-2 px-3 transition-transform animation-duration-300 animation-ease-in-out md:translate-x-0 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-100"
       }`}
     >

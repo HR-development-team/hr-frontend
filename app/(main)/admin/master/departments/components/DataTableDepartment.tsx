@@ -21,12 +21,6 @@ export default function DataTableDepartment({
   const newLocal =
     "border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
-  const statusBodyTemplate = (rowData: any) => {
-    const severity = rowData.status === "Aktif" ? "success" : "danger";
-
-    return <Tag value={rowData.status} severity={severity} />;
-  };
-
   return (
     <DataTable
       value={data}

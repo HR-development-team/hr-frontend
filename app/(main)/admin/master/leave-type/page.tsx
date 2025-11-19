@@ -1,6 +1,6 @@
 "use client";
 
-import { TicketsPlane, User, Users } from "lucide-react";
+import { TicketsPlane } from "lucide-react";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
@@ -73,7 +73,9 @@ export default function LeaveType() {
 
         setLeaveType([]);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.log(error.message);
+
       setLeaveType([]);
     } finally {
       setIsLoading(false);
@@ -94,7 +96,9 @@ export default function LeaveType() {
       } else {
         setViewLeaveType(null);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.log(error.message);
+
       setViewLeaveType(null);
     } finally {
       setIsLoading(false);
@@ -106,15 +110,15 @@ export default function LeaveType() {
       return null;
     }
 
-    const { id, type_code, created_at, updated_at, ...cleanData } =
-      viewLeaveType;
-
     return {
-      ...cleanData,
+      name: viewLeaveType.name,
+      deduction: Number(viewLeaveType.deduction),
+      description: viewLeaveType.description,
     };
   }, [viewLeaveType]);
 
   const handleSubmit = async (formData: LeaveTypeFormData) => {
+    setIsSaving(true);
     try {
       const method = dialogMode === "add" ? "POST" : "PUT";
 
@@ -152,6 +156,8 @@ export default function LeaveType() {
         detail: error.message,
         life: 3000,
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 

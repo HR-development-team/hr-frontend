@@ -11,9 +11,6 @@ import { DataTableMasterPropsTypes } from "@/lib/types/dataTable/dataTableMaster
 export default function DataTablePosition({
   data,
   isLoading,
-  // lazyParams,
-  // totalItems,
-  // onPageChange,
   onEdit,
   onDelete,
   onView,

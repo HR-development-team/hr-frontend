@@ -5,7 +5,6 @@ import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
 import React from "react";
 import EmployeeDialogViewSkeleton from "./EmployeeDialogViewSkeleton";
-import { EmployeeViewProps } from "@/lib/types/view/employeeViewTypes";
 import { ViewMasterPropsTypes } from "@/lib/types/view/viewMasterPropsTypes";
 import { GetEmployeeByIdData } from "@/lib/types/employee";
 

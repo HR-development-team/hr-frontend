@@ -38,9 +38,6 @@ export default function Department() {
     "Lihat Data Departement" | "Edit Departemen" | "Tambah Departemen" | null
   >(null);
 
-  const [selectedDepartment, setSelectedDepartment] =
-    useState<DepartementFormData | null>(null);
-
   const fetchAllDepartment = async () => {
     setIsLoading(true);
 
@@ -126,7 +123,6 @@ export default function Department() {
       });
 
       fetchAllDepartment();
-      setSelectedDepartment(null);
       setDialogMode(null);
       setIsDialogVisible(false);
       setCurrentEditedId(null);
@@ -146,11 +142,9 @@ export default function Department() {
       return null;
     }
 
-    const { id, department_code, created_at, updated_at, ...cleanData } =
-      viewDepartment;
-
     return {
-      ...cleanData,
+      name: viewDepartment.name,
+      description: viewDepartment.description,
     };
   }, [viewDepartment]);
 
@@ -202,7 +196,6 @@ export default function Department() {
           });
 
           fetchAllDepartment();
-          setSelectedDepartment(null);
         } catch (error: any) {
           toastRef.current?.show({
             severity: "error",
@@ -304,7 +297,6 @@ export default function Department() {
                   onClick={() => {
                     setDialogMode("add");
                     setDialogLabel("Tambah Departemen");
-                    setSelectedDepartment(null);
                     setCurrentEditedId(null);
                     setIsDialogVisible(true);
                   }}
