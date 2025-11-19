@@ -79,7 +79,8 @@ export default function StatusPengajuanPage() {
 
   // State untuk search bar modern
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const searchInputRef = useRef<InputText>(null);
+const searchInputRef = useRef<HTMLInputElement>(null);
+
 
   // --- Logika Filtering ---
   useEffect(() => {
