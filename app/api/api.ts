@@ -92,8 +92,7 @@ export const API_ENDPOINTS = {
   ADDPAYROLLPERIOD: `${API_URL}/payroll-periods`, // Create Payroll Periods
   GETALLPAYROLLPERIODS: `${API_URL}/payroll-periods`, // Get All Payroll Periods
   GETPAYROLLPERIODBYID: (id: string) => `${API_URL}/payroll-periods/${id}`, // Get Payroll Period By Id
-  UPDATEPAYROLLPERIODSTATUS: (id: string) =>
-    `${API_URL}/payroll-periods/${id}/status`, // Update Status Payroll Periods
+  UPDATEPAYROLLPERIODSTATUS: (id: string) =>`${API_URL}/payroll-periods/${id}/status`, // Update Status Payroll Periods
   DELETEPAYROLLPERIOD: (id: string) => `${API_URL}/payroll-periods/${id}`, // Delete Payroll Periods
 
   // --- INI TAMBAHAN: Payroll ---
