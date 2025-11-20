@@ -1,5 +1,3 @@
-// /app/(main)/karyawan/Pengajuan/status/page.tsx
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -9,78 +7,75 @@ import { Column } from "primereact/column";
 import { Tag } from "primereact/tag";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
-import { SelectButton } from "primereact/selectbutton"; // Untuk filter "Pending", "Approved"
+import { SelectButton } from "primereact/selectbutton";
 
-// --- Tipe Data Bohongan (Mock) ---
+// ===========================
+// TIPE DATA TABEL
+// ===========================
 interface AllRequest {
-  id: string;
+  id: number;
   jenis: string;
-  tanggal: string; // Tanggal utama untuk sort
-  detail: string; // Misal: "01 Nov - 02 Nov" atau "17:00 - 19:00"
+  mulai: string;
+  selesai: string;
+  alasan: string;
   status: "Approved" | "Pending" | "Rejected";
 }
 
-// --- Data Bohongan (Mock) ---
-const mockAllRequests: AllRequest[] = [
-  {
-    id: "C-003",
-    jenis: "Cuti Tahunan",
-    tanggal: "2025-11-01",
-    detail: "01 Nov - 02 Nov",
-    status: "Pending",
-  },
-  {
-    id: "L-002",
-    jenis: "Lembur",
-    tanggal: "2025-10-29",
-    detail: "17:00 - 18:00",
-    status: "Pending",
-  },
-  {
-    id: "C-001",
-    jenis: "Cuti Tahunan",
-    tanggal: "2025-10-25",
-    detail: "25 Okt - 25 Okt",
-    status: "Approved",
-  },
-  {
-    id: "L-001",
-    jenis: "Lembur",
-    tanggal: "2025-10-25",
-    detail: "17:00 - 19:00",
-    status: "Approved",
-  },
-  {
-    id: "C-002",
-    jenis: "Sakit",
-    tanggal: "2025-10-15",
-    detail: "15 Okt - 16 Okt",
-    status: "Rejected",
-  },
-];
-
-// Opsi untuk tombol filter status
+// ===========================
+// OPSI FILTER STATUS
+// ===========================
 const statusFilterOptions = [
   { name: "Tertunda", value: "Pending" },
   { name: "Disetujui", value: "Approved" },
   { name: "Semua", value: "All" },
 ];
 
-// PASTIKAN NAMA FUNGSI ADALAH 'Page'
+// Format tanggal: 2025-11-19 → 19 Nov
+const formatDate = (dateString: string) => {
+  return dateString.split("T")[0];
+};
+
+
 export default function Page() {
-  // <-- INI BAGIAN PENTING
-
-  // --- State ---
-  const [allRequests] = useState(mockAllRequests);
+  const [allRequests, setAllRequests] = useState<AllRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<AllRequest[]>([]);
-
   const [statusFilter, setStatusFilter] = useState("Pending");
   const [globalFilter, setGlobalFilter] = useState("");
-
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const searchInputRef = useRef<InputText>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // --- Logika Filtering ---
+  // ===========================
+  // FETCH DATA DARI BACKEND
+  // ===========================
+  useEffect(() => {
+    async function fetchRequests() {
+      try {
+        const res = await fetch("/api/karyawan/leave-request/current-employee");
+        const data = await res.json();
+
+        if (!data.leave_requests) return;
+
+        const mapped: AllRequest[] = data.leave_requests.map((req: any) => ({
+          id: req.id,
+          jenis: req.type_name,
+          mulai: formatDate(req.start_date),
+          selesai: formatDate(req.end_date),
+          alasan: req.reason,
+          status: req.status,
+        }));
+
+        setAllRequests(mapped);
+      } catch (err) {
+        console.error("Fetch Error:", err);
+      }
+    }
+
+    fetchRequests();
+  }, []);
+
+  // ===========================
+  // FILTERING
+  // ===========================
   useEffect(() => {
     let filtered = [...allRequests];
 
@@ -89,27 +84,23 @@ export default function Page() {
     }
 
     if (globalFilter) {
-      const lowerCaseFilter = globalFilter.toLowerCase();
+      const q = globalFilter.toLowerCase();
       filtered = filtered.filter(
         (req) =>
-          req.jenis.toLowerCase().includes(lowerCaseFilter) ||
-          req.detail.toLowerCase().includes(lowerCaseFilter) ||
-          req.status.toLowerCase().includes(lowerCaseFilter)
+          req.jenis.toLowerCase().includes(q) ||
+          req.alasan.toLowerCase().includes(q) ||
+          req.status.toLowerCase().includes(q)
       );
     }
 
     setFilteredRequests(filtered);
   }, [allRequests, statusFilter, globalFilter]);
 
-  useEffect(() => {
-    if (isSearchVisible) {
-      searchInputRef.current?.focus();
-    }
-  }, [isSearchVisible]);
-
-  // --- Helper & Render ---
+  // ===========================
+  // BADGE STATUS
+  // ===========================
   const statusBodyTemplate = (req: AllRequest) => {
-    const severityMap: { [key: string]: "success" | "warning" | "danger" } = {
+    const severityMap: any = {
       Approved: "success",
       Pending: "warning",
       Rejected: "danger",
@@ -117,69 +108,72 @@ export default function Page() {
     return <Tag value={req.status} severity={severityMap[req.status]} />;
   };
 
-  const renderHeader = () => {
-    return (
-      <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
-        <SelectButton
-          value={statusFilter}
-          options={statusFilterOptions}
-          onChange={(e) => setStatusFilter(e.value)}
-          optionLabel="name"
-          allowEmpty={false}
-        />
+  // ===========================
+  // HEADER TABLE
+  // ===========================
+  const renderHeader = () => (
+    <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
+      <SelectButton
+        value={statusFilter}
+        options={statusFilterOptions}
+        onChange={(e) => setStatusFilter(e.value)}
+        optionLabel="name"
+        allowEmpty={false}
+      />
 
-        <div className="flex justify-content-end">
-          {isSearchVisible ? (
-            <span className="p-input-icon-left w-full md:w-auto">
-              <i className="pi pi-search" />
-              <InputText
-                ref={searchInputRef}
-                type="search"
-                value={globalFilter}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                placeholder="Cari..."
-                className="w-full md:w-auto"
-                onBlur={() => {
-                  if (!globalFilter) setIsSearchVisible(false);
-                }}
-              />
-            </span>
-          ) : (
-            <Button
-              icon="pi pi-search"
-              className="p-button-text p-button-rounded"
-              onClick={() => setIsSearchVisible(true)}
+      <div className="flex justify-content-end">
+        {isSearchVisible ? (
+          <span className="p-input-icon-left w-full md:w-auto">
+            <i className="pi pi-search" />
+            <InputText
+              ref={searchInputRef}
+              type="search"
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              placeholder="Cari..."
+              className="w-full md:w-auto"
+              onBlur={() => {
+                if (!globalFilter) setIsSearchVisible(false);
+              }}
             />
-          )}
-        </div>
+          </span>
+        ) : (
+          <Button
+            icon="pi pi-search"
+            className="p-button-text p-button-rounded"
+            onClick={() => setIsSearchVisible(true)}
+          />
+        )}
       </div>
-    );
-  };
+    </div>
+  );
 
-  const header = renderHeader();
-
+  // ===========================
+  // RENDER PAGE
+  // ===========================
   return (
     <div className="grid">
       <div className="col-12">
         <Card className="shadow-1" title="Status Semua Pengajuan">
           <DataTable
             value={filteredRequests}
-            header={header}
+            header={renderHeader()}
             responsiveLayout="scroll"
             paginator
             rows={10}
             emptyMessage="Tidak ada pengajuan yang ditemukan."
-            sortField="tanggal"
+            sortField="mulai"
             sortOrder={-1}
           >
             <Column field="jenis" header="Jenis Pengajuan" sortable />
-            <Column field="tanggal" header="Tanggal" sortable />
-            <Column field="detail" header="Detail" />
+            <Column field="mulai" header="Mulai" sortable />
+            <Column field="selesai" header="Selesai" sortable />
+            <Column field="alasan" header="Alasan" />
             <Column
+              field="status"
               header="Status"
               body={statusBodyTemplate}
               sortable
-              field="status"
             />
           </DataTable>
         </Card>
