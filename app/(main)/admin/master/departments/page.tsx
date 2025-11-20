@@ -188,14 +188,23 @@ export default function Department() {
             );
           }
 
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
+          if (responseData && responseData.status === "00") {
+            toastRef.current?.show({
+              severity: "success",
+              summary: "Sukses",
+              detail: responseData.message,
+              life: 3000,
+            });
 
-          fetchAllDepartment();
+            fetchAllDepartment();
+          } else {
+            toastRef.current?.show({
+              severity: "error",
+              summary: "Error",
+              detail: responseData.message,
+              life: 3000,
+            });
+          }
         } catch (error: any) {
           toastRef.current?.show({
             severity: "error",
@@ -203,8 +212,6 @@ export default function Department() {
             detail: error.message,
             life: 3000,
           });
-        } finally {
-          setCurrentEditedId(null);
         }
       },
     });

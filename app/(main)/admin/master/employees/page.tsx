@@ -67,6 +67,15 @@ export default function Employees() {
           isInitialLoad.current = false;
         }
         setAllEmployee(responseData.master_employees || []);
+      } else {
+        toastRef.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: responseData.message || "Gagal mendapatkan data karyawan",
+          life: 3000,
+        });
+
+        setAllEmployee([]);
       }
     } catch (error: any) {
       setAllEmployee([]);
@@ -163,7 +172,6 @@ export default function Employees() {
 
   const handleSubmit = async (formData: EmployeeFormData) => {
     setIsSaving(true);
-    setIsLoading(true);
 
     const { join_date, contact_phone, birth_date, ...restOfValues } = formData;
 
@@ -230,7 +238,6 @@ export default function Employees() {
       });
     } finally {
       setIsSaving(false);
-      setIsLoading(false);
     }
   };
 

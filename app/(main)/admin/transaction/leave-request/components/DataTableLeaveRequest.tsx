@@ -14,6 +14,8 @@ export default function DataTableLeaveRequest({
   const newLocal =
     "border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden";
 
+  const isPendingStatus = (status: string) => status === "Pending";
+
   const statusBodyTemplate = (rowData: GetAllLeaveRequestData) => {
     const status = rowData.status;
 
@@ -82,14 +84,9 @@ export default function DataTableLeaveRequest({
               icon="pi pi-check text-sm"
               size="small"
               severity="success"
-              label="Setujui"
+              disabled={!isPendingStatus(row.status)}
               onClick={() => {
                 onUpdate(row, "Approved");
-              }}
-              pt={{
-                icon: {
-                  className: "mr-2",
-                },
               }}
             />
 
@@ -97,14 +94,9 @@ export default function DataTableLeaveRequest({
               icon="pi pi-times text-sm"
               size="small"
               severity="danger"
-              label="Tolak"
+              disabled={!isPendingStatus(row.status)}
               onClick={() => {
                 onUpdate(row, "Rejected");
-              }}
-              pt={{
-                icon: {
-                  className: "mr-2",
-                },
               }}
             />
           </div>
