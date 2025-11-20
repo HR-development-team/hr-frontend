@@ -9,6 +9,6 @@ export const roleOptions = [
 export const UserDefaultValues: UserFormData = {
   email: "",
   password: "",
-  employee_id: 0,
+  confirmPassword: "",
   role: "employee",
 };

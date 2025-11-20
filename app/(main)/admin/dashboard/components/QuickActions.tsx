@@ -10,7 +10,6 @@ import Link from "next/link";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { ReactNode } from "react";
-import { da } from "zod/v4/locales";
 
 interface QuickMenu {
   icon: ReactNode;
@@ -32,7 +31,7 @@ const actions = (data: number): QuickMenu[] => [
     description: data
       ? `${data} permintaan pending`
       : "Tidak ada permintaan cuti",
-    href: "/admin/transaction/leave",
+    href: "/admin/transaction/leave-request",
   },
   {
     icon: <ChartArea className="w-full h-full" />,
@@ -58,8 +57,8 @@ export default function QuickActions({ data }: { data: number }) {
         </div>
         <div className="grid">
           {actions(data).map((action, index) => (
-            <div className="col-12">
-              <Link key={index} href={action.href}>
+            <div key={index} className="col-12">
+              <Link href={action.href}>
                 <Button
                   key={index}
                   className="bg-transparent border-gray-200 shadow-1 w-full hover:bg-gray-100"

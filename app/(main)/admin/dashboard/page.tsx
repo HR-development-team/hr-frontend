@@ -5,7 +5,7 @@ import DashboardStats from "./components/DashboardStats";
 import QuickActions from "./components/QuickActions";
 import { CalendarDays, LayoutDashboard } from "lucide-react";
 import { Card } from "primereact/card";
-import React, { use, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Toast } from "primereact/toast";
 import { StatData } from "@/lib/types/statData";
 import { Skeleton } from "primereact/skeleton";

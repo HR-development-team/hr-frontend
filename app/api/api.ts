@@ -59,7 +59,8 @@ export const API_ENDPOINTS = {
   // --- Leave Request ---
   POSTLEAVEREQUEST: `${API_URL}/leave-requests`, // Submit Leave Request (Menggantikan POSTREQUEST)
   GETALLLEAVEREQUEST: `${API_URL}/leave-requests`, // Get All Leave Request (Menggantikan GETALLREQUEST)
-  UPDATELEAVEREQUESTSTATUS: (id: string) =>`${API_URL}/leave-requests/${id}/status`, // INI TAMBAHAN: Update Leave Request Status
+  UPDATELEAVEREQUESTSTATUS: (id: string) =>
+    `${API_URL}/leave-requests/${id}/status`, // INI TAMBAHAN: Update Leave Request Status
   GETLEAVEBYUSER: (id: string) => `${API_URL}/leave-requests/user/${id}`, // Ini dari kode Anda
   GETLEAVEBYEMPLOYEE: `${API_URL}/leave-requests/me`,
   // --- INI TAMBAHAN: Attendance Session ---
@@ -82,11 +83,13 @@ export const API_ENDPOINTS = {
   GETATTENDANCEHISTORY: `${API_URL}/attendances`,
 
   // --- INI TAMBAHAN: Leave Balance ---
-  ADDLEAVEBALANCEFORALL: `${API_URL}/leave-balances/add-all`, // Add Leave Balance For All Emp...
-  GETALLLEAVEBALANCEREPORT: `${API_URL}/leave-balances/report`, // Get All Leave Balance Report
+  ADDLEAVEBALANCEFORALL: `${API_URL}/leave-balances/bulk`, // Add Leave Balance For All Emp...
+  ADDLEAVEBALACEFORONE: `${API_URL}/leave-balances`, // Add Leave Balance For One Empl...
+  GETALLLEAVEBALANCEREPORT: `${API_URL}/leave-balances`, // Get All Leave Balance Report
   GETCURRENTEMPLOYEELEAVEBALANCE: `${API_URL}/leave-balances/me`, // Get Current Employee Leave B...
   UPDATELEAVEBALANCE: (id: string) => `${API_URL}/leave-balances/${id}`, // Update Leave Balance For Spe...
   DELETELEAVEBALANCE: (id: string) => `${API_URL}/leave-balances/${id}`, // Delete Leave Balance for Speci...
+  DELETEALLLEAVEBALANCE: `${API_URL}/leave-balances/bulk`, // Delete Leave Balance for All Employees
 
   // --- INI TAMBAHAN: Payroll Periods ---
   ADDPAYROLLPERIOD: `${API_URL}/payroll-periods`, // Create Payroll Periods

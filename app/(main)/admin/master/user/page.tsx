@@ -137,7 +137,6 @@ export default function UserPage() {
 
   const handleSubmit = async (formData: UserFormData) => {
     setIsSaving(true);
-    setIsLoading(true);
 
     const url =
       dialogMode === "edit"
@@ -190,7 +189,6 @@ export default function UserPage() {
       });
     } finally {
       setIsSaving(false);
-      setIsLoading(false);
     }
   };
 
