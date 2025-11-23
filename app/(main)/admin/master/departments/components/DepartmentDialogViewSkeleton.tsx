@@ -1,4 +1,3 @@
-import { DepartmentViewProps } from "@/lib/types/view/departmentViewTypes";
 import { Building } from "lucide-react";
 import { Card } from "primereact/card";
 import { Skeleton } from "primereact/skeleton";

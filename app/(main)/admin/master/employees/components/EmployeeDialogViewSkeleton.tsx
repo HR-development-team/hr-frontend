@@ -1,5 +1,4 @@
 import { Briefcase, IdCard, Phone, User } from "lucide-react";
-import { Avatar } from "primereact/avatar";
 import { Card } from "primereact/card";
 import { Skeleton } from "primereact/skeleton";
 

@@ -3,7 +3,6 @@ import { formatRupiah } from "@/lib/utils/formatRupiah";
 import { TicketsPlane } from "lucide-react";
 import { Card } from "primereact/card";
 import LeaveTypeDialogViewSkeleton from "./LeaveTypeDialogViewSkeleton";
-import { LeaveTypeViewProps } from "@/lib/types/view/leaveTypeViewTypes";
 import { ViewMasterPropsTypes } from "@/lib/types/view/viewMasterPropsTypes";
 import { GetLeaveTypeByIdData } from "@/lib/types/leaveType";
 
@@ -38,11 +37,7 @@ export default function LeaveTypeDialogView({
 
             <div className="w-full text-base font-medium">
               <span className="text-500">Pengurangan Gaji</span>
-              <p>
-                {data?.deduction
-                  ? formatRupiah(data.deduction)
-                  : "-"}
-              </p>
+              <p>{data?.deduction ? formatRupiah(data.deduction) : "-"}</p>
             </div>
           </div>
 
@@ -50,9 +45,7 @@ export default function LeaveTypeDialogView({
             <div className="text-base font-medium col-12 p-3 bg-gray-100 border-round-xl">
               <span>Deskripsi Tipe Cuti</span>
               <p className="text-500 font-italic">
-                {data?.description
-                  ? data.description
-                  : "Belum ada deskripsi"}
+                {data?.description ? data.description : "Belum ada deskripsi"}
               </p>
             </div>
           </div>

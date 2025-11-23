@@ -38,9 +38,6 @@ export default function Department() {
     "Lihat Data Departement" | "Edit Departemen" | "Tambah Departemen" | null
   >(null);
 
-  const [selectedDepartment, setSelectedDepartment] =
-    useState<DepartementFormData | null>(null);
-
   const fetchAllDepartment = async () => {
     setIsLoading(true);
 
@@ -126,7 +123,6 @@ export default function Department() {
       });
 
       fetchAllDepartment();
-      setSelectedDepartment(null);
       setDialogMode(null);
       setIsDialogVisible(false);
       setCurrentEditedId(null);
@@ -146,11 +142,9 @@ export default function Department() {
       return null;
     }
 
-    const { id, department_code, created_at, updated_at, ...cleanData } =
-      viewDepartment;
-
     return {
-      ...cleanData,
+      name: viewDepartment.name,
+      description: viewDepartment.description,
     };
   }, [viewDepartment]);
 
@@ -194,15 +188,23 @@ export default function Department() {
             );
           }
 
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
+          if (responseData && responseData.status === "00") {
+            toastRef.current?.show({
+              severity: "success",
+              summary: "Sukses",
+              detail: responseData.message,
+              life: 3000,
+            });
 
-          fetchAllDepartment();
-          setSelectedDepartment(null);
+            fetchAllDepartment();
+          } else {
+            toastRef.current?.show({
+              severity: "error",
+              summary: "Error",
+              detail: responseData.message,
+              life: 3000,
+            });
+          }
         } catch (error: any) {
           toastRef.current?.show({
             severity: "error",
@@ -210,8 +212,6 @@ export default function Department() {
             detail: error.message,
             life: 3000,
           });
-        } finally {
-          setCurrentEditedId(null);
         }
       },
     });
@@ -304,7 +304,6 @@ export default function Department() {
                   onClick={() => {
                     setDialogMode("add");
                     setDialogLabel("Tambah Departemen");
-                    setSelectedDepartment(null);
                     setCurrentEditedId(null);
                     setIsDialogVisible(true);
                   }}

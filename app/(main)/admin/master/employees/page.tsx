@@ -67,6 +67,15 @@ export default function Employees() {
           isInitialLoad.current = false;
         }
         setAllEmployee(responseData.master_employees || []);
+      } else {
+        toastRef.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: responseData.message || "Gagal mendapatkan data karyawan",
+          life: 3000,
+        });
+
+        setAllEmployee([]);
       }
     } catch (error: any) {
       setAllEmployee([]);
@@ -163,7 +172,6 @@ export default function Employees() {
 
   const handleSubmit = async (formData: EmployeeFormData) => {
     setIsSaving(true);
-    setIsLoading(true);
 
     const { join_date, contact_phone, birth_date, ...restOfValues } = formData;
 
@@ -230,7 +238,6 @@ export default function Employees() {
       });
     } finally {
       setIsSaving(false);
-      setIsLoading(false);
     }
   };
 
@@ -300,7 +307,7 @@ export default function Employees() {
   return (
     <div>
       <Toast ref={toastRef} />
-      <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
+      <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <Users className="w-2rem h-2rem" />
         </div>

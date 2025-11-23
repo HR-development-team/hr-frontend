@@ -1,4 +1,4 @@
-import { Building, GitFork, UserCheck } from "lucide-react";
+import { GitFork } from "lucide-react";
 import { Card } from "primereact/card";
 import { Skeleton } from "primereact/skeleton";
 

@@ -1,11 +1,11 @@
 "use client";
 
-import { User, Users } from "lucide-react";
+import { User } from "lucide-react";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
 import UserDialogForm from "./components/UserDialogForm";
@@ -14,8 +14,8 @@ import DataTableUser from "./components/DataTableUser";
 import { Toast } from "primereact/toast";
 import { GetAllEmployeeData } from "@/lib/types/employee";
 import { GetAllUserData, GetUserByIdData } from "@/lib/types/user";
-import { da, vi } from "date-fns/locale";
 import UserDialogView from "./components/UserDialogView";
+import { email } from "zod";
 
 // interface CombinedUserData extends UserData {
 //   employee_first_name: string;
@@ -90,6 +90,8 @@ export default function UserPage() {
         setUser([]);
       }
     } catch (error: any) {
+      console.log(error.message);
+
       setEmployee([]);
       setUser([]);
     } finally {
@@ -114,6 +116,8 @@ export default function UserPage() {
         setViewUser(null);
       }
     } catch (error: any) {
+      console.log(error.message);
+
       setViewUser(null);
     } finally {
       setIsLoading(false);
@@ -125,24 +129,14 @@ export default function UserPage() {
       return null;
     }
 
-    const {
-      id,
-      user_code,
-      password,
-      created_at,
-      updated_at,
-      employee_name,
-      ...cleanData
-    } = viewUser;
-
     return {
-      ...cleanData,
+      email: viewUser.email,
+      role: viewUser.role,
     };
   }, [viewUser]);
 
   const handleSubmit = async (formData: UserFormData) => {
     setIsSaving(true);
-    setIsLoading(true);
 
     const url =
       dialogMode === "edit"
@@ -151,7 +145,11 @@ export default function UserPage() {
 
     const method = dialogMode === "edit" ? "PUT" : "POST";
 
-    const { confirmPassword, ...payload } = formData;
+    const payload = {
+      email: formData.email,
+      password: formData.password,
+      role: formData.role,
+    };
 
     try {
       const res = await fetch(url, {
@@ -186,12 +184,11 @@ export default function UserPage() {
       toastRef.current?.show({
         severity: "error",
         summary: "Error",
-        detail: error,
+        detail: error.message || "Terjadi kesalahan koneksi",
         life: 3000,
       });
     } finally {
       setIsSaving(false);
-      setIsLoading(false);
     }
   };
 
@@ -243,7 +240,7 @@ export default function UserPage() {
           toastRef.current?.show({
             severity: "error",
             summary: "Gagal",
-            detail: error.message,
+            detail: error.message || "Terjadi kesalahan koneksi",
             life: 3000,
           });
         } finally {

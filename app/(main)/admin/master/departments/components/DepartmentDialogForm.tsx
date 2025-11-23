@@ -10,7 +10,6 @@ import { DepartmentFormProps } from "@/lib/types/form/departmentFormType";
 import { departmentDefaultValues } from "@/lib/values/departmentDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
-import { InputText } from "primereact/inputtext";
 
 export default function DepartmentDialogForm({
   departmentData,
@@ -35,7 +34,7 @@ export default function DepartmentDialogForm({
 
       return errors;
     },
-    onSubmit: async (values, { setStatus, setSubmitting }) => {
+    onSubmit: async (values, { setStatus }) => {
       try {
         await onSubmit(values);
       } catch (error: any) {
