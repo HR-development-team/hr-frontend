@@ -18,10 +18,18 @@ export default function UserDialogForm({
   const placeholder =
     dialogMode === "add" ? "Masukkan Password" : "Isi Password Untuk Update";
 
+  const formInitialValues: UserFormData = userData
+    ? {
+        ...userData,
+        password: "",
+        confirmPassword: "",
+      }
+    : UserDefaultValues;
+
   const isOnAddMode = dialogMode === "add" ? true : false;
 
   const formik = useFormik({
-    initialValues: userData || UserDefaultValues,
+    initialValues: formInitialValues,
     validate: (values) => {
       const schema = getUserSchema(dialogMode);
 

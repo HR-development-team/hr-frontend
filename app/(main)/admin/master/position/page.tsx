@@ -124,7 +124,7 @@ export default function Position() {
 
     return {
       name: viewPosition.name,
-      base_salary: viewPosition.base_salary,
+      base_salary: parseFloat(viewPosition.base_salary),
       description: viewPosition.description,
       division_code: viewPosition.division_code,
     };

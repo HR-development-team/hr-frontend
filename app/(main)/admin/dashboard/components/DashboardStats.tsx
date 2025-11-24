@@ -38,7 +38,7 @@ export default function DashboardStats({
   return (
     <div className="grid">
       {statsData(data).map((stat, index) => (
-        <div className="col-12 md:col-6 lg:col-3">
+        <div key={index} className="col-12 md:col-6 lg:col-3">
           <StatsCard
             key={index}
             title={stat.title}
