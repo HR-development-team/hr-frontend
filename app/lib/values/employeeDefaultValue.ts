@@ -38,6 +38,7 @@ export const employeeFormDefaultValues: EmployeeFormData = {
   join_date: null as any,
   position_code: "",
   employment_status: "aktif",
+  user_code: "",
 
   contact_phone: null,
   address: null,

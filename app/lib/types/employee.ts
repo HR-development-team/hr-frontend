@@ -21,7 +21,7 @@ export interface GetEmployeeByIdData extends GetAllEmployeeData {
   address: string | null;
   contact_phone: string | null;
   religion: string | null;
-  maritial_status: "Belum Menikah" | "Menikah" | null;
+  maritial_status: "Single" | "Married" | null;
   resign_date: string | null;
   education: string | null;
   blood_type: string | null;
