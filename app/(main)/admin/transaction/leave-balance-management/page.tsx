@@ -14,10 +14,12 @@ import LeaveBalanceDialogForm from "./components/LeaveBalanceDialogForm";
 import { Dropdown } from "primereact/dropdown";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { GetAllEmployeeData } from "@/lib/types/employee";
+import { spawn } from "child_process";
 
 export default function BalanceManagement() {
   const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
+  const isInitialFetchLeaveType = useRef<boolean>(true);
   const isInitialFetchEmployee = useRef<boolean>(true);
 
   const [employee, setEmployee] = useState<GetAllEmployeeData[]>([]);
@@ -30,6 +32,7 @@ export default function BalanceManagement() {
   const [leaveType, setLeaveType] = useState<GetAllLeaveTypeData[]>([]);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLeaveTypeLoading, setIsLeaveTypeLoading] = useState<boolean>(false);
   const [isEmployeeLoading, setIsEmployeeLoading] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
@@ -54,6 +57,7 @@ export default function BalanceManagement() {
   >(null);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
   const [dialogLabel, setDialogLabel] = useState<
+    | "Pilih Tindakan"
     | "Tambah Saldo Cuti Massal"
     | "Tambah Saldo Cuti Karyawan"
     | "Edit Saldo Cuti"
@@ -146,30 +150,37 @@ export default function BalanceManagement() {
   };
 
   const fetchLeaveType = async () => {
-    try {
-      const res = await fetch("/api/admin/master/leave-type");
+    if (isInitialFetchLeaveType.current) {
+      setIsLeaveTypeLoading(true);
+      try {
+        const res = await fetch("/api/admin/master/leave-type");
 
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data tipe cuti");
-      }
+        if (!res.ok) {
+          throw new Error("Gagal mendapatkan data tipe cuti");
+        }
 
-      const responseData = await res.json();
+        const responseData = await res.json();
 
-      if (responseData && responseData.status === "00") {
-        setLeaveType(responseData.leave_types || []);
-      } else {
+        if (responseData && responseData.status === "00") {
+          setLeaveType(responseData.leave_types || []);
+        } else {
+          setLeaveType([]);
+        }
+      } catch (error: any) {
+        console.log(error.message);
         setLeaveType([]);
+      } finally {
+        setIsLeaveTypeLoading(false);
       }
-    } catch (error: any) {
-      console.log(error.message);
-      setLeaveType([]);
     }
+
+    isInitialFetchLeaveType.current = false;
   };
 
   const fetchEmployee = async () => {
-    setIsEmployeeLoading(true);
-    try {
-      if (isInitialFetchEmployee.current) {
+    if (isInitialFetchEmployee.current) {
+      setIsEmployeeLoading(true);
+      try {
         const res = await fetch("/api/admin/master/employee");
 
         if (!res.ok) {
@@ -183,14 +194,14 @@ export default function BalanceManagement() {
         } else {
           setEmployee([]);
         }
+      } catch (error: any) {
+        setEmployee([]);
+      } finally {
+        setIsEmployeeLoading(false);
       }
-
-      isInitialFetchEmployee.current = false;
-    } catch (error: any) {
-      setEmployee([]);
-    } finally {
-      setIsEmployeeLoading(false);
     }
+
+    isInitialFetchEmployee.current = false;
   };
 
   const handleSubmit = async (formData: LeaveBalanceFormData) => {
@@ -223,8 +234,6 @@ export default function BalanceManagement() {
         employee_code: formData.employee_code,
       }),
     };
-
-    console.log(payload);
 
     try {
       const res = await fetch(url, {
@@ -266,7 +275,25 @@ export default function BalanceManagement() {
     }
   };
 
+  const handleChangeMode = (
+    mode: "bulkAdd" | "bulkDelete" | "singleAdd" | "edit" | null = null,
+    label:
+      | "Pilih Tindakan"
+      | "Tambah Saldo Cuti Massal"
+      | "Tambah Saldo Cuti Karyawan"
+      | "Edit Saldo Cuti"
+      | "Hapus Saldo Cuti Massal"
+      | null
+  ) => {
+    fetchLeaveType();
+    if (mode === "singleAdd") fetchEmployee();
+
+    setDialogMode(mode);
+    setDialogLabel(label);
+  };
+
   const handleEdit = (data: GetAllLeaveBalanceData) => {
+    fetchLeaveType();
     setDialogMode("edit");
     setDialogLabel("Edit Saldo Cuti");
     setIsDialogVisible(true);
@@ -327,13 +354,39 @@ export default function BalanceManagement() {
     });
   };
 
+  const renderHeader = () => {
+    if (!dialogMode) {
+      return <span className="text-xl font-bold">Pilih Tindakan</span>;
+    }
+
+    if (dialogMode === "edit") {
+      return (
+        <span>{`Edit Saldo Cuti ${selectedLeaveBalance?.employee_name}`}</span>
+      );
+    }
+
+    return (
+      <div className="flex align-items-center gap-2">
+        <Button
+          icon="pi pi-chevron-left"
+          rounded
+          text
+          severity="secondary"
+          aria-label="back"
+          onClick={() => {
+            setDialogMode(null);
+            setDialogLabel("Pilih Tindakan");
+            setCurrentSelectedId(null);
+          }}
+        />
+        <span className="text-xl font-bold">{dialogLabel}</span>
+      </div>
+    );
+  };
+
   useEffect(() => {
     fetchLeaveBalance();
   }, [filterYearQuery, filterTypeCodeQuery]);
-
-  useEffect(() => {
-    fetchLeaveType();
-  }, []);
 
   return (
     <div>
@@ -362,8 +415,8 @@ export default function BalanceManagement() {
 
           {/* filters */}
           <div>
-            <div className="flex flex-column md:flex-row md:justify-content-between gap-3">
-              <div className="flex flex-column md:flex-row gap-3">
+            <div className="flex flex-column lg:flex-row lg:justify-content-between lg:align-items-end gap-3">
+              <div className="flex flex-column xl:flex-row gap-3">
                 {/* type code search */}
                 <Dropdown
                   value={filterTypeCodeQuery}
@@ -371,7 +424,7 @@ export default function BalanceManagement() {
                   onChange={(e) => setFilterTypeCodeQuery(e.value)}
                   placeholder="Pilih Tipe Cuti"
                   showClear
-                  className="w-full md:w-15rem mr-2"
+                  className="w-full lg:w-15rem mr-2"
                   emptyMessage="Tidak ada opsi tipe cuti"
                 />
 
@@ -382,64 +435,26 @@ export default function BalanceManagement() {
                   onChange={(e) => setFilterYearQuery(e.value)}
                   placeholder="Pilih Tahun"
                   showClear
-                  className="w-full md:w-15rem"
+                  className="w-full lg:w-15rem"
                   emptyMessage="Tidak ada opsi tahun"
                 />
               </div>
 
-              {/* add button */}
+              {/* manage balance */}
               <div className="flex gap-2">
                 <Button
-                  icon="pi pi-plus"
-                  // label="Tambah Saldo Massal"
+                  icon="pi pi-calendar"
+                  label="Kelola Saldo Cuti"
                   severity="info"
-                  pt={
-                    {
-                      // icon: { className: "mr-2" },
-                      // root: { className: "w-full md:w-15rem" },
-                    }
-                  }
+                  pt={{
+                    icon: { className: "mr-2" },
+                    // root: { className: "w-full md:w-15rem" },
+                  }}
                   onClick={() => {
-                    setDialogMode("bulkAdd");
-                    setDialogLabel("Tambah Saldo Cuti Massal");
+                    // setDialogMode("bulkAdd");
+                    // setDialogLabel("Pilih Tindakan");
                     setIsDialogVisible(true);
                     setCurrentSelectedId(null);
-                  }}
-                />
-
-                <Button
-                  icon="pi pi-user-plus"
-                  // label="Tambah Saldo Massal"
-                  severity="secondary"
-                  pt={
-                    {
-                      // icon: { className: "mr-2" },
-                      // root: { className: "w-full md:w-15rem" },
-                    }
-                  }
-                  onClick={() => {
-                    setDialogMode("singleAdd");
-                    setDialogLabel("Tambah Saldo Cuti Karyawan");
-                    setIsDialogVisible(true);
-                    setCurrentSelectedId(null);
-                    fetchEmployee();
-                  }}
-                />
-
-                <Button
-                  icon="pi pi-trash"
-                  // label="Tambah Saldo Massal"
-                  severity="danger"
-                  pt={
-                    {
-                      // icon: { className: "mr-2" },
-                      // root: { className: "w-full md:w-15rem" },
-                    }
-                  }
-                  onClick={() => {
-                    setDialogMode("bulkDelete");
-                    setDialogLabel('Hapus Saldo Cuti Massal')
-                    setIsDialogVisible(true)
                   }}
                 />
               </div>
@@ -455,7 +470,7 @@ export default function BalanceManagement() {
           <ConfirmDialog />
 
           <Dialog
-            header={dialogLabel}
+            header={renderHeader()}
             visible={isDialogVisible}
             onHide={() => {
               setIsDialogVisible(false);
@@ -465,14 +480,16 @@ export default function BalanceManagement() {
               setDialogLabel(null);
             }}
             modal
-            className="w-full md:w-4"
+            className="w-full md:w-8 lg:w-7 xl:w-4"
           >
             <LeaveBalanceDialogForm
               leaveBalanceData={selectedLeaveBalance}
               onSubmit={handleSubmit}
+              setDialogMode={handleChangeMode}
               dialogMode={dialogMode}
               leaveTypeOptions={leaveType}
               employeeOptions={employee}
+              isLeaveTypeLoading={isLeaveTypeLoading}
               isEmployeeLoading={isEmployeeLoading}
               isSubmitting={isSaving}
             />
