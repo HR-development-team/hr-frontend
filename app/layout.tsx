@@ -1,8 +1,3 @@
-// import "primereact/resources/primereact.min.css";
-// import "primeicons/primeicons.css";
-// import "primereact/resources/themes/lara-light-indigo/theme.css";
-// import "primeflex/primeflex.css";
-
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { ClientOnlyTopLoader } from "@/components/ClientOnlyTopLoader";

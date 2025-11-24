@@ -1,15 +1,16 @@
 "use client";
 
-import FormDropdown from "@/components/form/FormDropdown";
-import FormInputNumber from "@/components/form/FormInputNumber";
 import {
   getLeaveBalanceFormSchema,
   LeaveBalanceFormData,
 } from "@/lib/schemas/leaveBalanceFormSchema";
 import { LeaveBalanceFormProps } from "@/lib/types/form/leaveBalanceFormType";
 import { useFormik } from "formik";
-import { Button } from "primereact/button";
-import { InputNumberValueChangeEvent } from "primereact/inputnumber";
+import { Trash2, UserPlus, Users } from "lucide-react";
+import BulkAdd from "./formComponents/BulkAdd";
+import AddSingle from "./formComponents/AddSingle";
+import BulkDelete from "./formComponents/BulkDelete";
+import Edit from "./formComponents/Edit";
 
 const leaveBalanceInitialValues: LeaveBalanceFormData = {
   employee_code: "",
@@ -21,9 +22,11 @@ const leaveBalanceInitialValues: LeaveBalanceFormData = {
 export default function LeaveBalanceDialogForm({
   leaveBalanceData,
   onSubmit,
+  setDialogMode,
   dialogMode,
   leaveTypeOptions,
   employeeOptions,
+  isLeaveTypeLoading,
   isEmployeeLoading,
   isSubmitting,
 }: LeaveBalanceFormProps) {
@@ -65,103 +68,133 @@ export default function LeaveBalanceDialogForm({
   };
 
   return (
-    <form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
-      {/* can hidden or block according dialogMode */}
-      <div
-        className={
-          dialogMode === "bulkAdd" ||
-          dialogMode === "edit" ||
-          dialogMode === "bulkDelete"
-            ? "hidden"
-            : "block"
-        }
-      >
-        <FormDropdown
-          props={{
-            ...formik.getFieldProps("employee_code"),
-            options: employeeOptions,
-            optionLabel: "full_name",
-            optionValue: "employee_code",
-            filter: true,
-            filterDelay: 400,
-            placeholder: "Pilih Karyawan",
-            onChange: (e) => {
-              formik.setFieldValue("employee_code", e.value);
-            },
-            loading: isEmployeeLoading,
-          }}
-          fieldName={"employee_code"}
-          label="Nama Karyawan"
+    <div>
+      {!dialogMode && (
+        <div className="flex flex-column gap-3">
+          {/* bulk add action */}
+          <div
+            className="pf-group flex flex-column lg:flex-row align-items-center gap-3 line-height-2 p-3 border-1 border-gray-200 border-round-xl hover:bg-blue-100 hover:border-blue-400 transition-colors transition-duration-300 cursor-pointer"
+            onClick={() => setDialogMode("bulkAdd", "Tambah Saldo Cuti Massal")}
+          >
+            <div
+              className="p-3 bg-blue-100 border-round-xl text-blue-500 pf-group-hover-dynamic-bg pf-group-hover-text-white transition-colors"
+              style={
+                { "--hover-color": "var(--blue-600)" } as React.CSSProperties
+              }
+            >
+              <Users size={24} />
+            </div>
+
+            <div className="text-center lg:text-left">
+              <span className="text-800 text-base font-semibold">
+                Bulk Add Saldo
+              </span>
+              <p className="text-500 text-sm">
+                Tambahkan saldo untuk banyak karyawan sekaligus berdasarkan tipe
+                cuti.
+              </p>
+            </div>
+          </div>
+
+          {/* single add action */}
+          <div
+            className="pf-group flex flex-column lg:flex-row align-items-center gap-3 line-height-2 p-3 border-1 border-gray-200 border-round-xl hover:bg-green-100 hover:border-green-400 transition-colors transition-duration-300 cursor-pointer"
+            onClick={() =>
+              setDialogMode("singleAdd", "Tambah Saldo Cuti Karyawan")
+            }
+          >
+            <div
+              className="p-3 bg-green-100 border-round-xl text-green-500 pf-group-hover-dynamic-bg pf-group-hover-text-white transition-colors"
+              style={
+                { "--hover-color": "var(--green-600)" } as React.CSSProperties
+              }
+            >
+              <UserPlus size={24} />
+            </div>
+
+            <div className="text-center lg:text-left">
+              <span className="text-800 text-base font-semibold">
+                Single Add Saldo
+              </span>
+              <p className="text-500 text-sm">
+                Tambahkan atau sesuaikan saldo untuk satu karyawan spesifik.
+              </p>
+            </div>
+          </div>
+
+          {/* delete action */}
+          <div
+            className="pf-group flex flex-column lg:flex-row align-items-center gap-3 line-height-2 p-3 border-1 border-gray-200 border-round-xl hover:bg-red-100 hover:border-red-400 transition-colors transition-duration-300 cursor-pointer"
+            onClick={() =>
+              setDialogMode("bulkDelete", "Hapus Saldo Cuti Massal")
+            }
+          >
+            <div
+              className="p-3 bg-red-100 border-round-xl text-red-500 pf-group-hover-dynamic-bg pf-group-hover-text-white transition-colors"
+              style={
+                { "--hover-color": "var(--red-600)" } as React.CSSProperties
+              }
+            >
+              <Trash2 size={24} />
+            </div>
+
+            <div className="text-center lg:text-left">
+              <span className="text-800 text-base font-semibold">
+                Hapus / Reset Tipe Cuti
+              </span>
+              <p className="text-500 text-sm">
+                Hapus saldo tipe cuti tertentu untuk semua karyawan.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {dialogMode === "bulkAdd" && (
+        <BulkAdd
+          formik={formik}
+          isFieldInvalid={isFieldInvalid}
+          getFieldError={getFieldError}
+          leaveTypeOptions={leaveTypeOptions}
+          isLeaveTypeLoading={isLeaveTypeLoading}
+          isSubmitting={isSubmitting}
+        />
+      )}
+
+      {dialogMode === "singleAdd" && (
+        <AddSingle
+          formik={formik}
+          leaveTypeOptions={leaveTypeOptions}
+          employeeOptions={employeeOptions}
+          isLeaveTypeLoading={isLeaveTypeLoading}
+          isEmployeeLoading={isEmployeeLoading}
+          isSubmitting={isSubmitting}
           isFieldInvalid={isFieldInvalid}
           getFieldError={getFieldError}
         />
-      </div>
-      <FormDropdown
-        props={{
-          ...formik.getFieldProps("type_code"),
-          options: leaveTypeOptions,
-          optionLabel: "name",
-          optionValue: "type_code",
-          filter: true,
-          filterDelay: 400,
-          placeholder: "Pilih Tipe Cuti",
-          disabled: dialogMode === "edit",
-          onChange: (e) => {
-            formik.setFieldValue("type_code", e.value);
-          },
-        }}
-        fieldName={"type_code"}
-        label="Tipe Cuti"
-        isFieldInvalid={isFieldInvalid}
-        getFieldError={getFieldError}
-      />
-      <FormInputNumber
-        props={{
-          value: formik.values.year,
-          onValueChange: (e: InputNumberValueChangeEvent) => {
-            formik.setFieldValue("year", e.value);
-          },
-          onBlur: formik.handleBlur,
-          min: 2000,
-          max: 9999,
-          useGrouping: false,
-          disabled: dialogMode === "edit",
-        }}
-        fieldName={"year"}
-        label="Tahun Cuti Berlaku"
-        isFieldInvalid={isFieldInvalid}
-        getFieldError={getFieldError}
-      />
-      <div className={dialogMode === "bulkDelete" ? "hidden" : "block"}>
-        <FormInputNumber
-          props={{
-            value: formik.values.balance,
-            onValueChange: (e: InputNumberValueChangeEvent) => {
-              formik.setFieldValue("balance", e.value);
-            },
-            onBlur: formik.handleBlur,
-          }}
-          fieldName={"balance"}
-          label="Jumlah Saldo Cuti"
+      )}
+
+      {dialogMode === "bulkDelete" && (
+        <BulkDelete
+          formik={formik}
+          leaveTypeOptions={leaveTypeOptions}
+          isLeaveTypeLoading={isLeaveTypeLoading}
+          isSubmitting={isSubmitting}
           isFieldInvalid={isFieldInvalid}
           getFieldError={getFieldError}
         />
-      </div>
-      <div className="flex justify-content-end mt-4">
-        <Button
-          type="submit"
-          label={dialogMode === "bulkDelete" ? "Hapus" : "Simpan"}
-          icon={dialogMode === "bulkDelete" ? "pi pi-trash" : "pi pi-save"}
-          loading={isSubmitting}
-          severity={dialogMode === "bulkDelete" ? "danger" : "success"}
-          disabled={formik.isSubmitting}
-          pt={{
-            icon: {
-              className: "mr-2",
-            },
-          }}
+      )}
+
+      {dialogMode === "edit" && (
+        <Edit
+          formik={formik}
+          leaveTypeOptions={leaveTypeOptions}
+          isLeaveTypeLoading={isLeaveTypeLoading}
+          isSubmitting={isSubmitting}
+          isFieldInvalid={isFieldInvalid}
+          getFieldError={getFieldError}
         />
-      </div>
-    </form>
+      )}
+    </div>
   );
 }

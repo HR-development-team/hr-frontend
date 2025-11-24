@@ -94,3 +94,15 @@ body {
     margin-left: 20rem; /* 320px */
   }
 }
+
+.pf-group {
+  position: relative;
+}
+
+.pf-group:hover .pf-group-hover-dynamic-bg {
+  background-color: var(--hover-color, --blue-600) !important;
+}
+
+.pf-group:hover .pf-group-hover-text-white {
+  color: #ffffff !important;
+}
