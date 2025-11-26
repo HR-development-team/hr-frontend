@@ -13,11 +13,11 @@ import { TabView, TabPanel } from "primereact/tabview";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { classNames } from "primereact/utils";
 import { useAuth } from "@/components/AuthContext";
-import { Dropdown } from "primereact/dropdown"; // Import Dropdown
+import { Dropdown } from "primereact/dropdown";
+import { Tag } from "primereact/tag";
 
-// --- 1. INTERFACE LENGKAP (TETAP SAMA) ---
+// --- INTERFACE ---
 interface UserProfile {
-  // Properti langsung dari JSON
   id: number;
   employee_code: string;
   position_code: string;
@@ -47,14 +47,11 @@ interface UserProfile {
   division_name: string;
   department_code: string;
   department_name: string;
-
-  // --- Properti "Virtual" ---
   first_name: string;
   last_name: string;
   email?: string;
   profile_image_url?: string | null;
 }
-// --- BATAS INTERFACE ---
 
 const API_PROFILE_URL = "/api/karyawan/profile";
 
@@ -79,7 +76,7 @@ export default function ProfilPage() {
     { label: "Data Finansial", value: 3, icon: "pi pi-wallet mr-2" },
   ];
 
-  // --- 2. useEffect (TETAP SAMA) ---
+  // --- useEffect ---
   useEffect(() => {
     if (!user) {
       setIsLoading(true);
@@ -102,12 +99,10 @@ export default function ProfilPage() {
           throw new Error("Data profil karyawan tidak ditemukan.");
         }
 
-        // Pecah 'full_name'
         const nameParts = (dataFromServer.full_name || "").split(" ");
         const firstName = nameParts[0] || "";
         const lastName = nameParts.slice(1).join(" ") || "";
 
-        // Buat objek 'profileData' yang LENGKAP
         const profileData: UserProfile = {
           ...dataFromServer,
           first_name: firstName,
@@ -136,7 +131,7 @@ export default function ProfilPage() {
     loadProfileData();
   }, [user]);
 
-  // --- 3. FUNGSI-FUNGSI (LENGKAP) ---
+  // --- FUNGSI CRUD ---
   const handleEdit = () => {
     setIsEditMode(true);
     setImagePreview(null);
@@ -192,7 +187,6 @@ export default function ProfilPage() {
       });
 
       const updatedProfileFromServer = result.updatedUser;
-
       const finalUpdatedProfile = { ...profile, ...updatedProfileFromServer };
 
       setProfile(finalUpdatedProfile);
@@ -201,7 +195,6 @@ export default function ProfilPage() {
         address: finalUpdatedProfile.address,
       });
 
-      // Perbarui state GLOBAL
       updateAuthUser({
         ...user,
         contact_phone: formData.contact_phone,
@@ -227,7 +220,7 @@ export default function ProfilPage() {
     }
   };
 
-  // --- FUNGSI HELPER (LENGKAP) ---
+  // --- FUNGSI HELPER ---
   const capitalizeFirstLetter = (string: string) => {
     if (!string) return "";
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
@@ -241,371 +234,449 @@ export default function ProfilPage() {
       year: "numeric",
     });
   };
-  // --- BATAS FUNGSI HELPER ---
 
-  // --- 6. FUNGSI RENDER KONTEN (DENGAN PERBAIKAN) ---
-  const renderTabContent = () => {
-    // --- INI SOLUSINYA ---
-    // Cek ini akan memberitahu TypeScript bahwa 'profile'
-    // tidak 'null' dan akan menghentikan error 'possibly 'null''
-    // 'return null' adalah ReactNode yang valid (menghentikan error 'void')
-    if (!profile) {
-      return null;
+  // --- LOGIKA PENENTUAN KANTOR ---
+  const getOfficeLocationInfo = () => {
+    if (!profile) return { label: "", severity: null, icon: "" };
+
+    const division = profile.division_name?.toUpperCase() || "";
+    const isHeadOffice =
+      division.includes("PUSAT") ||
+      division.includes("HEAD") ||
+      division.includes("DIREKSI") ||
+      profile.department_code === "HO";
+
+    if (isHeadOffice) {
+      return {
+        label: "Kantor Pusat",
+        severity: "warning", // Warna Emas/Oranye
+        icon: "pi pi-building",
+        detail: "Head Office - Jakarta",
+      };
+    } else {
+      return {
+        label: "Kantor Cabang",
+        severity: "info", // Warna Biru
+        icon: "pi pi-map-marker",
+        detail: `Cabang ${profile.birth_place || "Regional"}`,
+      };
     }
-    // --- BATAS SOLUSI ---
+  };
 
-    // Sekarang, semua 'profile.ktp_number', dll. di bawah ini aman
+  const officeInfo = getOfficeLocationInfo();
+
+  // --- 6. FUNGSI RENDER KONTEN (MODERN GRID + ICON BUTTON) ---
+  const renderTabContent = () => {
+    if (!profile) return null;
+
+    // Helper Component
+    const InfoItem = ({
+      icon,
+      label,
+      value,
+      className = "",
+    }: {
+      icon: string;
+      label: string;
+      value: React.ReactNode;
+      className?: string;
+    }) => (
+      <div className={`col-12 md:col-6 mb-2 ${className}`}>
+        <div className="flex align-items-center mb-2">
+          <div className="w-2rem h-2rem flex align-items-center justify-content-center bg-blue-50 text-blue-600 border-round mr-2">
+            <i className={`pi ${icon} text-sm`} />
+          </div>
+          <span className="text-500 text-sm font-medium">{label}</span>
+        </div>
+        <div className="pl-6">
+          <span className="text-900 font-semibold text-lg">{value}</span>
+        </div>
+      </div>
+    );
+
     switch (activeIndex) {
-      // --- KONTEN TAB 1: DETAIL PROFIL ---
+      // --- TAB 0: DETAIL PROFIL ---
       case 0:
         return (
-          <Card className="border-none shadow-none">
-            <div className="flex justify-content-end gap-2 mb-4">
+          <Card className="border-none shadow-none h-full">
+            {/* Header dengan Tombol Minimalis */}
+            <div className="flex align-items-center justify-content-between mb-5">
+              <h3 className="m-0 text-900 font-bold">Detail Dasar</h3>
+              
               {!isEditMode ? (
+                // TOMBOL EDIT: Ikon Bulat
                 <Button
-                  label="Edit Profil"
-                  icon="pi pi-user-edit"
-                  className="p-button-outlined p-button-info"
+                  icon="pi pi-pencil"
+                  rounded
+                  text
+                  severity="secondary" 
+                  aria-label="Edit"
+                  tooltip="Edit Profil"
+                  tooltipOptions={{ position: 'left' }}
                   onClick={handleEdit}
+                  className="surface-100 text-700 hover:surface-200"
                 />
               ) : (
-                <>
+                // TOMBOL ACTION: Kecil & Rapi
+                <div className="flex align-items-center gap-2">
                   <Button
-                    label="Batal"
                     icon="pi pi-times"
-                    className="p-button-text p-button-secondary"
+                    rounded
+                    text
+                    severity="danger"
+                    aria-label="Batal"
+                    tooltip="Batal"
                     onClick={handleCancel}
                     disabled={isSubmitting}
                   />
                   <Button
-                    label="Simpan Perubahan"
                     icon="pi pi-check"
-                    className="p-button-success"
+                    rounded
+                    aria-label="Simpan"
+                    tooltip="Simpan"
+                    className="p-button-success shadow-2"
                     onClick={handleSave}
                     loading={isSubmitting}
                   />
-                </>
+                </div>
               )}
             </div>
-            <div className="p-fluid grid formgrid">
-              {isEditMode && (
-                <>
-                  <div className="field col-12">
-                    <label
-                      htmlFor="upload"
-                      className="font-semibold block mb-2"
-                    >
-                      <i className="pi pi-image mr-2" /> Ubah Foto Profil
-                    </label>
-                    <FileUpload
-                      ref={fileUploadRef}
-                      name="profile_pic"
-                      mode="advanced"
-                      accept="image/*"
-                      maxFileSize={2000000}
-                      auto={false}
-                      customUpload={true}
-                      onSelect={handleFileSelect}
-                      chooseLabel="Pilih Foto"
-                      cancelLabel="Hapus"
-                      emptyTemplate={
-                        <p className="m-0 text-500">
-                          Seret dan lepas gambar di sini atau pilih untuk
-                          mengunggah.
-                        </p>
-                      }
-                      headerTemplate={(options) => (
-                        <div className="flex flex-column md:flex-row align-items-center justify-content-between p-3 surface-overlay border-bottom-1 surface-border">
-                          <span className="text-lg font-semibold mb-2 md:mb-0">
-                            Pilih Foto Profil Baru
-                          </span>
-                          <div className="flex gap-2">
-                            {options.chooseButton}
-                            {options.cancelButton}
-                          </div>
-                        </div>
-                      )}
-                    />
-                  </div>
-                  <div className="col-12">
-                    <Divider />
-                  </div>
-                </>
-              )}
-              <div className="field col-12 md:col-6">
-                <label htmlFor="firstname" className="font-semibold block mb-2">
-                  <i className="pi pi-user mr-2 text-primary-500" /> Nama Depan
-                </label>
-                <InputText
-                  id="firstname"
-                  value={profile.first_name}
-                  readOnly
-                  disabled
-                  className="p-inputtext-sm"
+
+            {/* MODE EDIT (Form Input) */}
+            {isEditMode ? (
+              <div className="p-fluid grid formgrid">
+                <div className="field col-12">
+                  <label className="font-semibold block mb-2">
+                    Ubah Foto Profil
+                  </label>
+                  <FileUpload
+                    ref={fileUploadRef}
+                    name="profile_pic"
+                    mode="basic"
+                    accept="image/*"
+                    maxFileSize={2000000}
+                    auto={false}
+                    customUpload={true}
+                    onSelect={handleFileSelect}
+                    chooseLabel="Pilih File Foto"
+                    className="w-full"
+                  />
+                </div>
+                <Divider className="col-12 mb-4" />
+
+                <div className="field col-12 md:col-6">
+                  <label className="text-sm font-medium text-700">
+                    Nama Depan
+                  </label>
+                  <InputText
+                    value={profile.first_name}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </div>
+                <div className="field col-12 md:col-6">
+                  <label className="text-sm font-medium text-700">
+                    Nama Belakang
+                  </label>
+                  <InputText
+                    value={profile.last_name}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </div>
+                <div className="field col-12 md:col-6">
+                  <label className="text-sm font-medium text-700">
+                    No. Telepon
+                  </label>
+                  <InputText
+                    value={formData.contact_phone}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        contact_phone: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="field col-12">
+                  <label className="text-sm font-medium text-700">
+                    Alamat Lengkap
+                  </label>
+                  <InputTextarea
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                    rows={3}
+                  />
+                </div>
+              </div>
+            ) : (
+              /* MODE BACA (Grid Modern) */
+              <div className="grid">
+                <InfoItem
+                  icon="pi-user"
+                  label="Nama Lengkap"
+                  value={profile.full_name}
+                  className="md:col-12"
+                />
+                <Divider className="col-12 my-2 border-gray-100" />
+                <InfoItem
+                  icon="pi-phone"
+                  label="No. Telepon"
+                  value={profile.contact_phone}
+                />
+                <InfoItem
+                  icon="pi-envelope"
+                  label="Email Akun"
+                  value={profile.email}
+                />
+                <Divider className="col-12 my-2 border-gray-100" />
+                <InfoItem
+                  icon="pi-home"
+                  label="Alamat Domisili"
+                  value={profile.address}
+                  className="md:col-12"
                 />
               </div>
-              <div className="field col-12 md:col-6">
-                <label htmlFor="lastname" className="font-semibold block mb-2">
-                  <i className="pi pi-user mr-2 text-primary-500" /> Nama
-                  Belakang
-                </label>
-                <InputText
-                  id="lastname"
-                  value={profile.last_name}
-                  readOnly
-                  disabled
-                  className="p-inputtext-sm"
-                />
-              </div>
-              <div className="field col-12 md:col-6">
-                <label htmlFor="phone" className="font-semibold block mb-2">
-                  <i className="pi pi-phone mr-2 text-primary-500" /> No.
-                  Telepon Kontak
-                </label>
-                <InputText
-                  id="phone"
-                  value={
-                    isEditMode ? formData.contact_phone : profile.contact_phone
-                  }
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      contact_phone: e.target.value,
-                    })
-                  }
-                  readOnly={!isEditMode}
-                  disabled={!isEditMode}
-                  className={classNames({
-                    "p-inputtext-sm": true,
-                    "p-invalid": !formData.contact_phone && isEditMode,
-                  })}
-                />
-                {isEditMode && !formData.contact_phone && (
-                  <small className="p-error">Nomor telepon wajib diisi.</small>
-                )}
-              </div>
-              <div className="field col-12">
-                <label htmlFor="address" className="font-semibold block mb-2">
-                  <i className="pi pi-home mr-2 text-primary-500" /> Alamat
-                </label>
-                <InputTextarea
-                  id="address"
-                  value={isEditMode ? formData.address : profile.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  readOnly={!isEditMode}
-                  disabled={!isEditMode}
-                  rows={4}
-                  autoResize
-                  className={classNames({
-                    "p-inputtext-sm": true,
-                    "p-invalid": !formData.address && isEditMode,
-                  })}
-                />
-                {isEditMode && !formData.address && (
-                  <small className="p-error">Alamat wajib diisi.</small>
-                )}
-              </div>
-            </div>
+            )}
           </Card>
         );
 
-      // --- KONTEN TAB 2: INFORMASI PEKERJAAN ---
+      // --- TAB 1: INFORMASI PEKERJAAN ---
       case 1:
+        const detailedOfficeAddress =
+          officeInfo.label === "Kantor Pusat"
+            ? "Gedung Menara HR, Jl. Jend. Sudirman Kav. 52-53, Senayan, Jakarta Selatan"
+            : `Ruko Bisnis Center No. 88, ${
+                profile.birth_place || "Kota Cabang"
+              }, Jawa Timur`;
+
         return (
-          <Card className="border-none shadow-none">
-            <div className="p-3">
-              <div className="flex flex-column gap-4">
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-envelope mr-2 text-lg text-primary-500" />{" "}
-                    Email
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.email || "Tidak ada email"}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-id-card mr-2 text-lg text-primary-500" />{" "}
-                    Posisi / Jabatan
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.position_name}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-sitemap mr-2 text-lg text-primary-500" />{" "}
-                    Divisi
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.division_name || "-"}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-building mr-2 text-lg text-primary-500" />{" "}
-                    Departemen
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.department_name}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-check-circle mr-2 text-lg text-primary-500" />{" "}
-                    Status Kepegawaian
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {capitalizeFirstLetter(profile.employment_status)}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-calendar-plus mr-2 text-lg text-primary-500" />{" "}
-                    Tanggal Bergabung
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {formatLocalDate(profile.join_date)}
-                  </span>
-                </div>
+          <Card className="border-none shadow-none h-full">
+            <h3 className="m-0 mb-4 text-900 font-bold">Status & Penempatan</h3>
+
+            {/* KARTU LOKASI */}
+            <div className="surface-50 border-1 border-gray-200 border-round-xl p-4 mb-5 hover:shadow-2 transition-duration-200">
+              <div className="flex justify-content-between mb-3">
+                <span className="text-blue-600 font-bold flex align-items-center gap-2">
+                  <i className="pi pi-building"></i> Lokasi Kerja
+                </span>
+                <Tag
+                  value={officeInfo.label}
+                  severity={officeInfo.severity as any}
+                  rounded
+                ></Tag>
               </div>
+              <div className="flex flex-column gap-1">
+                <span className="text-xl font-bold text-900">
+                  {officeInfo.detail}
+                </span>
+                <span className="text-600 line-height-3">
+                  {detailedOfficeAddress}
+                </span>
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent(
+                    detailedOfficeAddress
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-blue-500 no-underline hover:text-blue-700 mt-2 font-medium"
+                >
+                  <i className="pi pi-map-marker mr-1"></i> Lihat di Peta
+                </a>
+              </div>
+            </div>
+
+            {/* GRID INFO PEKERJAAN */}
+            <div className="grid row-gap-4">
+              <InfoItem
+                icon="pi-id-card"
+                label="Posisi / Jabatan"
+                value={profile.position_name}
+              />
+              <InfoItem
+                icon="pi-briefcase"
+                label="Status Kepegawaian"
+                value={
+                  <Tag
+                    severity="success"
+                    value={capitalizeFirstLetter(profile.employment_status)}
+                  />
+                }
+              />
+
+              <div className="col-12">
+                <Divider className="my-0 border-gray-100" />
+              </div>
+
+              <InfoItem
+                icon="pi-sitemap"
+                label="Divisi"
+                value={profile.division_name || "-"}
+              />
+              <InfoItem
+                icon="pi-building"
+                label="Departemen"
+                value={profile.department_name}
+              />
+
+              <div className="col-12">
+                <Divider className="my-0 border-gray-100" />
+              </div>
+
+              <InfoItem
+                icon="pi-calendar"
+                label="Tanggal Bergabung"
+                value={formatLocalDate(profile.join_date)}
+              />
+              <InfoItem
+                icon="pi-calendar-times"
+                label="Tanggal Resign"
+                value={
+                  profile.resign_date
+                    ? formatLocalDate(profile.resign_date)
+                    : "-"
+                }
+              />
             </div>
           </Card>
         );
 
-      // --- KONTEN TAB 3: DATA PRIBADI ---
+      // --- TAB 2: DATA PRIBADI ---
       case 2:
         return (
-          <Card className="border-none shadow-none">
-            <div className="p-3">
-              <div className="flex flex-column gap-4">
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-id-card mr-2 text-lg text-primary-500" />{" "}
-                    No. KTP
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.ktp_number || "-"}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-calendar mr-2 text-lg text-primary-500" />{" "}
-                    Tempat, Tanggal Lahir
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.birth_place || "-"},{" "}
-                    {formatLocalDate(profile.birth_date)}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-users mr-2 text-lg text-primary-500" />{" "}
-                    Jenis Kelamin
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {capitalizeFirstLetter(profile.gender) || "-"}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-star mr-2 text-lg text-primary-500" />{" "}
-                    Agama
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.religion || "-"}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-heart mr-2 text-lg text-primary-500" />{" "}
-                    Status Pernikahan
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.maritial_status || "-"}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-tint mr-2 text-lg text-primary-500" />{" "}
-                    Golongan Darah
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.blood_type || "-"}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-book mr-2 text-lg text-primary-500" />{" "}
-                    Pendidikan
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.education || "-"}
-                  </span>
-                </div>
+          <Card className="border-none shadow-none h-full">
+            <h3 className="m-0 mb-4 text-900 font-bold">Data Personal</h3>
+
+            <div className="mb-4">
+              <span className="block text-xs font-bold text-500 uppercase mb-3 tracking-wide">
+                Identitas Utama
+              </span>
+              <div className="grid row-gap-3">
+                <InfoItem
+                  icon="pi-id-card"
+                  label="Nomor KTP (NIK)"
+                  value={profile.ktp_number}
+                  className="md:col-12"
+                />
+                <InfoItem
+                  icon="pi-user"
+                  label="Jenis Kelamin"
+                  value={capitalizeFirstLetter(profile.gender)}
+                />
+                <InfoItem
+                  icon="pi-heart"
+                  label="Status Pernikahan"
+                  value={profile.maritial_status}
+                />
+              </div>
+            </div>
+
+            <Divider className="border-gray-100" />
+
+            <div className="mb-4">
+              <span className="block text-xs font-bold text-500 uppercase mb-3 tracking-wide">
+                Detail Lainnya
+              </span>
+              <div className="grid row-gap-3">
+                <InfoItem
+                  icon="pi-calendar"
+                  label="Tempat, Tanggal Lahir"
+                  value={`${profile.birth_place}, ${formatLocalDate(
+                    profile.birth_date
+                  )}`}
+                  className="md:col-12"
+                />
+                <InfoItem
+                  icon="pi-star"
+                  label="Agama"
+                  value={profile.religion}
+                />
+                <InfoItem
+                  icon="pi-book"
+                  label="Pendidikan Terakhir"
+                  value={profile.education}
+                />
+                <InfoItem
+                  icon="pi-tint"
+                  label="Golongan Darah"
+                  value={profile.blood_type || "-"}
+                />
               </div>
             </div>
           </Card>
         );
 
-      // --- KONTEN TAB 4: DATA FINANSIAL ---
+      // --- TAB 3: DATA FINANSIAL ---
       case 3:
         return (
-          <Card className="border-none shadow-none">
-            <div className="p-3">
-              <div className="flex flex-column gap-4">
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-briefcase mr-2 text-lg text-primary-500" />{" "}
-                    BPJS Ketenagakerjaan
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.bpjs_ketenagakerjaan || "-"}
-                  </span>
+          <Card className="border-none shadow-none h-full">
+            <h3 className="m-0 mb-4 text-900 font-bold">Informasi Finansial</h3>
+
+            <div className="grid">
+              {/* Kartu Bank Style */}
+              <div className="col-12 md:col-6">
+                <div
+                  className="p-4 border-round-xl h-full shadow-1"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+                    color: "white",
+                  }}
+                >
+                  <div className="flex justify-content-between align-items-start mb-4">
+                    <i className="pi pi-credit-card text-3xl opacity-80"></i>
+                    <span className="text-xs border-1 border-white border-round px-2 py-1 opacity-70">
+                      PAYROLL
+                    </span>
+                  </div>
+                  <div className="mb-1 text-sm opacity-70">Nomor Rekening</div>
+                  <div className="text-2xl font-mono font-bold tracking-wider mb-4">
+                    {profile.bank_account || "Belum Terdaftar"}
+                  </div>
+                  <div className="text-sm font-medium">Bank Transfer</div>
                 </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-heart-fill mr-2 text-lg text-primary-500" />{" "}
-                    BPJS Kesehatan
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.bpjs_kesehatan || "-"}
-                  </span>
-                </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-file mr-2 text-lg text-primary-500" />{" "}
-                    NPWP
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
+              </div>
+
+              {/* Kartu NPWP Style */}
+              <div className="col-12 md:col-6">
+                <div className="p-4 surface-50 border-1 border-gray-200 border-round-xl h-full">
+                  <div className="flex align-items-center gap-3 mb-3">
+                    <div className="bg-yellow-100 text-yellow-700 p-2 border-round">
+                      <i className="pi pi-file text-xl"></i>
+                    </div>
+                    <span className="font-bold text-700">NPWP</span>
+                  </div>
+                  <div className="text-xl font-bold text-900">
                     {profile.npwp || "-"}
-                  </span>
+                  </div>
+                  <div className="text-xs text-500 mt-2">
+                    Wajib Pajak Orang Pribadi
+                  </div>
                 </div>
-                <Divider className="my-1" />
-                <div className="flex flex-column md:flex-row md:justify-content-between align-items-start md:align-items-center">
-                  <span className="font-semibold text-base flex align-items-center">
-                    <i className="pi pi-credit-card mr-2 text-lg text-primary-500" />{" "}
-                    Akun Bank
-                  </span>
-                  <span className="text-color-secondary text-lg mt-1 md:mt-0 md:text-right">
-                    {profile.bank_account || "-"}
-                  </span>
+              </div>
+
+              {/* Kartu BPJS */}
+              <div className="col-12 mt-3">
+                <div className="surface-card border-1 border-gray-200 border-round-xl p-0 overflow-hidden">
+                  <div className="bg-green-50 p-3 border-bottom-1 border-green-100 flex justify-content-between">
+                    <span className="font-bold text-green-800">
+                      <i className="pi pi-shield mr-2"></i>Jaminan Sosial (BPJS)
+                    </span>
+                  </div>
+                  <div className="grid p-3">
+                    <InfoItem
+                      icon="pi-briefcase"
+                      label="BPJS Ketenagakerjaan"
+                      value={profile.bpjs_ketenagakerjaan}
+                    />
+                    <InfoItem
+                      icon="pi-heart-fill"
+                      label="BPJS Kesehatan"
+                      value={profile.bpjs_kesehatan}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -616,131 +687,152 @@ export default function ProfilPage() {
         return null;
     }
   };
-  // --- BATAS FUNGSI RENDER KONTEN ---
 
-  // --- 7. UI SKELETON (LENGKAP) ---
+  // --- SKELETON ---
   if (isLoading) {
     return (
       <div className="grid p-fluid">
         <div className="col-12 lg:col-4">
-          <Card className="shadow-2 mb-4 h-full flex flex-column">
-            <div className="flex flex-column align-items-center mb-4">
-              <Skeleton shape="circle" size="8rem" className="mb-3"></Skeleton>
-              <Skeleton width="10rem" height="2rem" className="mb-2"></Skeleton>
-              <Skeleton width="8rem" height="1.2rem"></Skeleton>
-            </div>
-            <Divider />
-            <div className="flex-1 flex flex-column gap-2">
-              <Skeleton width="80%" height="1.2rem" />
-              <Skeleton width="70%" height="1.2rem" />
-              <Skeleton width="90%" height="1.2rem" />
-              <Skeleton width="60%" height="1.2rem" />
-            </div>
-          </Card>
+          <Skeleton height="400px" className="mb-2" />
         </div>
         <div className="col-12 lg:col-8">
-          <Card className="shadow-2 h-full">
-            <Skeleton height="400px"></Skeleton>
-          </Card>
+          <Skeleton height="400px" />
         </div>
       </div>
     );
   }
 
-  if (!profile) {
-    return (
-      <div className="flex justify-content-center align-items-center h-screen">
-        <Card title="Error">Gagal memuat profil. Silakan coba lagi.</Card>
-      </div>
-    );
-  }
+  if (!profile) return <div>Error</div>;
 
-  // --- 8. UI UTAMA (DENGAN LOGIKA DROPDOWN) ---
+  // --- RETURN UTAMA ---
   return (
     <div className="grid p-fluid">
       <Toast ref={toast} />
 
-      {/* Kolom Kiri (Avatar, dll) - Tidak Berubah */}
+      {/* --- KOLOM KIRI (COVER BANNER STYLE) --- */}
       <div className="col-12 lg:col-4">
-        <Card className="profile-summary-card shadow-2 h-full flex flex-column">
-          <div className="flex flex-column align-items-center text-center p-4">
+        <Card className="shadow-4 border-none p-0 overflow-hidden h-full flex flex-column">
+          {/* 1. BANNER BACKGROUND */}
+          <div
+            className="relative w-full h-8rem bg-blue-600"
+            style={{
+              background:
+                "linear-gradient(90deg, var(--primary-color) 0%, var(--primary-700) 100%)",
+            }}
+          >
+            <div className="absolute top-0 right-0 m-3">
+              <Tag
+                value={officeInfo.label}
+                severity={officeInfo.severity as any}
+                icon={officeInfo.icon}
+                className="shadow-2"
+              />
+            </div>
+          </div>
+
+          {/* 2. AREA FOTO & NAMA */}
+          <div className="flex flex-column align-items-center text-center px-4 pb-4 -mt-6 relative z-1">
             <Avatar
               image={imagePreview || profile.profile_image_url || undefined}
               label={
                 !imagePreview && !profile.profile_image_url
-                  ? `${profile.first_name[0] || ""}${
-                      profile.last_name[0] || ""
-                    }`.toUpperCase()
+                  ? `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase()
                   : undefined
               }
               shape="circle"
-              className={classNames(
-                "p-overlay-badge p-avatar-info mb-4",
-                "w-8rem h-8rem text-4xl lg:w-12rem lg:h-12rem lg:text-6xl"
-              )}
-              style={{
-                border: "4px solid var(--primary-color)",
-              }}
+              className="w-10rem h-10rem text-5xl shadow-4 surface-card text-primary font-bold mb-3"
+              style={{ border: "5px solid var(--surface-card)" }}
             />
-            <h2 className="m-0 text-2xl lg:text-3xl font-bold text-color-primary">
+            <h2 className="text-2xl font-bold text-900 mb-1 mt-2">
               {profile.full_name}
             </h2>
-            <p className="text-lg lg:text-xl text-color-secondary mt-2">
+            <span className="text-lg text-600 font-medium mb-2 block">
               {profile.position_name}
-            </p>
-            <span className="text-500 text-sm mt-1">
-              {profile.department_name}
             </span>
+            <div className="surface-200 text-700 border-round-2xl px-3 py-1 text-sm font-semibold">
+              {profile.department_name}
+            </div>
           </div>
 
-          <Divider align="center" type="dashed">
-            <b>Kontak Cepat</b>
-          </Divider>
+          <Divider className="my-0" />
 
-          <div className="flex flex-column gap-3 p-4">
-            <div className="flex align-items-center">
-              <i className="pi pi-envelope mr-3 text-lg lg:text-xl text-primary-500" />
-              <span className="text-base lg:text-lg">{profile.email}</span>
-            </div>
-            <div className="flex align-items-center">
-              <i className="pi pi-phone mr-3 text-lg lg:text-xl text-primary-500" />
-              <span className="text-base lg:text-lg">
-                {profile.contact_phone}
-              </span>
-            </div>
-            <div className="flex align-items-start">
-              <i
-                className="pi pi-home mr-3 text-lg lg:text-xl text-primary-500"
-                style={{ marginTop: "0.2rem" }}
-              />
-              <span className="text-base lg:text-lg">{profile.address}</span>
+          {/* 3. KONTAK CEPAT (LIST CLEAN) */}
+          <div className="p-4 flex-1">
+            <h5 className="mb-3 text-700 font-bold">Kontak & Lokasi</h5>
+            <div className="flex flex-column gap-3">
+              <div className="flex align-items-center p-2 border-round hover:surface-100 transition-duration-200 cursor-pointer">
+                <div className="w-2rem h-2rem flex align-items-center justify-content-center bg-blue-100 border-round mr-3">
+                  <i className="pi pi-envelope text-blue-600" />
+                </div>
+                <div className="flex flex-column overflow-hidden">
+                  <span className="text-xs text-500">Email</span>
+                  <span
+                    className="text-sm font-medium text-900 white-space-nowrap overflow-hidden text-overflow-ellipsis"
+                    title={profile.email}
+                  >
+                    {profile.email}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex align-items-center p-2 border-round hover:surface-100 transition-duration-200 cursor-pointer">
+                <div className="w-2rem h-2rem flex align-items-center justify-content-center bg-green-100 border-round mr-3">
+                  <i className="pi pi-phone text-green-600" />
+                </div>
+                <div className="flex flex-column">
+                  <span className="text-xs text-500">Telepon</span>
+                  <span className="text-sm font-medium text-900">
+                    {profile.contact_phone}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex align-items-center p-2 border-round hover:surface-100 transition-duration-200 cursor-pointer">
+                <div className="w-2rem h-2rem flex align-items-center justify-content-center bg-orange-100 border-round mr-3">
+                  <i className="pi pi-building text-orange-600" />
+                </div>
+                <div className="flex flex-column">
+                  <span className="text-xs text-500">Penempatan</span>
+                  <span className="text-sm font-medium text-900">
+                    {officeInfo.detail}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex align-items-center p-2 border-round hover:surface-100 transition-duration-200 cursor-pointer">
+                <div className="w-2rem h-2rem flex align-items-center justify-content-center bg-gray-100 border-round mr-3">
+                  <i className="pi pi-home text-gray-600" />
+                </div>
+                <div className="flex flex-column">
+                  <span className="text-xs text-500">Domisili</span>
+                  <span className="text-sm font-medium text-900 line-height-3">
+                    {profile.address}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </Card>
       </div>
-      {/* --- BATAS KOLOM KIRI --- */}
 
-      {/* --- Kolom Kanan (DIPERBARUI DENGAN LOGIKA DROPDOWN) --- */}
+      {/* --- KOLOM KANAN (MODERN GRID TAB CONTENT) --- */}
       <div className="col-12 lg:col-8">
-        {/* 1. TAMPILAN DESKTOP (Muncul di 'lg' ke atas) */}
         <div className="hidden lg:block">
           <TabView
             activeIndex={activeIndex}
             onTabChange={(e) => setActiveIndex(e.index)}
             className="shadow-2 h-full"
           >
-            {/* TabView ini HANYA untuk navigasi, KONTEN ada di renderTabContent */}
-            <TabPanel header="Detail Profil" leftIcon="pi pi-user mr-2" />
-            <TabPanel
-              header="Informasi Pekerjaan"
-              leftIcon="pi pi-briefcase mr-2"
-            />
-            <TabPanel header="Data Pribadi" leftIcon="pi pi-shield mr-2" />
-            <TabPanel header="Data Finansial" leftIcon="pi pi-wallet mr-2" />
+            {tabOptions.map((tab) => (
+              <TabPanel
+                key={tab.value}
+                header={tab.label}
+                leftIcon={tab.icon}
+              />
+            ))}
           </TabView>
         </div>
 
-        {/* 2. TAMPILAN MOBILE (Muncul di bawah 'lg') */}
         <div className="block lg:hidden mb-3">
           <label htmlFor="tab-dropdown" className="font-semibold block mb-2">
             Pilih Halaman
@@ -754,13 +846,10 @@ export default function ProfilPage() {
           />
         </div>
 
-        {/* 3. KONTEN (Selalu tampil, di bawah navigasi) */}
-        {/* Kita bungkus konten di dalam Card agar sama seperti sebelumnya */}
         <div className="card shadow-2 p-0 lg:p-0 border-none">
           {renderTabContent()}
         </div>
       </div>
-      {/* --- BATAS KOLOM KANAN --- */}
     </div>
   );
 }
