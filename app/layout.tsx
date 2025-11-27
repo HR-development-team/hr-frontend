@@ -1,10 +1,16 @@
 import "./globals.css";
-import { Inter } from "next/font/google";
+import { Inter, Roboto_Mono } from "next/font/google";
 import { ClientOnlyTopLoader } from "@/components/ClientOnlyTopLoader";
 import { PrimeReactProvider } from "primereact/api";
 import { AuthProvider } from "@/components/AuthContext";
 
 const inter = Inter({ subsets: ["latin"] });
+
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-roboto-mono",
+});
 
 export const metadata = {
   title: "Sistem Manajemen Sumber Daya Manusia",
@@ -21,7 +27,9 @@ export default function RootLayout({
       <AuthProvider>
         <PrimeReactProvider>
           <ClientOnlyTopLoader />
-          <body className={inter.className}>{children}</body>
+          <body className={`${inter.className} ${robotoMono.variable}`}>
+            {children}
+          </body>
         </PrimeReactProvider>
       </AuthProvider>
     </html>

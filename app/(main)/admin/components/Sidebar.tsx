@@ -38,6 +38,10 @@ const menuItems: MenuItems[] = [
     icon: <FileText />,
     children: [
       {
+        label: "Master Kantor",
+        href: "/admin/master/office",
+      },
+      {
         label: "Master Departemen",
         href: "/admin/master/departments",
       },

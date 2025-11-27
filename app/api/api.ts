@@ -6,6 +6,13 @@ export const API_ENDPOINTS = {
   LOGOUT: `${API_URL}/auth/logout`,
   GETUSER: `${API_URL}/auth/me`, // Get Current User
 
+  // --- Master Office ---
+  ADDOFFICE: `${API_URL}/master-offices`, // Create New Office
+  GETALLOFFICE: `${API_URL}/master-offices`, // Get All Office
+  EDITOFFICE: (id: string) => `${API_URL}/master-offices/${id}`, // Update Office By Id
+  DELETEOFFICE: (id: string) => `${API_URL}/master-offices/${id}`, // Delete Office By Id
+  GETOFFICEBYID: (id: string) => `${API_URL}/master-offices/${id}`, // Get Office By Id
+
   // --- Master Departments ---
   ADDDEPARTMENT: `${API_URL}/master-departments`, // Create New Department
   GETALLDEPARTMENT: `${API_URL}/master-departments`, // Get All Department
@@ -95,7 +102,8 @@ export const API_ENDPOINTS = {
   ADDPAYROLLPERIOD: `${API_URL}/payroll-periods`, // Create Payroll Periods
   GETALLPAYROLLPERIODS: `${API_URL}/payroll-periods`, // Get All Payroll Periods
   GETPAYROLLPERIODBYID: (id: string) => `${API_URL}/payroll-periods/${id}`, // Get Payroll Period By Id
-  UPDATEPAYROLLPERIODSTATUS: (id: string) =>`${API_URL}/payroll-periods/${id}/status`, // Update Status Payroll Periods
+  UPDATEPAYROLLPERIODSTATUS: (id: string) =>
+    `${API_URL}/payroll-periods/${id}/status`, // Update Status Payroll Periods
   DELETEPAYROLLPERIOD: (id: string) => `${API_URL}/payroll-periods/${id}`, // Delete Payroll Periods
 
   // --- INI TAMBAHAN: Payroll ---
