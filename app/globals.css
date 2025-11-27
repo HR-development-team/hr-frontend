@@ -17,6 +17,10 @@
   }
 }
 
+.font-mono {
+  font-family: var(--font-roboto-mono), monospace;
+}
+
 body,
 html {
   margin: 0;

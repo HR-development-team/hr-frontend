@@ -1,30 +1,27 @@
 "use client";
 
-import { UserCheck } from "lucide-react";
-import { Card } from "primereact/card";
-import { Calendar } from "primereact/calendar";
-import { Button } from "primereact/button";
 import InputTextComponent from "@/components/Input";
+import { Building, Diamond } from "lucide-react";
+import { Button } from "primereact/button";
+import { Calendar } from "primereact/calendar";
+import { Card } from "primereact/card";
+import DataTableOffice from "./components/DataTableOffice";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-import { Dialog } from "primereact/dialog";
 import { Toast } from "primereact/toast";
-import PositionDialogForm from "./components/PositionDialogForm";
-import DataTablePosition from "./components/DataTablePosition";
-import { PositionFormData } from "@/lib/schemas/positionFormSchema";
-import { GetAllPositionData, GetPositionByIdData } from "@/lib/types/position";
-import { GetAllDivisionData } from "@/lib/types/division";
-import PositionDialogView from "./components/PositionDialogView";
+import { GetAllOfficeData, GetOfficeByIdData } from "@/lib/types/office";
+import { OfficeFormData } from "@/lib/schemas/officeFormSchema";
+import { Dialog } from "primereact/dialog";
+import OfficeDialogForm from "./components/OfficeDialogForm";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { off } from "process";
+import OfficeDialogView from "./components/OfficeDialogView";
 
-export default function Position() {
+export default function Office() {
   const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
-  const [division, setDivision] = useState<GetAllDivisionData[]>([]);
-  const [position, setPosition] = useState<GetAllPositionData[]>([]);
-  const [viewPosition, setViewPosition] = useState<GetPositionByIdData | null>(
-    null
-  );
+  const [office, setOffice] = useState<GetAllOfficeData[]>([]);
+  const [viewOffice, setViewOffice] = useState<GetOfficeByIdData | null>(null);
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
@@ -36,16 +33,16 @@ export default function Position() {
     null
   );
   const [dialogLabel, setDialogLabel] = useState<
-    "Lihat Data Posisi" | "Edit Posisi" | "Tambah Posisi" | null
+    "Lihat Data Kantor" | "Edit Kantor" | "Tambah Kantor" | null
   >(null);
 
-  const fetchAllPosition = async () => {
+  const fetchAllOffice = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/admin/master/position");
+      const res = await fetch("/api/admin/master/office");
 
       if (!res.ok) {
-        throw new Error("Gagal mendapatkan data posisi");
+        throw new Error("Gagal mendapatkan data kantor");
       }
 
       const responseData = await res.json();
@@ -60,85 +57,79 @@ export default function Position() {
           });
           isInitialLoad.current = false;
         }
-        setPosition(responseData.master_positions || []);
+        setOffice(responseData.master_offices || []);
+      } else {
+        toastRef.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: responseData.message || "Gagal mendapatkan data kantor",
+          life: 3000,
+        });
+
+        setOffice([]);
       }
     } catch (error: any) {
-      console.log(error.message);
-
-      setPosition([]);
+      toastRef.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: error.message || "Gagal mendapatkan data kantor",
+        life: 3000,
+      });
+      setOffice([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchPositionById = async (id: number) => {
+  const fetchOfficeById = async (id: number) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/admin/master/position/${id}`);
+      const res = await fetch(`/api/admin/master/office/${id}`);
 
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data posisi berdasarkan id");
+      if (!res.ok)
+        throw new Error("Gagal mendapatkan data kantor berdasarkan id");
+
+      const leaveTypeData = await res.json();
+
+      if (leaveTypeData && leaveTypeData.status === "00") {
+        setViewOffice(leaveTypeData.master_offices || null);
+      } else {
+        setViewOffice(null);
       }
-
-      const responseData = await res.json();
-      console.log(`Status Position: ${responseData.status} dan id: ${id}`);
-
-      if (responseData && responseData.status === "00") {
-        setViewPosition(responseData.master_positions || null);
-      }
-
-      console.log(viewPosition);
     } catch (error: any) {
       console.log(error.message);
 
-      setViewPosition(null);
+      setViewOffice(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchDivision = async () => {
-    try {
-      const res = await fetch("/api/admin/master/division");
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data divisi");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
-        setDivision(responseData.master_divisions || []);
-      }
-    } catch (error: any) {
-      console.log(error.message);
-
-      setDivision([]);
-    }
-  };
-
-  const cleanPositionDataForm = useMemo(() => {
-    if (!viewPosition) {
+  const cleanOfficeDataForm = useMemo(() => {
+    if (!viewOffice) {
       return null;
     }
 
     return {
-      name: viewPosition.name,
-      base_salary: parseFloat(viewPosition.base_salary),
-      description: viewPosition.description,
-      division_code: viewPosition.division_code,
+      name: viewOffice.name,
+      address: viewOffice.address,
+      latitude: parseFloat(viewOffice.latitude),
+      longitude: parseFloat(viewOffice.longitude),
+      radius_meters: viewOffice.radius_meters,
     };
-  }, [viewPosition]);
+  }, [viewOffice]);
 
-  const handleSubmit = async (formData: PositionFormData) => {
+  const handleSubmit = async (formData: OfficeFormData) => {
     setIsSaving(true);
 
-    const url =
-      dialogMode === "edit"
-        ? `/api/admin/master/position/${currentEditedId}`
-        : "/api/admin/master/position";
+    console.log(JSON.stringify(formData));
 
-    const method = dialogMode === "edit" ? "PUT" : "POST";
+    const url =
+      dialogMode === "add"
+        ? "/api/admin/master/office"
+        : `/api/admin/master/office/${currentEditedId}`;
+
+    const method = dialogMode === "add" ? "POST" : "PUT";
 
     try {
       const res = await fetch(url, {
@@ -155,12 +146,12 @@ export default function Position() {
           detail: response.message,
           life: 3000,
         });
-        fetchAllPosition();
+        fetchAllOffice();
       } else {
         toastRef.current?.show({
           severity: "error",
-          summary: "Gagal",
-          detail: response.error[0].message || "Gagal menyimpan data divisi",
+          summary: "Error",
+          detail: response.message,
           life: 3000,
         });
       }
@@ -172,7 +163,7 @@ export default function Position() {
       toastRef.current?.show({
         severity: "error",
         summary: "Error",
-        detail: error.message || "Terjadi kesalahan koneksi",
+        detail: error.message,
         life: 3000,
       });
     } finally {
@@ -180,41 +171,42 @@ export default function Position() {
     }
   };
 
-  const handleView = (position: GetAllPositionData) => {
+  const handleView = (office: GetAllOfficeData) => {
     setDialogMode("view");
     setIsDialogVisible(true);
-    setDialogLabel("Lihat Data Posisi");
-    fetchPositionById(position.id);
+    setDialogLabel("Lihat Data Kantor");
+    fetchOfficeById(office.id);
   };
 
-  const handleEdit = (position: GetAllPositionData) => {
+  const handleEdit = (office: GetAllOfficeData) => {
     setDialogMode("edit");
     setIsDialogVisible(true);
-    setCurrentEditedId(position.id);
-    setDialogLabel("Edit Posisi");
-    fetchPositionById(position.id);
+    setCurrentEditedId(office.id);
+    setDialogLabel("Edit Kantor");
+    fetchOfficeById(office.id);
   };
 
-  const handleDelete = (position: GetAllPositionData) => {
+  const handleDelete = (office: GetAllOfficeData) => {
     confirmDialog({
       icon: "pi pi-exclamation-triangle text-red-400 mr-2",
       header: "Konfirmasi Hapus",
-      message: `Yakin ingin menghapus posisi ${position.name}`,
+      message: `Yakin ingin menghapus Kantor ${office.name}`,
       acceptLabel: "Hapus",
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
         try {
-          const res = await fetch(`/api/admin/master/position/${position.id}`, {
+          const res = await fetch(`/api/admin/master/office/${office.id}`, {
             method: "DELETE",
           });
 
           const responseData = await res.json();
 
-          if (!res.ok)
+          if (!res.ok) {
             throw new Error(
               responseData.message || "Terjadi kesalahan koneksi"
             );
+          }
 
           toastRef.current?.show({
             severity: "success",
@@ -223,12 +215,12 @@ export default function Position() {
             life: 3000,
           });
 
-          fetchAllPosition();
+          fetchAllOffice();
         } catch (error: any) {
           toastRef.current?.show({
             severity: "error",
             summary: "Gagal",
-            detail: error.message || "Terjadi kesalahan koneksi",
+            detail: error.message,
             life: 3000,
           });
         } finally {
@@ -239,32 +231,29 @@ export default function Position() {
   };
 
   useEffect(() => {
-    fetchAllPosition();
-    fetchDivision();
+    fetchAllOffice();
   }, []);
 
   return (
     <div>
       <Toast ref={toastRef} />
-      <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
+      <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
-          <UserCheck className="w-2rem h-2rem" />
+          <Building className="w-2rem h-2rem" />
         </div>
         <div>
           <h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-            Master Data Posisi
+            Master Data Kantor
           </h1>
-          <p className="text-sm md:text-md text-gray-500">
-            Kelola data posisi atau jabatan
-          </p>
+          <p className="text-sm md:text-md text-gray-500">Kelola data kantor</p>
         </div>
       </div>
 
       <Card>
         <div className="flex flex-column gap-4">
-          <div className="flex gap-2 align-items-center">
-            <UserCheck className="h-2" />
-            <h2 className="text-base text-800">Master Data Posisi</h2>
+          <div className="flex gap-2 align-content-center">
+            <Building className="h-2" />
+            <h2 className="text-base text-800">Master Data Kantor</h2>
           </div>
 
           {/* filters */}
@@ -327,22 +316,21 @@ export default function Position() {
                     setDialogMode("add");
                     setIsDialogVisible(true);
                     setCurrentEditedId(null);
-                    setDialogLabel("Tambah Posisi");
+                    setDialogLabel("Tambah Kantor");
                   }}
                 />
               </div>
             </div>
           </div>
-
-          {/* data table */}
-          <DataTablePosition
-            data={position}
-            isLoading={isLoading}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onView={handleView}
-          />
         </div>
+
+        <DataTableOffice
+          data={office}
+          isLoading={isLoading}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
 
         <ConfirmDialog />
 
@@ -352,27 +340,23 @@ export default function Position() {
           onHide={() => {
             setDialogLabel(null);
             setIsDialogVisible(false);
-            setViewPosition(null);
+            setViewOffice(null);
+            setCurrentEditedId(null);
           }}
           modal
-          className="w-full md:w-4"
+          className={dialogMode === 'view' ? 'w-full md:w-8' : 'w-full md:w-6'}
         >
-          <div
-            className={
-              dialogMode === "add" || dialogMode === "edit" ? "block" : "hidden"
-            }
-          >
-            <PositionDialogForm
-              positionData={cleanPositionDataForm}
+          <div className={dialogMode !== "view" ? "block" : "hidden"}>
+            <OfficeDialogForm
+              officeData={cleanOfficeDataForm}
               onSubmit={handleSubmit}
-              divisionOptions={division}
               isSubmitting={isSaving}
             />
           </div>
 
           <div className={dialogMode === "view" ? "block" : "hidden"}>
-            <PositionDialogView
-              data={viewPosition}
+            <OfficeDialogView
+              data={viewOffice}
               isLoading={isLoading}
               dialogMode={dialogMode}
             />
