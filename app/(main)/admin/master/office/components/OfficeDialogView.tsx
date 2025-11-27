@@ -3,8 +3,15 @@ import { GetOfficeByIdData } from "@/lib/types/office";
 import { ViewMasterPropsTypes } from "@/lib/types/view/viewMasterPropsTypes";
 import { Building, Navigation } from "lucide-react";
 import { Card } from "primereact/card";
-import InternalMapInput from "./mapComponents/InternalMapInput";
 import OfficeDialogViewSkeleton from "./OfficeDialogViewSkeleton";
+import dynamic from "next/dynamic";
+
+const InternalMapInput = dynamic(
+  () => import("./mapComponents/InternalMapInput"),
+  {
+    ssr: false,
+  }
+);
 
 export default function OfficeDialogView({
   data,
