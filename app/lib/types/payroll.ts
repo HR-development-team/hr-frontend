@@ -23,4 +23,5 @@ export interface Payroll {
   gross_salary: number;
   total_deductions: number;
   net_salary: number;
+  total_allowances: number;
 }
