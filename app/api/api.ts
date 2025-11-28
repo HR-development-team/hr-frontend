@@ -57,12 +57,12 @@ export const API_ENDPOINTS = {
   UPDATEUSERPROFILE: `${API_URL}/profiles`, // Update Profile
 
   // --- Leave Request ---
-  POSTLEAVEREQUEST: `${API_URL}/leave-requests`, // Submit Leave Request (Menggantikan POSTREQUEST)
-  GETALLLEAVEREQUEST: `${API_URL}/leave-requests`, // Get All Leave Request (Menggantikan GETALLREQUEST)
+  POSTLEAVEREQUEST: `${API_URL}/employee/leave-requests`, // Submit Leave Request (Menggantikan POSTREQUEST)
+  GETALLLEAVEREQUEST: `${API_URL}/empoloyee/leave-requests`, // Get All Leave Request (Menggantikan GETALLREQUEST)
   UPDATELEAVEREQUESTSTATUS: (id: string) =>
-    `${API_URL}/leave-requests/${id}/status`, // INI TAMBAHAN: Update Leave Request Status
+    `${API_URL}/employee/leave-requests/${id}/status`, // INI TAMBAHAN: Update Leave Request Status
   GETLEAVEBYUSER: (id: string) => `${API_URL}/leave-requests/user/${id}`, // Ini dari kode Anda
-  GETLEAVEBYEMPLOYEE: `${API_URL}/leave-requests/me`,
+  GETLEAVEBYEMPLOYEE: `${API_URL}/employee/leave-requests/me`,
   // --- INI TAMBAHAN: Attendance Session ---
   ADDATTENDANCESESSION: `${API_URL}/attendance-sessions`, // Create New Attendance Session
   GETALLATTENDANCESESSION: `${API_URL}/attendance-sessions`, // Get All Attendance Session
