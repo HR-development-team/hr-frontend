@@ -5,6 +5,8 @@ export interface GetAllEmployeeData {
   join_date: string;
   position_code: string;
   employment_status: "aktif" | "inaktif";
+  office_code: string;
+  office_name: string;
   position_name: string;
   division_code: string;
   division_name: string;

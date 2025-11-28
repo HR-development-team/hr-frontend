@@ -23,6 +23,7 @@ export default function EmployeeDialogForm({
   employeeData,
   onSubmit,
   dialogMode,
+  officeOptions,
   positionOptions,
   userOptions,
   isSubmitting,
@@ -89,6 +90,22 @@ export default function EmployeeDialogForm({
         }}
         fieldName={"join_date"}
         label="Tanggal Bergabung"
+        isFieldInvalid={isFieldInvalid}
+        getFieldError={getFieldError}
+      />
+
+      <FormDropdown
+        props={{
+          ...formik.getFieldProps("office_code"),
+          options: officeOptions,
+          optionLabel: "name",
+          optionValue: "office_code",
+          filter: true,
+          filterDelay: 400,
+          placeholder: "Pilih Kantor",
+        }}
+        fieldName={"office_code"}
+        label="Kantor Cabang"
         isFieldInvalid={isFieldInvalid}
         getFieldError={getFieldError}
       />

@@ -321,15 +321,15 @@ export default function Office() {
               </div>
             </div>
           </div>
-        </div>
 
-        <DataTableOffice
-          data={office}
-          isLoading={isLoading}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+          <DataTableOffice
+            data={office}
+            isLoading={isLoading}
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </div>
 
         <ConfirmDialog />
 
@@ -343,7 +343,7 @@ export default function Office() {
             setCurrentEditedId(null);
           }}
           modal
-          className={dialogMode === 'view' ? 'w-full md:w-8' : 'w-full md:w-6'}
+          className={dialogMode === "view" ? "w-full md:w-8" : "w-full md:w-6"}
         >
           <div className={dialogMode !== "view" ? "block" : "hidden"}>
             <OfficeDialogForm

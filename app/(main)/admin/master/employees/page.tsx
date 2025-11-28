@@ -17,10 +17,13 @@ import { GetAllPositionData } from "@/lib/types/position";
 import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 import { format } from "date-fns";
 import { GetAllUserData } from "@/lib/types/user";
+import { GetAllOfficeData } from "@/lib/types/office";
 
 export default function Employees() {
   const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
+
+  const [office, setOffice] = useState<GetAllOfficeData[]>([]);
 
   const [allEmployee, setAllEmployee] = useState<GetAllEmployeeData[]>([]);
   const [viewEmployee, setViewEmployee] = useState<GetEmployeeByIdData | null>(
@@ -105,33 +108,41 @@ export default function Employees() {
     }
   };
 
-  const fetchPositionAndUser = async () => {
+  const fetchPositionUserAndOffice = async () => {
     try {
-      const [positionRes, userRes] = await Promise.all([
+      const [officeRes, positionRes, userRes] = await Promise.all([
+        fetch("/api/admin/master/office"),
         fetch("/api/admin/master/position"),
         fetch("/api/admin/master/user"),
       ]);
 
-      if (!positionRes.ok || !userRes.ok) {
+      if (!officeRes.ok || !positionRes.ok || !userRes.ok) {
         throw new Error("Gagal mendapatkan data posisi");
       }
 
+      const officeData = await officeRes.json();
       const positionData = await positionRes.json();
       const userData = await userRes.json();
 
       if (
+        officeData &&
         positionData &&
         userData &&
+        officeData.status === "00" &&
         positionData.status === "00" &&
         userData.status === "00"
       ) {
+        setOffice(officeData.master_offices || []);
         setPosition(positionData.master_positions || []);
         setUser(userData.users || []);
       } else {
+        setOffice([]);
         setPosition([]);
         setUser([]);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.log(error.message);
+      setOffice([]);
       setPosition([]);
       setUser([]);
     }
@@ -144,6 +155,7 @@ export default function Employees() {
 
     const {
       id,
+      office_name,
       employee_code,
       position_name,
       division_code,
@@ -301,7 +313,7 @@ export default function Employees() {
 
   useEffect(() => {
     fetchAllEmployee();
-    fetchPositionAndUser();
+    fetchPositionUserAndOffice();
   }, []);
 
   return (
@@ -428,6 +440,7 @@ export default function Employees() {
               employeeData={cleanEmployeeDataForm}
               dialogMode={dialogMode}
               onSubmit={handleSubmit}
+              officeOptions={office}
               positionOptions={position}
               userOptions={user}
               isSubmitting={isSaving}
