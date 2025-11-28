@@ -1,15 +1,14 @@
-import { Payroll } from "../types";
+import { Payroll } from "@/lib/types/payroll";
 
+// Perbaikan path URL jika perlu, pastikan endpoint ini benar ada di backend
 export const getPayrollData = async (payrollId: string): Promise<Payroll[]> => {
   try {
-    // Memanggil Route Next.js yang sudah kita buat sebelumnya
-    // URL ini mengarah ke: src/app/api/payroll-periods/[id]/route.ts
     const res = await fetch(`/api/karyawan/payroll-periods/${payrollId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      cache: "no-store", // Agar data tidak dicache (selalu fresh)
+      cache: "no-store", 
     });
 
     if (!res.ok) {
