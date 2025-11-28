@@ -7,6 +7,10 @@ import React from "react";
 import EmployeeDialogViewSkeleton from "./EmployeeDialogViewSkeleton";
 import { ViewMasterPropsTypes } from "@/lib/types/view/viewMasterPropsTypes";
 import { GetEmployeeByIdData } from "@/lib/types/employee";
+import { controllers } from "chart.js";
+import { strict } from "assert";
+import { string } from "zod";
+import { stat } from "fs";
 
 export default function EmployeeDialogView({
   data,
@@ -15,10 +19,24 @@ export default function EmployeeDialogView({
 }: ViewMasterPropsTypes<GetEmployeeByIdData>) {
   const isOnViewMode = dialogMode === "view" ? true : false;
 
-  const statusBodyTemplate = () => {
-    const severity = data?.employment_status === "aktif" ? "success" : "danger";
+  const statusBodyTemplate = (rowData: GetEmployeeByIdData | null) => {
+    if (!rowData || !rowData.employment_status) {
+      return <Tag value={"-"} severity={"secondary"} />;
+    }
 
-    return <Tag value={data?.employment_status} severity={severity} />;
+    const status = rowData.employment_status;
+    let displayValue = "-";
+
+    const severity = status === "aktif" ? "success" : "danger";
+
+    if (status && status.length > 0) {
+      const firstCharUppercase = status.charAt(0).toUpperCase();
+
+      const restOfString = status.slice(1);
+      displayValue = firstCharUppercase + restOfString;
+    }
+
+    return <Tag value={displayValue} severity={severity} />;
   };
 
   if (isLoading) {
@@ -32,11 +50,11 @@ export default function EmployeeDialogView({
         <div className="col-12 md:col-4 text-800 mt-2">
           <Card className="text-center line-height-3">
             <Avatar className="w-10rem h-10rem bg-blue-500 text-white text-4xl font-semibold">
-              <span>N/A</span>
+              <span>{data?.full_name.charAt(0).toUpperCase()}</span>
             </Avatar>
-            <div className="">
+            <div>
               <p className="text-xl font-bold">{data?.full_name}</p>
-              <p className="text-600 text-md font-semibold">
+              <p className="font-mono text-600 text-md">
                 {data?.employee_code}
               </p>
             </div>
@@ -47,11 +65,22 @@ export default function EmployeeDialogView({
               <Briefcase className="text-blue-500" />
               <span className="text-800 font-medium">Status Pekerjaan</span>
             </div>
+
+            <div className="flex align-items-start justify-content-between">
+              <span>Kantor</span>
+              <div className="line-height-3">
+                <p>{data?.office_name}</p>
+                <p className="text-sm font-mono font-light text-right">
+                  {data?.office_code}
+                </p>
+              </div>
+            </div>
+
             <div className="flex align-items-start justify-content-between">
               <span>Departemen</span>
               <div className="line-height-3">
                 <p>{data?.department_name}</p>
-                <p className="text-sm font-light font-italic text-right">
+                <p className="text-sm font-mono font-light text-right">
                   {data?.department_code}
                 </p>
               </div>
@@ -61,7 +90,7 @@ export default function EmployeeDialogView({
               <span>Divisi</span>
               <div className="line-height-3">
                 <p>{data?.division_name} </p>
-                <p className="text-sm font-light font-italic text-right">
+                <p className="text-sm font-mono font-light text-right">
                   {data?.division_code}
                 </p>
               </div>
@@ -71,7 +100,7 @@ export default function EmployeeDialogView({
               <span>Posisi/Jabatan</span>
               <div className="line-height-3">
                 <p>{data?.position_name} </p>
-                <p className="text-sm font-light font-italic text-right">
+                <p className="text-sm font-mono font-light text-right">
                   {data?.position_code}
                 </p>
               </div>
@@ -79,7 +108,7 @@ export default function EmployeeDialogView({
 
             <div className="flex align-items-center justify-content-between">
               <span>Status</span>
-              {statusBodyTemplate()}
+              {statusBodyTemplate(data)}
             </div>
 
             <div className="flex align-items-center justify-content-between">

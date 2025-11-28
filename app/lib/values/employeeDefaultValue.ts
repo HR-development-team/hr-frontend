@@ -36,6 +36,7 @@ export const marriedOptions = [
 export const employeeFormDefaultValues: EmployeeFormData = {
   full_name: "",
   join_date: null as any,
+  office_code: "",
   position_code: "",
   employment_status: "aktif",
   user_code: "",

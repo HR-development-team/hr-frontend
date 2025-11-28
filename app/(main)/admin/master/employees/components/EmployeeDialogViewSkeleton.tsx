@@ -51,6 +51,11 @@ export default function EmployeeDialogViewSkeleton() {
                 <Skeleton className="w-10rem" />
                 <Skeleton className="w-8rem" />
               </div>
+
+              <div className="flex align-items-center justify-content-between">
+                <Skeleton className="w-10rem" />
+                <Skeleton className="w-8rem" />
+              </div>
             </div>
           </Card>
         </div>

@@ -1,4 +1,4 @@
-import z, { number } from "zod";
+import z from "zod";
 
 const numberRegex = /^\+?[0-9]+$/;
 
@@ -19,6 +19,8 @@ export const employeeFormSchema = z.object({
   employment_status: z
     .enum(["aktif", "inaktif"], "Status wajib diisi")
     .default("aktif"),
+
+  office_code: z.string("Kantor wajib dipilih"),
 
   // optional
   contact_phone: z.preprocess(
