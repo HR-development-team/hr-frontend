@@ -15,6 +15,7 @@ export default function DepartmentDialogForm({
   departmentData,
   dialogMode,
   onSubmit,
+  isSubmitting,
 }: DepartmentFormProps) {
   const formik = useFormik({
     initialValues: departmentData || departmentDefaultValues,
@@ -84,6 +85,7 @@ export default function DepartmentDialogForm({
           label="Simpan"
           icon="pi pi-save"
           severity="success"
+          loading={isSubmitting}
           disabled={formik.isSubmitting}
           pt={{
             icon: {

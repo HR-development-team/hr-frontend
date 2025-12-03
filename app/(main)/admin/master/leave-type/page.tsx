@@ -17,6 +17,7 @@ import DataTableLeaveType from "./components/DataTableLeaveType";
 import { LeaveTypeFormData } from "@/lib/schemas/leaveTypeFormSchema";
 import LeaveTypeDialogForm from "./components/LeaveTypeDialogForm";
 import LeaveTypeDialogView from "./components/LeaveTypeDialogView";
+import { useFetch } from "@/lib/hooks/useFetch";
 
 export default function LeaveType() {
   const toastRef = useRef<Toast>(null);
@@ -28,7 +29,6 @@ export default function LeaveType() {
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
   const [dialogLabel, setDialogLabel] = useState<
     "Lihat Data Tipe Cuti" | "Edit Tipe Cuti" | "Tambah Tipe Cuti" | null
@@ -40,69 +40,31 @@ export default function LeaveType() {
     null
   );
 
+  const { isLoading, fetchData, fetchDataById } = useFetch();
+
   const fetchLeaveType = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/admin/master/leave-type");
-
-      if (!res.ok) throw new Error("Gagal mendapatkan data dari server");
-
-      const leaveTypeData = await res.json();
-
-      console.log(leaveTypeData.message);
-
-      if (leaveTypeData && leaveTypeData.status === "00") {
-        if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: leaveTypeData.message,
-            life: 3000,
-          });
-
-          isInitialLoad.current = false;
-        }
-        setLeaveType(leaveTypeData.leave_types || []);
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: leaveTypeData.message,
-          life: 3000,
-        });
-
+    await fetchData({
+      url: "/api/admin/master/leave-type",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
+        setLeaveType(responseData.leave_types || []);
+      },
+      onError: () => {
         setLeaveType([]);
-      }
-    } catch (error: any) {
-      console.log(error.message);
-
-      setLeaveType([]);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
 
   const fetchLeaveTypeById = async (id: number) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/admin/master/leave-type/${id}`);
-
-      if (!res.ok) throw new Error("Gagal mendapatkan user berdasarkan id");
-
-      const leaveTypeData = await res.json();
-
-      if (leaveTypeData && leaveTypeData.status === "00") {
-        setViewLeaveType(leaveTypeData.leave_types || null);
-      } else {
+    await fetchDataById({
+      url: `/api/admin/master/leave-type/${id}`,
+      onSuccess: (responseData) => {
+        setViewLeaveType(responseData.leave_types || null);
+      },
+      onError: () => {
         setViewLeaveType(null);
-      }
-    } catch (error: any) {
-      console.log(error.message);
-
-      setViewLeaveType(null);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
 
   const cleanLeaveTypeDataForm = useMemo(() => {

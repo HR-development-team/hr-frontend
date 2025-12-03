@@ -14,6 +14,7 @@ import { Dialog } from "primereact/dialog";
 import OfficeDialogForm from "./components/OfficeDialogForm";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import OfficeDialogView from "./components/OfficeDialogView";
+import { useFetch } from "@/lib/hooks/useFetch";
 
 export default function Office() {
   const toastRef = useRef<Toast>(null);
@@ -24,7 +25,6 @@ export default function Office() {
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
@@ -35,73 +35,31 @@ export default function Office() {
     "Lihat Data Kantor" | "Edit Kantor" | "Tambah Kantor" | null
   >(null);
 
+  const { isLoading, fetchData, fetchDataById } = useFetch();
+
   const fetchAllOffice = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/admin/master/office");
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data kantor");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
-        if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message,
-            life: 3000,
-          });
-          isInitialLoad.current = false;
-        }
+    await fetchData({
+      url: "/api/admin/master/office",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
         setOffice(responseData.master_offices || []);
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: responseData.message || "Gagal mendapatkan data kantor",
-          life: 3000,
-        });
-
+      },
+      onError: () => {
         setOffice([]);
-      }
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.message || "Gagal mendapatkan data kantor",
-        life: 3000,
-      });
-      setOffice([]);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
 
   const fetchOfficeById = async (id: number) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/admin/master/office/${id}`);
-
-      if (!res.ok)
-        throw new Error("Gagal mendapatkan data kantor berdasarkan id");
-
-      const leaveTypeData = await res.json();
-
-      if (leaveTypeData && leaveTypeData.status === "00") {
-        setViewOffice(leaveTypeData.master_offices || null);
-      } else {
+    await fetchDataById({
+      url: `/api/admin/master/office/${id}`,
+      onSuccess: (responseData) => {
+        setViewOffice(responseData.master_offices || null);
+      },
+      onError: () => {
         setViewOffice(null);
-      }
-    } catch (error: any) {
-      console.log(error.message);
-
-      setViewOffice(null);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
 
   const cleanOfficeDataForm = useMemo(() => {
