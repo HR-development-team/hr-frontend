@@ -1,0 +1,9 @@
+/app/(mian)/karyawan/dashboard/
+├── components/
+│   ├── types.ts              <-- Definisi tipe data (Interface)
+│   ├── DashboardHeader.tsx   <-- Header (Salam & Jam)
+│   ├── StatsGrid.tsx         <-- Ringkasan (Hadir/Cuti)
+│   ├── AttendanceCard.tsx    <-- Card Utama Absensi & Lokasi
+│   ├── QuickMenu.tsx         <-- Menu Cepat & Info HR
+│   └── AttendanceModal.tsx   <-- Pop-up Verifikasi Lokasi
+└── page.tsx                  <-- Halaman Utama (Parent Controller)
