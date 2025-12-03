@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
   if (payload && !isPublicPath) {
     const role = payload.role;
     if (pathname.startsWith("/admin") && role !== "admin") {
-      return NextResponse.redirect(new URL("/karyawan", request.url));
+      return NextResponse.redirect(new URL("/karyawan/Dashboard", request.url));
     }
 
     if (pathname.startsWith("/karyawan") && role !== "employee") {
