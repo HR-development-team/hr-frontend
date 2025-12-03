@@ -65,6 +65,10 @@ const menuItems: MenuItems[] = [
         label: "Master Tipe Cuti",
         href: "/admin/master/leave-type",
       },
+      {
+        label: "Master Shift",
+        href: "/admin/master/shift",
+      },
     ],
   },
   {
