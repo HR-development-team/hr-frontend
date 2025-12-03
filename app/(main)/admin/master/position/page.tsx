@@ -15,6 +15,7 @@ import { PositionFormData } from "@/lib/schemas/positionFormSchema";
 import { GetAllPositionData, GetPositionByIdData } from "@/lib/types/position";
 import { GetAllDivisionData } from "@/lib/types/division";
 import PositionDialogView from "./components/PositionDialogView";
+import { useFetch } from "@/lib/hooks/useFetch";
 
 export default function Position() {
   const toastRef = useRef<Toast>(null);
@@ -28,7 +29,6 @@ export default function Position() {
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
@@ -39,82 +39,44 @@ export default function Position() {
     "Lihat Data Posisi" | "Edit Posisi" | "Tambah Posisi" | null
   >(null);
 
+  const { isLoading, fetchData, fetchDataById } = useFetch();
+
   const fetchAllPosition = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/admin/master/position");
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data posisi");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
-        if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message,
-            life: 3000,
-          });
-          isInitialLoad.current = false;
-        }
+    await fetchData({
+      url: "/api/admin/master/position",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
         setPosition(responseData.master_positions || []);
-      }
-    } catch (error: any) {
-      console.log(error.message);
-
-      setPosition([]);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: () => {
+        setPosition([]);
+      },
+    });
   };
 
   const fetchPositionById = async (id: number) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/admin/master/position/${id}`);
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data posisi berdasarkan id");
-      }
-
-      const responseData = await res.json();
-      console.log(`Status Position: ${responseData.status} dan id: ${id}`);
-
-      if (responseData && responseData.status === "00") {
+    await fetchDataById({
+      url: `/api/admin/master/position/${id}`,
+      onSuccess: (responseData) => {
         setViewPosition(responseData.master_positions || null);
-      }
-
-      console.log(viewPosition);
-    } catch (error: any) {
-      console.log(error.message);
-
-      setViewPosition(null);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: () => {
+        setViewPosition(null);
+      },
+    });
   };
 
   const fetchDivision = async () => {
-    try {
-      const res = await fetch("/api/admin/master/division");
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data divisi");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
+    await fetchData({
+      url: "/api/admin/master/division",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
         setDivision(responseData.master_divisions || []);
-      }
-    } catch (error: any) {
-      console.log(error.message);
-
-      setDivision([]);
-    }
+      },
+      onError: () => {
+        setPosition([]);
+      },
+    });
   };
 
   const cleanPositionDataForm = useMemo(() => {

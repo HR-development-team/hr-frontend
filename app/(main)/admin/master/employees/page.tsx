@@ -18,6 +18,7 @@ import { EmployeeFormData } from "@/lib/schemas/employeeFormSchema";
 import { format } from "date-fns";
 import { GetAllUserData } from "@/lib/types/user";
 import { GetAllOfficeData } from "@/lib/types/office";
+import { useFetch } from "@/lib/hooks/useFetch";
 
 export default function Employees() {
   const toastRef = useRef<Toast>(null);
@@ -37,7 +38,6 @@ export default function Employees() {
     null
   );
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
@@ -48,104 +48,52 @@ export default function Employees() {
     "Lihat Data Karyawan" | "Edit Karyawan" | "Tambah Karyawan" | null
   >(null);
 
+  const { isLoading, fetchData, fetchMultiple, fetchDataById } = useFetch();
+
   const fetchAllEmployee = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/admin/master/employee");
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data semua karyawan");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
-        if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message,
-            life: 3000,
-          });
-          isInitialLoad.current = false;
-        }
+    await fetchData({
+      url: "/api/admin/master/employee",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
         setAllEmployee(responseData.master_employees || []);
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: responseData.message || "Gagal mendapatkan data karyawan",
-          life: 3000,
-        });
-
+      },
+      onError: () => {
         setAllEmployee([]);
-      }
-    } catch (error: any) {
-      setAllEmployee([]);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
 
   const fetchEmployeeById = async (id: number) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/admin/master/employee/${id}`);
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data karyawan berdasarkan id");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
+    await fetchDataById({
+      url: `/api/admin/master/employee/${id}`,
+      onSuccess: (responseData) => {
         setViewEmployee(responseData.master_employees || null);
-      }
-    } catch (error: any) {
-      setViewEmployee(null);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: () => {
+        setViewEmployee(null);
+      },
+    });
   };
 
   const fetchPositionUserAndOffice = async () => {
-    try {
-      const [officeRes, positionRes, userRes] = await Promise.all([
-        fetch("/api/admin/master/office"),
-        fetch("/api/admin/master/position"),
-        fetch("/api/admin/master/user"),
-      ]);
-
-      if (!officeRes.ok || !positionRes.ok || !userRes.ok) {
-        throw new Error("Gagal mendapatkan data posisi");
-      }
-
-      const officeData = await officeRes.json();
-      const positionData = await positionRes.json();
-      const userData = await userRes.json();
-
-      if (
-        officeData &&
-        positionData &&
-        userData &&
-        officeData.status === "00" &&
-        positionData.status === "00" &&
-        userData.status === "00"
-      ) {
+    await fetchMultiple({
+      urls: [
+        "/api/admin/master/office",
+        "/api/admin/master/position",
+        "/api/admin/master/user",
+      ],
+      onSuccess: (resulArray) => {
+        const [officeData, positionData, userData] = resulArray;
         setOffice(officeData.master_offices || []);
         setPosition(positionData.master_positions || []);
         setUser(userData.users || []);
-      } else {
+      },
+      onError: () => {
         setOffice([]);
         setPosition([]);
         setUser([]);
-      }
-    } catch (error: any) {
-      console.log(error.message);
-      setOffice([]);
-      setPosition([]);
-      setUser([]);
-    }
+      },
+    });
   };
 
   const cleanEmployeeDataForm = useMemo(() => {
@@ -190,8 +138,6 @@ export default function Employees() {
     const formattedBirthDate = birth_date
       ? format(birth_date, "yyyy-MM-dd")
       : null;
-
-    console.log(`Format birth date: ${formattedBirthDate}`);
 
     const payload: any = {
       ...restOfValues,

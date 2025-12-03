@@ -6,104 +6,40 @@ import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import OrganizationNode from "./components/OrganizationNode";
 import { PositionStructure, OfficeStructure } from "@/lib/types/organization";
+import { useFetch } from "@/lib/hooks/useFetch";
 
 export default function Organization() {
   const toastRef = useRef<Toast>(null);
-  const isInitialLoad = useRef<boolean>(true);
 
   const [office, setOffice] = useState<OfficeStructure[]>([]);
   const [position, setPosition] = useState<PositionStructure[]>([]);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { isLoading, fetchData } = useFetch();
 
   const fetchAllOffice = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/admin/organization/office");
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data kantor");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
-        if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message,
-            life: 3000,
-          });
-          isInitialLoad.current = false;
-        }
+    await fetchData({
+      url: "/api/admin/organization/office",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
         setOffice(responseData.offices || []);
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: responseData.message || "Gagal mendapatkan data kantor",
-          life: 3000,
-        });
-
+      },
+      onError: () => {
         setOffice([]);
-      }
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.message || "Gagal mendapatkan data kantor",
-        life: 3000,
-      });
-      setOffice([]);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
 
   const fetchAllPosition = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/admin/organization/position");
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data kantor");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
-        if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message,
-            life: 3000,
-          });
-          isInitialLoad.current = false;
-        }
+    await fetchData({
+      url: "/api/admin/organization/position",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
         setPosition(responseData.position || []);
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: responseData.message || "Gagal mendapatkan data kantor",
-          life: 3000,
-        });
-
+      },
+      onError: () => {
         setPosition([]);
-      }
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.message || "Gagal mendapatkan data kantor",
-        life: 3000,
-      });
-      setPosition([]);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
 
   useEffect(() => {

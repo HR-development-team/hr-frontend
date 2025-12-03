@@ -15,10 +15,10 @@ import DivisionDialogView from "./components/DivisionDialogView";
 import DataTableDivision from "./components/DataTableDivision";
 import { DivisionFormData } from "@/lib/schemas/divisionFormSchema";
 import { GetAllDepartmentData } from "@/lib/types/department";
+import { useFetch } from "@/lib/hooks/useFetch";
 
 export default function Position() {
   const toastRef = useRef<Toast>(null);
-  const isInitialLoad = useRef<boolean>(true);
 
   const [department, setDepartment] = useState<GetAllDepartmentData[]>([]);
   const [division, setDivision] = useState<GetAllDivisionData[]>([]);
@@ -28,7 +28,6 @@ export default function Position() {
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
@@ -39,75 +38,44 @@ export default function Position() {
     "Lihat Data Divisi" | "Edit Divisi" | "Tambah Divisi" | null
   >(null);
 
+  const { isLoading, fetchData, fetchDataById } = useFetch();
+
   const fetchAllDivision = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/admin/master/division");
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data divisi");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
-        if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message,
-            life: 3000,
-          });
-          isInitialLoad.current = false;
-        }
+    await fetchData({
+      url: "/api/admin/master/division",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
         setDivision(responseData.master_divisions || []);
-      }
-    } catch (error: any) {
-      setDivision([]);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: () => {
+        setDivision([]);
+      },
+    });
   };
 
   const fetchDivisionById = async (id: number) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/admin/master/division/${id}`);
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data divisi berdasarkan id");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
+    await fetchDataById({
+      url: `/api/admin/master/division/${id}`,
+      onSuccess: (responseData) => {
         setViewDivision(responseData.master_divisions || null);
-      }
-    } catch (error: any) {
-      setViewDivision(null);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: () => {
+        setViewDivision(null);
+      },
+    });
   };
 
   const fetchDepartment = async () => {
-    try {
-      const res = await fetch("/api/admin/master/department");
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data departemen");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
+    await fetchData({
+      url: "/api/admin/master/department",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
         setDepartment(responseData.master_departments || []);
-      }
-    } catch (error: any) {
-      console.log(error.message);
-
-      setDepartment([]);
-    }
+      },
+      onError: () => {
+        setDepartment([]);
+      },
+    });
   };
 
   const cleanDivisionDataForm = useMemo(() => {
@@ -124,7 +92,6 @@ export default function Position() {
 
   const handleSubmit = async (formData: DivisionFormData) => {
     setIsSaving(true);
-    setIsLoading(true);
 
     const {} = formData;
 
@@ -173,7 +140,6 @@ export default function Position() {
       });
     } finally {
       setIsSaving(false);
-      setIsLoading(false);
     }
   };
 

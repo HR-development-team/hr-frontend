@@ -17,10 +17,10 @@ import {
   GetDepartmentByIdData,
 } from "@/lib/types/department";
 import DepartmentDialogView from "./components/DepartmentDialogView";
+import { useFetch } from "@/lib/hooks/useFetch";
 
 export default function Department() {
   const toastRef = useRef<Toast>(null);
-  const isInitialLoad = useRef<boolean>(true);
 
   const [department, setDepartment] = useState<GetAllDepartmentData[]>([]);
   const [viewDepartment, setViewDepartment] =
@@ -28,9 +28,9 @@ export default function Department() {
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
   );
@@ -38,64 +38,35 @@ export default function Department() {
     "Lihat Data Departement" | "Edit Departemen" | "Tambah Departemen" | null
   >(null);
 
+  const { isLoading, fetchData, fetchDataById } = useFetch();
+
   const fetchAllDepartment = async () => {
-    setIsLoading(true);
-
-    try {
-      const res = await fetch("/api/admin/master/department");
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: response.message,
-            life: 3000,
-          });
-
-          isInitialLoad.current = false;
-        }
-        setDepartment(response.master_departments);
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: response.message,
-          life: 3000,
-        });
-
+    await fetchData({
+      url: "/api/admin/master/department",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
+        setDepartment(responseData.master_departments || []);
+      },
+      onError: () => {
         setDepartment([]);
-      }
-    } catch (error: any) {
-      setDepartment([]);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
 
   const fetchDepartmentById = async (id: number) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/admin/master/department/${id}`);
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data departemen berdasarkan id");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
+    await fetchDataById({
+      url: `/api/admin/master/department/${id}`,
+      onSuccess: (responseData) => {
         setViewDepartment(responseData.master_departments || null);
-      }
-    } catch (error: any) {
-      setViewDepartment(null);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: () => {
+        setViewDepartment(null);
+      },
+    });
   };
 
   const handleSubmit = async (formData: DepartementFormData) => {
+    setIsSaving(true);
     try {
       const method = dialogMode === "add" ? "POST" : "PUT";
 
@@ -134,6 +105,8 @@ export default function Department() {
         life: 3000,
       });
       throw error;
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -344,6 +317,7 @@ export default function Department() {
               departmentData={cleanDepartmentData}
               dialogMode={dialogMode}
               onSubmit={handleSubmit}
+              isSubmitting={isSaving}
             />
           </div>
 
