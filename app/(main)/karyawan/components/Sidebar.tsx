@@ -37,7 +37,7 @@ const menuItems: MenuItems[] = [
     id: "dashboard",
     label: "Dashboard",
     icon: <LayoutDashboard />,
-    href: "/karyawan",
+    href: "/karyawan/Dashboard",
   },
   {
     id: "attendance",
