@@ -1,97 +1,138 @@
+"use client";
+
+import React from "react";
+import { Network } from "lucide-react";
+import { Toast } from "primereact/toast";
+import { useEffect, useRef, useState } from "react";
+import OrganizationNode from "./components/OrganizationNode";
+import { PositionStructure, OfficeStructure } from "@/lib/types/organization";
+
 export default function Organization() {
-  const departments = [
-    {
-      name: "IT Department",
-      head: "Budi Santoso",
-      employees: 15,
-      color: "bg-blue-500",
-    },
-    {
-      name: "HR Department",
-      head: "Siti Rahayu",
-      employees: 8,
-      color: "bg-green-500",
-    },
-    {
-      name: "Marketing",
-      head: "Ahmad Fauzi",
-      employees: 12,
-      color: "bg-purple-500",
-    },
-    {
-      name: "Finance",
-      head: "Dewi Lestari",
-      employees: 10,
-      color: "bg-yellow-500",
-    },
-  ];
+  const toastRef = useRef<Toast>(null);
+  const isInitialLoad = useRef<boolean>(true);
+
+  const [office, setOffice] = useState<OfficeStructure[]>([]);
+  const [position, setPosition] = useState<PositionStructure[]>([]);
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const fetchAllOffice = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/admin/organization/office");
+
+      if (!res.ok) {
+        throw new Error("Gagal mendapatkan data kantor");
+      }
+
+      const responseData = await res.json();
+
+      if (responseData && responseData.status === "00") {
+        if (isInitialLoad.current) {
+          toastRef.current?.show({
+            severity: "success",
+            summary: "Sukses",
+            detail: responseData.message,
+            life: 3000,
+          });
+          isInitialLoad.current = false;
+        }
+        setOffice(responseData.offices || []);
+      } else {
+        toastRef.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: responseData.message || "Gagal mendapatkan data kantor",
+          life: 3000,
+        });
+
+        setOffice([]);
+      }
+    } catch (error: any) {
+      toastRef.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: error.message || "Gagal mendapatkan data kantor",
+        life: 3000,
+      });
+      setOffice([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAllPosition = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/admin/organization/position");
+
+      if (!res.ok) {
+        throw new Error("Gagal mendapatkan data kantor");
+      }
+
+      const responseData = await res.json();
+
+      if (responseData && responseData.status === "00") {
+        if (isInitialLoad.current) {
+          toastRef.current?.show({
+            severity: "success",
+            summary: "Sukses",
+            detail: responseData.message,
+            life: 3000,
+          });
+          isInitialLoad.current = false;
+        }
+        setPosition(responseData.position || []);
+      } else {
+        toastRef.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: responseData.message || "Gagal mendapatkan data kantor",
+          life: 3000,
+        });
+
+        setPosition([]);
+      }
+    } catch (error: any) {
+      toastRef.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: error.message || "Gagal mendapatkan data kantor",
+        life: 3000,
+      });
+      setPosition([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllOffice();
+    fetchAllPosition();
+  }, []);
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Struktur Organisasi
-        </h1>
-        <p className="text-gray-600">
-          Kelola struktur departemen dan hierarki perusahaan
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {departments.map((dept, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-sm border p-6">
-            <div
-              className={`w-12 h-12 ${dept.color} rounded-lg flex items-center justify-center text-white text-xl mb-4`}
-            >
-              {dept.name.charAt(0)}
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">{dept.name}</h3>
-            <p className="text-sm text-gray-600 mb-1">Kepala: {dept.head}</p>
-            <p className="text-sm text-gray-600">Karyawan: {dept.employees}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="p-6 border-b">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">
-              Diagram Struktur Organisasi
-            </h2>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-              Edit Struktur
-            </button>
-          </div>
+      <Toast ref={toastRef} />
+      <div className="mb-6 flex align-items-center gap-3 mt-4">
+        <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
+          <Network className="w-2rem h-2rem" />
         </div>
-        <div className="p-6">
-          <div className="flex justify-center items-center">
-            <div className="text-center">
-              {/* CEO Level */}
-              <div className="bg-blue-600 text-white p-4 rounded-lg shadow-md w-48 mx-auto mb-8">
-                <div className="font-bold">Direktur Utama</div>
-                <div className="text-sm">John Doe</div>
-              </div>
-
-              {/* Manager Level */}
-              <div className="flex justify-center space-x-8 mb-8">
-                {departments.map((dept, index) => (
-                  <div key={index} className="text-center">
-                    <div className="bg-green-500 text-white p-3 rounded-lg shadow-md w-40">
-                      <div className="font-bold text-sm">{dept.name}</div>
-                      <div className="text-xs">{dept.head}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Employee Level */}
-              <div className="text-center text-gray-500">
-                <p>+156 Karyawan</p>
-              </div>
-            </div>
-          </div>
+        <div>
+          <h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2 ">
+            Struktur Organisasi
+          </h1>
+          <p className="text-sm md:text-md text-gray-500">
+            Kelola struktur departemen dan hierarki perusahaan
+          </p>
         </div>
       </div>
+
+      <OrganizationNode
+        initialOfficeData={office}
+        initialPositionData={position}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

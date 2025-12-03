@@ -7,10 +7,6 @@ import React from "react";
 import EmployeeDialogViewSkeleton from "./EmployeeDialogViewSkeleton";
 import { ViewMasterPropsTypes } from "@/lib/types/view/viewMasterPropsTypes";
 import { GetEmployeeByIdData } from "@/lib/types/employee";
-import { controllers } from "chart.js";
-import { strict } from "assert";
-import { string } from "zod";
-import { stat } from "fs";
 
 export default function EmployeeDialogView({
   data,
