@@ -11,7 +11,7 @@ import {
 import { OfficeFormProps } from "@/lib/types/form/officeFormType";
 import { officeDefaultValues } from "@/lib/values/officeDefaultValue";
 import { useFormik } from "formik";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import FormInputNumber from "@/components/form/FormInputNumber";
 import { InputNumberValueChangeEvent } from "primereact/inputnumber";
 import { Button } from "primereact/button";
@@ -167,7 +167,7 @@ export default function OfficeDialogForm({
           />
         </div>
 
-        <div className="col-12 md:col-6">
+        {/* <div className="col-12 md:col-6">
           <FormInputNumber
             props={{
               value: formik.values.sort_order,
@@ -185,10 +185,10 @@ export default function OfficeDialogForm({
             getFieldError={getFieldError}
             optional
           />
-        </div>
+        </div> */}
       </div>
 
-      <FormInputTextarea
+      {/* <FormInputTextarea
         props={{
           ...formik.getFieldProps("description"),
           rows: 5,
@@ -198,7 +198,7 @@ export default function OfficeDialogForm({
         isFieldInvalid={isFieldInvalid}
         getFieldError={getFieldError}
         optional
-      />
+      /> */}
 
       <div className="flex justify-content-end mt-4">
         <Button

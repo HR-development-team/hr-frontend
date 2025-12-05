@@ -18,6 +18,7 @@ import { LeaveTypeFormData } from "@/lib/schemas/leaveTypeFormSchema";
 import LeaveTypeDialogForm from "./components/LeaveTypeDialogForm";
 import LeaveTypeDialogView from "./components/LeaveTypeDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
 
 export default function LeaveType() {
   const toastRef = useRef<Toast>(null);
@@ -34,13 +35,12 @@ export default function LeaveType() {
     "Lihat Data Tipe Cuti" | "Edit Tipe Cuti" | "Tambah Tipe Cuti" | null
   >(null);
 
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
   );
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
 
   const fetchLeaveType = async () => {
     await fetchData({
@@ -80,47 +80,25 @@ export default function LeaveType() {
   }, [viewLeaveType]);
 
   const handleSubmit = async (formData: LeaveTypeFormData) => {
-    setIsSaving(true);
-    try {
-      const method = dialogMode === "add" ? "POST" : "PUT";
+    const method = dialogMode === "add" ? "POST" : "PUT";
 
-      const url =
-        dialogMode === "add"
-          ? "/api/admin/master/leave-type"
-          : `/api/admin/master/leave-type/${currentEditedId}`;
+    const url =
+      dialogMode === "add"
+        ? "/api/admin/master/leave-type"
+        : `/api/admin/master/leave-type/${currentEditedId}`;
 
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(formData),
-      });
-
-      const responseData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(responseData.message || "Terjadi kesalahan");
-      }
-
-      toastRef.current?.show({
-        severity: "success",
-        summary: "Sukses",
-        detail: responseData.message || "Data berhasil disimpan",
-        life: 3000,
-      });
-
-      fetchLeaveType();
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "success",
-        summary: "Sukses",
-        detail: error.message,
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    await submitData({
+      url: url,
+      payload: formData,
+      toastRef: toastRef,
+      onSuccess: () => {
+          fetchLeaveType();
+          setDialogMode(null);
+          setIsDialogVisible(false);
+          setCurrentEditedId(null);
+      },
+      method: method
+    });
   };
 
   const handleView = (leaveType: GetAllLeaveTypeData) => {

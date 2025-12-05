@@ -16,6 +16,7 @@ import { GetAllPositionData, GetPositionByIdData } from "@/lib/types/position";
 import { GetAllDivisionData } from "@/lib/types/division";
 import PositionDialogView from "./components/PositionDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
 
 export default function Position() {
   const toastRef = useRef<Toast>(null);
@@ -30,7 +31,6 @@ export default function Position() {
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -40,6 +40,7 @@ export default function Position() {
   >(null);
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
 
   const fetchAllPosition = async () => {
     await fetchData({
@@ -93,8 +94,6 @@ export default function Position() {
   }, [viewPosition]);
 
   const handleSubmit = async (formData: PositionFormData) => {
-    setIsSaving(true);
-
     const url =
       dialogMode === "edit"
         ? `/api/admin/master/position/${currentEditedId}`
@@ -102,44 +101,18 @@ export default function Position() {
 
     const method = dialogMode === "edit" ? "PUT" : "POST";
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(formData),
-      });
-
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
+    await submitData({
+      url: url,
+      payload: formData,
+      toastRef: toastRef,
+      onSuccess: () => {
         fetchAllPosition();
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: response.error[0].message || "Gagal menyimpan data divisi",
-          life: 3000,
-        });
-      }
-
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.message || "Terjadi kesalahan koneksi",
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
+      },
+      method: method,
+    });
   };
 
   const handleView = (position: GetAllPositionData) => {
@@ -214,7 +187,7 @@ export default function Position() {
         </div>
         <div>
           <h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-            Master Data Posisi
+            Master Data Jabatan
           </h1>
           <p className="text-sm md:text-md text-gray-500">
             Kelola data posisi atau jabatan

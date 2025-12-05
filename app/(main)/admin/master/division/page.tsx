@@ -16,6 +16,7 @@ import DataTableDivision from "./components/DataTableDivision";
 import { DivisionFormData } from "@/lib/schemas/divisionFormSchema";
 import { GetAllDepartmentData } from "@/lib/types/department";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
 
 export default function Position() {
   const toastRef = useRef<Toast>(null);
@@ -29,7 +30,6 @@ export default function Position() {
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -39,6 +39,7 @@ export default function Position() {
   >(null);
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
 
   const fetchAllDivision = async () => {
     await fetchData({
@@ -91,10 +92,6 @@ export default function Position() {
   }, [viewDivision]);
 
   const handleSubmit = async (formData: DivisionFormData) => {
-    setIsSaving(true);
-
-    const {} = formData;
-
     const url =
       dialogMode === "edit"
         ? `/api/admin/master/division/${currentEditedId}`
@@ -102,45 +99,18 @@ export default function Position() {
 
     const method = dialogMode === "edit" ? "PUT" : "POST";
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(formData),
-      });
-
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
-        fetchAllDivision();
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: response.error[0].message || "Gagal menyimpan data divisi",
-          life: 3000,
-        });
-      }
-
-      fetchAllDivision();
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: "Terjadi kesalahan koneksi",
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    await submitData({
+      url: url,
+      payload: formData,
+      toastRef: toastRef,
+      onSuccess: () => {
+          fetchAllDivision();
+          setDialogMode(null);
+          setIsDialogVisible(false);
+          setCurrentEditedId(null);
+      },
+      method: method
+    });
   };
 
   const handleView = (division: GetAllDivisionData) => {
