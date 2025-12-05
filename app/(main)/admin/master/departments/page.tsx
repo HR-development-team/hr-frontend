@@ -19,6 +19,7 @@ import {
 import DepartmentDialogView from "./components/DepartmentDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { GetAllOfficeData } from "@/lib/types/office";
+import { useSubmit } from "@/lib/hooks/useSubmit";
 
 export default function Department() {
   const toastRef = useRef<Toast>(null);
@@ -33,7 +34,7 @@ export default function Department() {
 
   const [isOfficeLoading, setIsOfficeLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
+  // const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -43,6 +44,7 @@ export default function Department() {
   >(null);
 
   const { isLoading, fetchData, fetchDataById, fetchMultiple } = useFetch();
+  const { isSaving, submitData } = useSubmit();
 
   const fetchAllDepartment = async () => {
     await fetchData({
@@ -91,48 +93,25 @@ export default function Department() {
   };
 
   const handleSubmit = async (formData: DepartementFormData) => {
-    setIsSaving(true);
-    try {
-      const method = dialogMode === "add" ? "POST" : "PUT";
+    const method = dialogMode === "add" ? "POST" : "PUT";
 
-      const url =
-        dialogMode === "add"
-          ? "/api/admin/master/department"
-          : `/api/admin/master/department/${currentEditedId}`;
+    const url =
+      dialogMode === "add"
+        ? "/api/admin/master/department"
+        : `/api/admin/master/department/${currentEditedId}`;
 
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(formData),
-      });
-
-      const responseData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(responseData.message || "Terjadi kesalahan");
-      }
-
-      toastRef.current?.show({
-        severity: "success",
-        summary: "Sukses",
-        detail: responseData.message || "Data berhasil disimpan",
-        life: 3000,
-      });
-
-      fetchAllDepartment();
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Gagal",
-        detail: error.message,
-        life: 3000,
-      });
-      throw error;
-    } finally {
-      setIsSaving(false);
-    }
+    await submitData({
+      url: url,
+      payload: formData,
+      toastRef: toastRef,
+      onSuccess: () => {
+          fetchAllDepartment();
+          setDialogMode(null);
+          setIsDialogVisible(false);
+          setCurrentEditedId(null);
+      },
+      method: method
+    });
   };
 
   const cleanDepartmentData = useMemo(() => {

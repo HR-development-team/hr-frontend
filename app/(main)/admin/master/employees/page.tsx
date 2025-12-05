@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { GetAllUserData } from "@/lib/types/user";
 import { GetAllOfficeData } from "@/lib/types/office";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
 
 export default function Employees() {
   const toastRef = useRef<Toast>(null);
@@ -38,7 +39,6 @@ export default function Employees() {
   );
 
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -48,6 +48,7 @@ export default function Employees() {
   >(null);
 
   const { isLoading, fetchData, fetchMultiple, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
 
   const fetchAllEmployee = async () => {
     await fetchData({
@@ -130,8 +131,6 @@ export default function Employees() {
   }, [viewEmployee]);
 
   const handleSubmit = async (formData: EmployeeFormData) => {
-    setIsSaving(true);
-
     const { join_date, contact_phone, birth_date, ...restOfValues } = formData;
 
     const formattedBirthDate = birth_date
@@ -156,46 +155,18 @@ export default function Employees() {
 
     const method = dialogMode === "edit" ? "PUT" : "POST";
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(payload),
-      });
-
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
-        fetchAllEmployee();
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail:
-            response?.errors?.[0]?.message || "Gagal menyimpan data karyawan",
-          life: 3000,
-        });
-      }
-
-      fetchAllEmployee();
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentSelectedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error,
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    await submitData({
+      url: url,
+      payload: payload,
+      toastRef: toastRef,
+      onSuccess: () => {
+          fetchAllEmployee();
+          setDialogMode(null);
+          setIsDialogVisible(false);
+          setCurrentSelectedId(null);
+      },
+      method: method
+    });
   };
 
   const handleView = (employee: GetAllEmployeeData) => {

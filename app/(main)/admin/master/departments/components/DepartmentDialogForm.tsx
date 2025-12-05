@@ -60,7 +60,7 @@ export default function DepartmentDialogForm({
 
   return (
     <form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
-      <FormDropdown
+      {/* <FormDropdown
         props={{
           ...formik.getFieldProps("office_code"),
           options: officeOptions,
@@ -75,7 +75,7 @@ export default function DepartmentDialogForm({
         label="Kantor Cabang"
         isFieldInvalid={isFieldInvalid}
         getFieldError={getFieldError}
-      />
+      /> */}
 
       <FormInputText
         props={{

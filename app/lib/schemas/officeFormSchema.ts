@@ -1,7 +1,7 @@
 import z from "zod";
 
 export const officeFormSchema = z.object({
-  parent_office_code: z.string().nullable().optional(),
+  // parent_office_code: z.string().nullable().optional(),
   name: z
     .string()
     .min(3, "Nama kantor harus minimal 3 karakter")
@@ -15,9 +15,11 @@ export const officeFormSchema = z.object({
     .number()
     .min(-180, "Longitude minimal -180 derajat")
     .max(180, "Longitude maksimal 180 derajat"),
-  radius_meters: z.number().min(0, 'Radius jarak harus berupa bilangan positif'),
-  sort_order: z.number().positive("Harus berupa bilangan positif").nullable().optional(),
-  description: z.string().nullable().optional()
+  radius_meters: z
+    .number()
+    .min(0, "Radius jarak harus berupa bilangan positif"),
+  // sort_order: z.number().positive("Harus berupa bilangan positif").nullable().optional(),
+  // description: z.string().nullable().optional()
 });
 
 export type OfficeFormData = z.infer<typeof officeFormSchema>;

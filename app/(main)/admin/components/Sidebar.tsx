@@ -50,7 +50,7 @@ const menuItems: MenuItems[] = [
         href: "/admin/master/division",
       },
       {
-        label: "Master Posisi",
+        label: "Master Jabatan",
         href: "/admin/master/position",
       },
       {

@@ -15,6 +15,7 @@ import OfficeDialogForm from "./components/OfficeDialogForm";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import OfficeDialogView from "./components/OfficeDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
 
 export default function Office() {
   const toastRef = useRef<Toast>(null);
@@ -25,7 +26,7 @@ export default function Office() {
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
+  // const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -35,6 +36,7 @@ export default function Office() {
   >(null);
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
 
   const fetchAllOffice = async () => {
     await fetchData({
@@ -72,16 +74,12 @@ export default function Office() {
       latitude: parseFloat(viewOffice.latitude),
       longitude: parseFloat(viewOffice.longitude),
       radius_meters: viewOffice.radius_meters,
-      sort_order: viewOffice.sort_order,
-      description: viewOffice.description
+      // sort_order: viewOffice.sort_order,
+      // description: viewOffice.description,
     };
   }, [viewOffice]);
 
   const handleSubmit = async (formData: OfficeFormData) => {
-    setIsSaving(true);
-
-    console.log(JSON.stringify(formData));
-
     const url =
       dialogMode === "add"
         ? "/api/admin/master/office"
@@ -89,44 +87,18 @@ export default function Office() {
 
     const method = dialogMode === "add" ? "POST" : "PUT";
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(formData),
-      });
-
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
+    await submitData({
+      url: url,
+      payload: formData,
+      toastRef: toastRef,
+      onSuccess: () => {
         fetchAllOffice();
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: response.message,
-          life: 3000,
-        });
-      }
-
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.message,
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
+      },
+      method: method,
+    });
   };
 
   const handleView = (office: GetAllOfficeData) => {
