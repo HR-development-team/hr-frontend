@@ -9,6 +9,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Toast } from "primereact/toast";
 import { StatData } from "@/lib/types/statData";
 import { Skeleton } from "primereact/skeleton";
+import { useFetch } from "@/lib/hooks/useFetch";
 
 const metricDefaultValues: StatData = {
   totalEmployee: 0,
@@ -19,37 +20,26 @@ const metricDefaultValues: StatData = {
 
 export default function Dashboard() {
   const toastRef = useRef<Toast>(null);
-  const isInitialLoad = useRef<boolean>(true);
-
-  const [isLoadingMetric, setIsLoadingMetric] = useState<boolean>(false);
 
   const [metric, setMetric] = useState<StatData>(metricDefaultValues);
 
   const [todayDate, setTodayDate] = useState<string>("...");
 
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
+
+  const { isLoading: isMetricLoading, fetchData } = useFetch();
 
   const fetchMetricData = async () => {
-    setIsLoadingMetric(true);
-    try {
-      const res = await fetch("/api/admin/dashboard/metric");
-
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data metrik dashboard");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
+    await fetchData({
+      url: "/api/admin/dashboard/metric",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
         setMetric(responseData.master_employees);
-      } else {
+      },
+      onError: () => {
         setMetric(metricDefaultValues);
-      }
-    } catch (error: any) {
-      console.error(error.message);
-    } finally {
-      setIsLoadingMetric(false);
-    }
+      },
+    });
   };
 
   const dateFormat = (date: Date) => {
@@ -79,23 +69,30 @@ export default function Dashboard() {
           <LayoutDashboard className="h-2rem w-2rem" />
         </div>
         <div>
-          <h2 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-            {isLoading ? (
-              <Skeleton className="w-20rem h-1rem" />
-            ) : user?.full_name ? (
-              `Selamat Datang, ${user?.full_name}`
-            ) : (
-              "Selamat Datang"
-            )}
-          </h2>
-          <p className="text-sm md:text-md text-gray-500">
-            Berikut adalah ringkasan aktivitas HR hari ini.
-          </p>
+          {isAuthLoading ? (
+            <div>
+              <Skeleton className="w-20rem h-1rem mb-2" />
+              <Skeleton className="w-15rem h-1rem" />
+            </div>
+          ) : (
+            <div>
+              <h2 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
+                {user?.full_name ? (
+                  `Selamat Datang, ${user?.full_name}!`
+                ) : (
+                  "Selamat Datang, Admin!"
+                )}
+              </h2>
+              <p className="text-sm md:text-md text-gray-500">
+                Ringkasan HR hari ini, {todayDate}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Statistics */}
-      <DashboardStats data={metric} isLoading={isLoadingMetric} />
+      <DashboardStats data={metric} isLoading={isMetricLoading} />
 
       {/* Main Content Grid */}
       <div className="mt-1 grid">
