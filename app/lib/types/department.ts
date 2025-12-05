@@ -1,11 +1,13 @@
 export interface GetAllDepartmentData {
   id: number;
-  name: string;
   department_code: string;
+  office_code: string;
+  office_name: string;
+  name: string;
+  description: string | null;
 }
 
 export interface GetDepartmentByIdData extends GetAllDepartmentData {
-  description: string | null;
   created_at: string;
   updated_at: string;
 }

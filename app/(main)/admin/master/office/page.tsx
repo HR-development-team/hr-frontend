@@ -72,6 +72,8 @@ export default function Office() {
       latitude: parseFloat(viewOffice.latitude),
       longitude: parseFloat(viewOffice.longitude),
       radius_meters: viewOffice.radius_meters,
+      sort_order: viewOffice.sort_order,
+      description: viewOffice.description
     };
   }, [viewOffice]);
 

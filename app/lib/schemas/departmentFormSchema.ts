@@ -1,6 +1,7 @@
 import z from "zod";
 
 export const departmentFormSchema = z.object({
+  office_code: z.string("Kantor untuk memilih salah satu kantor"),
   name: z
     .string()
     .nonempty("Nama departemen wajib diisi")
