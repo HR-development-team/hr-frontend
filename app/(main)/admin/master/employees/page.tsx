@@ -25,7 +25,6 @@ export default function Employees() {
   const isInitialLoad = useRef<boolean>(true);
 
   const [office, setOffice] = useState<GetAllOfficeData[]>([]);
-
   const [allEmployee, setAllEmployee] = useState<GetAllEmployeeData[]>([]);
   const [viewEmployee, setViewEmployee] = useState<GetEmployeeByIdData | null>(
     null
@@ -82,8 +81,8 @@ export default function Employees() {
         "/api/admin/master/position",
         "/api/admin/master/user",
       ],
-      onSuccess: (resulArray) => {
-        const [officeData, positionData, userData] = resulArray;
+      onSuccess: (resultArray) => {
+        const [officeData, positionData, userData] = resultArray;
         setOffice(officeData.master_offices || []);
         setPosition(positionData.master_positions || []);
         setUser(userData.users || []);

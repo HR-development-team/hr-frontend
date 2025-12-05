@@ -18,16 +18,20 @@ import {
 } from "@/lib/types/department";
 import DepartmentDialogView from "./components/DepartmentDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { GetAllOfficeData } from "@/lib/types/office";
 
 export default function Department() {
   const toastRef = useRef<Toast>(null);
+  const isInitialLoad = useRef<boolean>(true);
 
+  const [office, setOffice] = useState<GetAllOfficeData[]>([]);
   const [department, setDepartment] = useState<GetAllDepartmentData[]>([]);
   const [viewDepartment, setViewDepartment] =
     useState<GetDepartmentByIdData | null>(null);
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
+  const [isOfficeLoading, setIsOfficeLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
@@ -38,7 +42,7 @@ export default function Department() {
     "Lihat Data Departement" | "Edit Departemen" | "Tambah Departemen" | null
   >(null);
 
-  const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isLoading, fetchData, fetchDataById, fetchMultiple } = useFetch();
 
   const fetchAllDepartment = async () => {
     await fetchData({
@@ -63,6 +67,27 @@ export default function Department() {
         setViewDepartment(null);
       },
     });
+  };
+
+  const fetchAllOffice = async () => {
+    if (isInitialLoad.current) {
+      setIsOfficeLoading(true);
+
+      await fetchMultiple({
+        urls: ["/api/admin/master/office"],
+        onSuccess: (resultArray) => {
+          const [officeData] = resultArray;
+          setOffice(officeData.master_offices || []);
+        },
+        onError: () => {
+          setOffice([]);
+        },
+      });
+
+      setIsOfficeLoading(false);
+    }
+
+    isInitialLoad.current = false;
   };
 
   const handleSubmit = async (formData: DepartementFormData) => {
@@ -116,6 +141,7 @@ export default function Department() {
     }
 
     return {
+      office_code: viewDepartment.office_code,
       name: viewDepartment.name,
       description: viewDepartment.description,
     };
@@ -134,6 +160,7 @@ export default function Department() {
     setCurrentEditedId(department.id);
     setDialogLabel("Edit Departemen");
     fetchDepartmentById(department.id);
+    fetchAllOffice();
   };
 
   const handleDelete = (department: GetAllDepartmentData) => {
@@ -279,6 +306,7 @@ export default function Department() {
                     setDialogLabel("Tambah Departemen");
                     setCurrentEditedId(null);
                     setIsDialogVisible(true);
+                    fetchAllOffice();
                   }}
                 />
               </div>
@@ -315,9 +343,11 @@ export default function Department() {
           >
             <DepartmentDialogForm
               departmentData={cleanDepartmentData}
+              officeOptions={office}
               dialogMode={dialogMode}
               onSubmit={handleSubmit}
               isSubmitting={isSaving}
+              isOfficeLoading={isOfficeLoading}
             />
           </div>
 
