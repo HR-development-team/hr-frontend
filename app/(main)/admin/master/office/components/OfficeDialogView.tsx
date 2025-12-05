@@ -72,6 +72,11 @@ export default function OfficeDialogView({
                   <span className="text-500">Radius Kantor</span>
                   <p>{data?.radius_meters ? data.radius_meters : 0} meter</p>
                 </div>
+
+                <div className="w-full text-base font-medium">
+                  <span className="text-500">Deskripsi Kantor</span>
+                  <p className="bg-gray-100 p-2 border-round-lg">{data?.description ? data.description : "-"}</p>
+                </div>
               </div>
             </div>
 

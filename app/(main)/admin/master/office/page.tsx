@@ -18,7 +18,6 @@ import { useFetch } from "@/lib/hooks/useFetch";
 
 export default function Office() {
   const toastRef = useRef<Toast>(null);
-  const isInitialLoad = useRef<boolean>(true);
 
   const [office, setOffice] = useState<GetAllOfficeData[]>([]);
   const [viewOffice, setViewOffice] = useState<GetOfficeByIdData | null>(null);
