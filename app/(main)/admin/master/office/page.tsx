@@ -16,6 +16,7 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import OfficeDialogView from "./components/OfficeDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
 
 export default function Office() {
   const toastRef = useRef<Toast>(null);
@@ -26,7 +27,6 @@ export default function Office() {
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  // const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -37,6 +37,7 @@ export default function Office() {
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
   const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete();
 
   const fetchAllOffice = async () => {
     await fetchData({
@@ -125,37 +126,11 @@ export default function Office() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(`/api/admin/master/office/${office.id}`, {
-            method: "DELETE",
-          });
-
-          const responseData = await res.json();
-
-          if (!res.ok) {
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-          }
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllOffice();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/master/office/${office.id}`,
+          onSuccess: () => fetchAllOffice(),
+          toastRef: toastRef,
+        });
       },
     });
   };

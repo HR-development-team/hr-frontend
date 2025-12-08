@@ -17,6 +17,7 @@ import { GetAllDivisionData } from "@/lib/types/division";
 import PositionDialogView from "./components/PositionDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
 
 export default function Position() {
   const toastRef = useRef<Toast>(null);
@@ -41,6 +42,7 @@ export default function Position() {
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
   const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete()
 
   const fetchAllPosition = async () => {
     await fetchData({
@@ -139,36 +141,11 @@ export default function Position() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(`/api/admin/master/position/${position.id}`, {
-            method: "DELETE",
-          });
-
-          const responseData = await res.json();
-
-          if (!res.ok)
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllPosition();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message || "Terjadi kesalahan koneksi",
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/master/position/${position.id}`,
+          onSuccess: () => fetchAllPosition(),
+          toastRef: toastRef
+        })
       },
     });
   };

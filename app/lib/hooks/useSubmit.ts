@@ -3,7 +3,7 @@ import { useState } from "react";
 
 interface FetchOptions<T> {
   url: string;
-  payload: T;
+  payload?: T;
   toastRef?: React.RefObject<Toast>;
   onSuccess: () => void;
   onError?: (message: string) => void;
@@ -25,7 +25,7 @@ export const useSubmit = () => {
     try {
       const res = await fetch(url, {
         method: method,
-        body: JSON.stringify(payload),
+        ...(payload && { body: JSON.stringify(payload) }),
       });
 
       const response = await res.json();
@@ -66,5 +66,5 @@ export const useSubmit = () => {
     }
   };
 
-  return {isSaving, submitData}
+  return { isSaving, submitData };
 };
