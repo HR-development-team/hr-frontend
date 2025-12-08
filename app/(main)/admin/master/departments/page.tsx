@@ -20,6 +20,7 @@ import DepartmentDialogView from "./components/DepartmentDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { GetAllOfficeData } from "@/lib/types/office";
 import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
 
 export default function Department() {
   const toastRef = useRef<Toast>(null);
@@ -34,7 +35,6 @@ export default function Department() {
 
   const [isOfficeLoading, setIsOfficeLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  // const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -45,6 +45,7 @@ export default function Department() {
 
   const { isLoading, fetchData, fetchDataById, fetchMultiple } = useFetch();
   const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete();
 
   const fetchAllDepartment = async () => {
     await fetchData({
@@ -105,12 +106,12 @@ export default function Department() {
       payload: formData,
       toastRef: toastRef,
       onSuccess: () => {
-          fetchAllDepartment();
-          setDialogMode(null);
-          setIsDialogVisible(false);
-          setCurrentEditedId(null);
+        fetchAllDepartment();
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
       },
-      method: method
+      method: method,
     });
   };
 
@@ -151,47 +152,11 @@ export default function Department() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(
-            `/api/admin/master/department/${department.id}`,
-            {
-              method: "DELETE",
-            }
-          );
-
-          const responseData = await res.json();
-
-          if (!res.ok) {
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-          }
-
-          if (responseData && responseData.status === "00") {
-            toastRef.current?.show({
-              severity: "success",
-              summary: "Sukses",
-              detail: responseData.message,
-              life: 3000,
-            });
-
-            fetchAllDepartment();
-          } else {
-            toastRef.current?.show({
-              severity: "error",
-              summary: "Error",
-              detail: responseData.message,
-              life: 3000,
-            });
-          }
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        }
+        await deleteData({
+          url: `/api/admin/master/department/${department.id}`,
+          onSuccess: () => fetchAllDepartment(),
+          toastRef: toastRef,
+        });
       },
     });
   };

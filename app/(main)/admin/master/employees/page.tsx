@@ -20,6 +20,7 @@ import { GetAllUserData } from "@/lib/types/user";
 import { GetAllOfficeData } from "@/lib/types/office";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
 
 export default function Employees() {
   const toastRef = useRef<Toast>(null);
@@ -49,6 +50,7 @@ export default function Employees() {
 
   const { isLoading, fetchData, fetchMultiple, fetchDataById } = useFetch();
   const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete();
 
   const fetchAllEmployee = async () => {
     await fetchData({
@@ -160,12 +162,12 @@ export default function Employees() {
       payload: payload,
       toastRef: toastRef,
       onSuccess: () => {
-          fetchAllEmployee();
-          setDialogMode(null);
-          setIsDialogVisible(false);
-          setCurrentSelectedId(null);
+        fetchAllEmployee();
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentSelectedId(null);
       },
-      method: method
+      method: method,
     });
   };
 
@@ -193,36 +195,11 @@ export default function Employees() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(`/api/admin/master/employee/${employee.id}`, {
-            method: "DELETE",
-          });
-
-          const responseData = await res.json();
-
-          if (!res.ok)
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllEmployee();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        } finally {
-          setCurrentSelectedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/master/employee/${employee.id}`,
+          onSuccess: () => fetchAllEmployee(),
+          toastRef: toastRef,
+        });
       },
     });
   };

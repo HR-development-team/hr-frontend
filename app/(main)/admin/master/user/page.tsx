@@ -17,6 +17,7 @@ import { GetAllUserData, GetUserByIdData } from "@/lib/types/user";
 import UserDialogView from "./components/UserDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
 
 export default function UserPage() {
   const toastRef = useRef<Toast>(null);
@@ -39,6 +40,7 @@ export default function UserPage() {
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
   const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete()
 
   const fetchAllUserData = async () => {
     await fetchData({
@@ -104,60 +106,35 @@ export default function UserPage() {
     });
   };
 
-  const handleView = (data: GetAllUserData) => {
+  const handleView = (user: GetAllUserData) => {
     setDialogMode("view");
     setIsDialogVisible(true);
     setDialogLabel("Lihat Data User");
-    fetchUserById(data.id);
+    fetchUserById(user.id);
   };
 
-  const handleEdit = (data: GetAllUserData) => {
+  const handleEdit = (user: GetAllUserData) => {
     setDialogMode("edit");
     setIsDialogVisible(true);
-    setCurrentEditedId(data.id);
+    setCurrentEditedId(user.id);
     setDialogLabel("Edit User");
-    fetchUserById(data.id);
+    fetchUserById(user.id);
   };
 
-  const handleDelete = (data: GetAllUserData) => {
+  const handleDelete = (user: GetAllUserData) => {
     confirmDialog({
       icon: "pi pi-exclamation-triangle text-red-400 mr-2",
       header: "Konfirmasi Hapus",
-      message: `Yakin ingin menghapus user ${data.email}`,
+      message: `Yakin ingin menghapus user ${user.email}`,
       acceptLabel: "Hapus",
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(`/api/admin/master/user/${data.id}`, {
-            method: "DELETE",
-          });
-
-          const responseData = await res.json();
-
-          if (!res.ok)
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllUserData();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message || "Terjadi kesalahan koneksi",
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/master/user/${user.id}`,
+          onSuccess: () => fetchAllUserData(),
+          toastRef: toastRef
+        })
       },
     });
   };

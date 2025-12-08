@@ -5,7 +5,6 @@ interface FetchOptions {
   onSuccess: () => void;
   onError?: (message: string) => void;
   toastRef?: React.RefObject<Toast>;
-  id: number;
 }
 
 export const useDelete = () => {
@@ -14,7 +13,6 @@ export const useDelete = () => {
     onSuccess,
     onError,
     toastRef,
-    id,
   }: FetchOptions) => {
     try {
       const res = await fetch(url, {
@@ -43,4 +41,6 @@ export const useDelete = () => {
       });
     }
   };
+
+  return deleteData;
 };

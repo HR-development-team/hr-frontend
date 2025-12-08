@@ -19,6 +19,7 @@ import LeaveTypeDialogForm from "./components/LeaveTypeDialogForm";
 import LeaveTypeDialogView from "./components/LeaveTypeDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
 
 export default function LeaveType() {
   const toastRef = useRef<Toast>(null);
@@ -41,6 +42,7 @@ export default function LeaveType() {
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
   const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete();
 
   const fetchLeaveType = async () => {
     await fetchData({
@@ -92,12 +94,12 @@ export default function LeaveType() {
       payload: formData,
       toastRef: toastRef,
       onSuccess: () => {
-          fetchLeaveType();
-          setDialogMode(null);
-          setIsDialogVisible(false);
-          setCurrentEditedId(null);
+        fetchLeaveType();
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
       },
-      method: method
+      method: method,
     });
   };
 
@@ -125,40 +127,11 @@ export default function LeaveType() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(
-            `/api/admin/master/leave-type/${leaveType.id}`,
-            {
-              method: "DELETE",
-            }
-          );
-
-          const responseData = await res.json();
-
-          if (!res.ok) {
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-          }
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchLeaveType();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/master/leave-type/${leaveType.id}`,
+          onSuccess: () => fetchLeaveType(),
+          toastRef: toastRef,
+        });
       },
     });
   };

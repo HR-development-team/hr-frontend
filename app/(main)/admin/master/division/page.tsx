@@ -17,6 +17,7 @@ import { DivisionFormData } from "@/lib/schemas/divisionFormSchema";
 import { GetAllDepartmentData } from "@/lib/types/department";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
 
 export default function Position() {
   const toastRef = useRef<Toast>(null);
@@ -40,6 +41,7 @@ export default function Position() {
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
   const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete()
 
   const fetchAllDivision = async () => {
     await fetchData({
@@ -137,36 +139,11 @@ export default function Position() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(`/api/admin/master/division/${division.id}`, {
-            method: "DELETE",
-          });
-
-          const responseData = await res.json();
-
-          if (!res.ok)
-            throw new Error(
-              responseData.message || "Gagal menghapus data divisi"
-            );
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllDivision();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url:`/api/admin/master/division/${division.id}`,
+          onSuccess: () => fetchAllDivision(),
+          toastRef: toastRef
+        })
       },
     });
   };
