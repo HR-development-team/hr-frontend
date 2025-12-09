@@ -62,6 +62,8 @@ export default function Dashboard() {
   return (
     <>
       <Toast ref={toastRef} />
+
+      {/* Header Section */}
       <div className="flex gap-3 align-items-center mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <LayoutDashboard className="h-2rem w-2rem" />
@@ -89,14 +91,24 @@ export default function Dashboard() {
         </div>
       </div>
       <div className="grid">
-        <div className="col-12 md:col-6 flex-order-1 md:flex-order-3">
-          <DashboardCalendar />
-        </div>
-        <div className="col-12 flex-order-2 md:flex-order-1">
+        
+        {/* 1. STATS (Full Width) */}
+        <div className="col-12">
           <DashboardStats data={metric} isLoading={isMetricLoading} />
         </div>
-        <div className="col-12 md:col-6 flex-order-3 md:flex-order-2">
-          <QuickActions data={metric.totalLeaveRequest} />
+
+        {/* 2. QUICK ACTIONS (Kiri di Desktop, Tengah di Mobile) */}
+        <div className="col-12 md:col-6">
+          <div className="h-full">
+            <QuickActions data={metric.totalLeaveRequest} />
+          </div>
+        </div>
+
+        {/* 3. CALENDAR (Kanan di Desktop, Bawah di Mobile) */}
+        <div className="col-12 md:col-6">
+          <div className="h-full">
+            <DashboardCalendar />
+          </div>
         </div>
 
       </div>
