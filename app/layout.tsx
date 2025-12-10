@@ -29,8 +29,8 @@ export default function RootLayout({
         <PrimeReactProvider>
           <ClientOnlyTopLoader />
           <body className={`${inter.className} ${robotoMono.variable}`}>
-            {/* <ToastProvider>{children}</ToastProvider> */}
-            {children}
+            <ToastProvider>{children}</ToastProvider>
+            {/* {children} */}
           </body>
         </PrimeReactProvider>
       </AuthProvider>

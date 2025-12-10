@@ -11,16 +11,15 @@ import { Dialog } from "primereact/dialog";
 import UserDialogForm from "./components/UserDialogForm";
 import { UserFormData } from "@/lib/schemas/userFormSchema";
 import DataTableUser from "./components/DataTableUser";
-import { Toast } from "primereact/toast";
 import { GetAllEmployeeData } from "@/lib/types/employee";
 import { GetAllUserData, GetUserByIdData } from "@/lib/types/user";
 import UserDialogView from "./components/UserDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
 import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function UserPage() {
-  const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
   const [employee, setEmployee] = useState<GetAllEmployeeData[]>([]);
@@ -42,10 +41,12 @@ export default function UserPage() {
   const { isSaving, submitData } = useSubmit();
   const deleteData = useDelete()
 
+  const {showToast} = useToastContext()
+
   const fetchAllUserData = async () => {
     await fetchData({
       url: "/api/admin/master/user",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setUser(responseData.users || []);
       },
@@ -95,7 +96,7 @@ export default function UserPage() {
     await submitData({
       url: url,
       payload: payload,
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: () => {
         fetchAllUserData();
         setDialogMode(null);
@@ -133,7 +134,7 @@ export default function UserPage() {
         await deleteData({
           url: `/api/admin/master/user/${user.id}`,
           onSuccess: () => fetchAllUserData(),
-          toastRef: toastRef
+          showToast: showToast
         })
       },
     });
@@ -145,7 +146,6 @@ export default function UserPage() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <User className="w-2rem h-2rem" />
