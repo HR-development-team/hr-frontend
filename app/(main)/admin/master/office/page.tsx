@@ -6,8 +6,7 @@ import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Card } from "primereact/card";
 import DataTableOffice from "./components/DataTableOffice";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Toast } from "primereact/toast";
+import { useEffect, useMemo, useState } from "react";
 import { GetAllOfficeData, GetOfficeByIdData } from "@/lib/types/office";
 import { OfficeFormData } from "@/lib/schemas/officeFormSchema";
 import { Dialog } from "primereact/dialog";
@@ -17,10 +16,9 @@ import OfficeDialogView from "./components/OfficeDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
 import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function Office() {
-  const toastRef = useRef<Toast>(null);
-
   const [office, setOffice] = useState<GetAllOfficeData[]>([]);
   const [viewOffice, setViewOffice] = useState<GetOfficeByIdData | null>(null);
 
@@ -39,12 +37,14 @@ export default function Office() {
   const { isSaving, submitData } = useSubmit();
   const deleteData = useDelete();
 
+  const { showToast } = useToastContext();
+
   const fetchAllOffice = async () => {
     await fetchData({
       url: "/api/admin/master/office",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
-        setOffice(responseData.master_offices || []);
+        setOffice(responseData.offices || []);
       },
       onError: () => {
         setOffice([]);
@@ -56,7 +56,7 @@ export default function Office() {
     await fetchDataById({
       url: `/api/admin/master/office/${id}`,
       onSuccess: (responseData) => {
-        setViewOffice(responseData.master_offices || null);
+        setViewOffice(responseData.offices || null);
       },
       onError: () => {
         setViewOffice(null);
@@ -91,7 +91,7 @@ export default function Office() {
     await submitData({
       url: url,
       payload: formData,
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: () => {
         fetchAllOffice();
         setDialogMode(null);
@@ -129,7 +129,7 @@ export default function Office() {
         await deleteData({
           url: `/api/admin/master/office/${office.id}`,
           onSuccess: () => fetchAllOffice(),
-          toastRef: toastRef,
+          showToast: showToast,
         });
       },
     });
@@ -141,7 +141,6 @@ export default function Office() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <Building className="w-2rem h-2rem" />

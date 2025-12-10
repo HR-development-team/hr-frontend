@@ -10,7 +10,6 @@ import EmployeeDialogForm from "./components/EmployeeDialogForm";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { Toast } from "primereact/toast";
 import EmployeeDialogView from "./components/EmployeeDialogView";
 import { GetAllEmployeeData, GetEmployeeByIdData } from "@/lib/types/employee";
 import { GetAllPositionData } from "@/lib/types/position";
@@ -21,9 +20,9 @@ import { GetAllOfficeData } from "@/lib/types/office";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
 import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function Employees() {
-  const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
   const [office, setOffice] = useState<GetAllOfficeData[]>([]);
@@ -52,10 +51,12 @@ export default function Employees() {
   const { isSaving, submitData } = useSubmit();
   const deleteData = useDelete();
 
+  const { showToast } = useToastContext();
+
   const fetchAllEmployee = async () => {
     await fetchData({
       url: "/api/admin/master/employee",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setAllEmployee(responseData.master_employees || []);
       },
@@ -160,7 +161,7 @@ export default function Employees() {
     await submitData({
       url: url,
       payload: payload,
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: () => {
         fetchAllEmployee();
         setDialogMode(null);
@@ -198,7 +199,7 @@ export default function Employees() {
         await deleteData({
           url: `/api/admin/master/employee/${employee.id}`,
           onSuccess: () => fetchAllEmployee(),
-          toastRef: toastRef,
+          showToast: showToast,
         });
       },
     });
@@ -211,7 +212,6 @@ export default function Employees() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <Users className="w-2rem h-2rem" />

@@ -8,7 +8,6 @@ import InputTextComponent from "@/components/Input";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { Toast } from "primereact/toast";
 import {
   GetAllLeaveTypeData,
   GetLeaveTypeByIdData,
@@ -20,9 +19,9 @@ import LeaveTypeDialogView from "./components/LeaveTypeDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
 import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function LeaveType() {
-  const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
   const [leaveType, setLeaveType] = useState<GetAllLeaveTypeData[]>([]);
@@ -44,10 +43,12 @@ export default function LeaveType() {
   const { isSaving, submitData } = useSubmit();
   const deleteData = useDelete();
 
+  const {showToast} = useToastContext()
+
   const fetchLeaveType = async () => {
     await fetchData({
       url: "/api/admin/master/leave-type",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setLeaveType(responseData.leave_types || []);
       },
@@ -92,7 +93,7 @@ export default function LeaveType() {
     await submitData({
       url: url,
       payload: formData,
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: () => {
         fetchLeaveType();
         setDialogMode(null);
@@ -130,7 +131,7 @@ export default function LeaveType() {
         await deleteData({
           url: `/api/admin/master/leave-type/${leaveType.id}`,
           onSuccess: () => fetchLeaveType(),
-          toastRef: toastRef,
+          showToast: showToast,
         });
       },
     });
@@ -142,7 +143,6 @@ export default function LeaveType() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <TicketsPlane className="w-2rem h-2rem" />

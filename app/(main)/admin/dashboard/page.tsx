@@ -10,6 +10,7 @@ import { Toast } from "primereact/toast";
 import { StatData } from "@/lib/types/statData";
 import { Skeleton } from "primereact/skeleton";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useToastContext } from "@/components/ToastProvider";
 
 const metricDefaultValues: StatData = {
   totalEmployee: 0,
@@ -27,10 +28,12 @@ export default function Dashboard() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const { isLoading: isMetricLoading, fetchData } = useFetch();
 
+  const {showToast} = useToastContext()
+
   const fetchMetricData = async () => {
     await fetchData({
       url: "/api/admin/dashboard/metric",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setMetric(responseData.master_employees);
       },
@@ -61,7 +64,6 @@ export default function Dashboard() {
 
   return (
     <>
-      <Toast ref={toastRef} />
       <div className="flex gap-3 align-items-center mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <LayoutDashboard className="h-2rem w-2rem" />

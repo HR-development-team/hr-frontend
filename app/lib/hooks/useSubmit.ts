@@ -1,10 +1,15 @@
-import { Toast } from "primereact/toast";
 import { useState } from "react";
+
+type ShowToastFn = (
+  severity: "success" | "info" | "warn" | "error",
+  summary: string,
+  detail: string
+) => void;
 
 interface FetchOptions<T> {
   url: string;
   payload?: T;
-  toastRef?: React.RefObject<Toast>;
+  showToast?: ShowToastFn;
   onSuccess: () => void;
   onError?: (message: string) => void;
   method: "PUT" | "POST";
@@ -16,7 +21,7 @@ export const useSubmit = () => {
   const submitData = async <T>({
     url,
     payload,
-    toastRef,
+    showToast,
     onSuccess,
     onError,
     method,
@@ -31,34 +36,32 @@ export const useSubmit = () => {
       const response = await res.json();
 
       if (response && response.status === "00") {
-        toastRef?.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
+        if (showToast) {
+          showToast("success", "Sukses", response.message);
+        }
         onSuccess();
       } else {
         const msg = response.message || "Gagal menyimpan data";
-        toastRef?.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: msg || "Terjadi kesalahan sistem",
-          life: 3000,
-        });
+
+        if (showToast) {
+          showToast(
+            "error",
+            "Gagal",
+            response.message || "Gagal menyimpan data"
+          );
+        }
         if (onError) {
           onError(msg);
         }
       }
     } catch (error: any) {
       const msg = error.message || "Terjadi kesalahan sistem";
-      if (toastRef?.current) {
-        toastRef.current.show({
-          severity: "error",
-          summary: "Error",
-          detail: msg,
-          life: 3000,
-        });
+      if (showToast) {
+        showToast(
+          "error",
+          "Gagal",
+          error.message || "Terjadi kesalahan sistem"
+        );
       }
       if (onError) onError(msg);
     } finally {

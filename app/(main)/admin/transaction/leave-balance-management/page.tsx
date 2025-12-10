@@ -4,7 +4,6 @@ import { ChartPie, PieChart } from "lucide-react";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import DataTableLeaveBalance from "./components/DataTableLeaveBalance";
-import { Toast } from "primereact/toast";
 import { GetAllLeaveBalanceData } from "@/lib/types/leaveBalance";
 import { useEffect, useRef, useState } from "react";
 import { LeaveBalanceFormData } from "@/lib/schemas/leaveBalanceFormSchema";
@@ -14,10 +13,10 @@ import LeaveBalanceDialogForm from "./components/LeaveBalanceDialogForm";
 import { Dropdown } from "primereact/dropdown";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { GetAllEmployeeData } from "@/lib/types/employee";
-import { spawn } from "child_process";
+import { useToastContext } from "@/components/ToastProvider";
+import { useDelete } from "@/lib/hooks/useDelete";
 
 export default function BalanceManagement() {
-  const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
   const isInitialFetchLeaveType = useRef<boolean>(true);
   const isInitialFetchEmployee = useRef<boolean>(true);
@@ -65,6 +64,10 @@ export default function BalanceManagement() {
     | null
   >(null);
 
+  const deleteData = useDelete();
+
+  const { showToast } = useToastContext();
+
   const fetchLeaveBalance = async () => {
     setIsLoading(true);
 
@@ -90,11 +93,12 @@ export default function BalanceManagement() {
 
       if (responseData && responseData.status === "00") {
         if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message,
-          });
+          // toastRef.current?.show({
+          //   severity: "success",
+          //   summary: "Sukses",
+          //   detail: responseData.message,
+          // });
+          showToast("succeess", "Sukses", responseData.message);
           isInitialLoad.current = false;
         }
 
@@ -133,11 +137,17 @@ export default function BalanceManagement() {
           setTypeCodeOptions(typeOptions);
         }
       } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: responseData.message || "Gagal mendapatkan data saldo cuti",
-        });
+        // toastRef.current?.show({
+        //   severity: "error",
+        //   summary: "Error",
+        //   detail: responseData.message || "Gagal mendapatkan data saldo cuti",
+        // });
+
+        showToast(
+          "error",
+          "Error",
+          responseData.message || "Gagal mendapatkan data saldo cuti"
+        );
 
         setLeaveBalance([]);
       }
@@ -244,32 +254,37 @@ export default function BalanceManagement() {
       const response = await res.json();
 
       if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
+        // toastRef.current?.show({
+        //   severity: "success",
+        //   summary: "Sukses",
+        //   detail: response.message,
+        //   life: 3000,
+        // });
+
+        showToast("success", "Sukses", response.message);
         fetchLeaveBalance();
       } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: response.message,
-          life: 3000,
-        });
+        // toastRef.current?.show({
+        //   severity: "error",
+        //   summary: "Error",
+        //   detail: response.message,
+        //   life: 3000,
+        // });
+
+        showToast("error", "Error", response.message);
       }
 
       setDialogMode(null);
       setIsDialogVisible(false);
       setCurrentSelectedId(null);
     } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.message || "Terjadi kesalahan koneksi",
-        life: 3000,
-      });
+      // toastRef.current?.show({
+      //   severity: "error",
+      //   summary: "Error",
+      //   detail: error.message || "Terjadi kesalahan koneksi",
+      //   life: 3000,
+      // });
+      showToast("error", "Error", error.message);
     } finally {
       setIsSaving(false);
     }
@@ -310,46 +325,53 @@ export default function BalanceManagement() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(
-            `/api/admin/transaction/leave-balance/${data.id}`,
-            {
-              method: "DELETE",
-            }
-          );
-
-          const responseData = await res.json();
-
-          if (!res.ok) {
-            throw new Error(
-              responseData.message || "Gagal menghapus saldo cuti"
-            );
-          }
-
-          if (responseData && responseData.status === "00") {
-            toastRef.current?.show({
-              severity: "success",
-              summary: "Sukses",
-              detail: responseData.message,
-              life: 3000,
-            });
+        await deleteData({
+          url: `/api/admin/transaction/leave-balance/${data.id}`,
+          onSuccess: () => {
             fetchLeaveBalance();
-          } else {
-            toastRef.current?.show({
-              severity: "error",
-              summary: "Error",
-              detail: responseData.message,
-              life: 3000,
-            });
-          }
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail: error.message,
-            life: 3000,
-          });
-        }
+          },
+          showToast: showToast,
+        });
+        // try {
+        //   const res = await fetch(
+        //     `/api/admin/transaction/leave-balance/${data.id}`,
+        //     {
+        //       method: "DELETE",
+        //     }
+        //   );
+
+        //   const responseData = await res.json();
+
+        //   if (!res.ok) {
+        //     throw new Error(
+        //       responseData.message || "Gagal menghapus saldo cuti"
+        //     );
+        //   }
+
+        //   if (responseData && responseData.status === "00") {
+        //     // toastRef.current?.show({
+        //     //   severity: "success",
+        //     //   summary: "Sukses",
+        //     //   detail: responseData.message,
+        //     //   life: 3000,
+        //     // });
+        //     fetchLeaveBalance();
+        //   } else {
+        //     toastRef.current?.show({
+        //       severity: "error",
+        //       summary: "Error",
+        //       detail: responseData.message,
+        //       life: 3000,
+        //     });
+        //   }
+        // } catch (error: any) {
+        //   toastRef.current?.show({
+        //     severity: "error",
+        //     summary: "Error",
+        //     detail: error.message,
+        //     life: 3000,
+        //   });
+        // }
       },
     });
   };
@@ -390,7 +412,6 @@ export default function BalanceManagement() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <ChartPie className="w-2rem h-2rem" />
