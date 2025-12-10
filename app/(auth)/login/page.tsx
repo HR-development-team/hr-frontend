@@ -1,14 +1,14 @@
 "use client";
 
 import { useAuth } from "@/components/AuthContext";
+import { useToastContext } from "@/components/ToastProvider";
 import { LoginFormData, loginFormSchema } from "@/lib/schemas/loginFormSchema";
 import { useFormik } from "formik";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { Toast } from "primereact/toast";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const defaultValues: LoginFormData = {
   email: "",
@@ -19,8 +19,6 @@ const ADMIN_ROLES = ["ROL0000001", "ROL0000002"];
 const EMPLOYEE_ROLES = ["ROL0000003", "ROL0000004", "ROL0000005"];
 
 export default function Home() {
-  const toastRef = useRef<Toast>(null);
-
   const { login, user, isLoading } = useAuth();
 
   const [passowrdVisible, setPasswordVisible] = useState<boolean>(false);
@@ -28,6 +26,8 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const router = useRouter();
+
+  const { showToast } = useToastContext();
 
   const FormError = ({
     error,
@@ -79,15 +79,12 @@ export default function Home() {
         } else if (EMPLOYEE_ROLES.includes(roleCode)) {
           router.push("karyawan/Dashboard");
         }
+
+        showToast("success", response.message, "Selamat Datang Kembali");
       } catch (error: any) {
         setStatus(error.message);
 
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Login Gagal",
-          detail: error.message,
-          life: 3000,
-        });
+        showToast("error", "Login Gagal", error.message);
       } finally {
         setIsSubmitting(false);
       }
@@ -110,15 +107,6 @@ export default function Home() {
         roleLabel = "Karyawan";
       }
 
-      if (destination) {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Selamat Datang Kembali",
-          detail: `Mengarahkan ke dashboard ${roleLabel}`,
-          life: 3000,
-        });
-      }
-
       setTimeout(() => {
         router.push(destination);
       }, 2000);
@@ -127,8 +115,6 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen">
-      <Toast ref={toastRef} />
-
       <div className="absolute h-full w-full bg-login-pattern" />
 
       <div className="absolute inset-0 h-full w-full bg-black/10" />

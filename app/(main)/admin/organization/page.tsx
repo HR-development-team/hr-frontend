@@ -2,24 +2,25 @@
 
 import React from "react";
 import { Network } from "lucide-react";
-import { Toast } from "primereact/toast";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import OrganizationNode from "./components/OrganizationNode";
 import { PositionStructure, OfficeStructure } from "@/lib/types/organization";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function Organization() {
-  const toastRef = useRef<Toast>(null);
 
   const [office, setOffice] = useState<OfficeStructure[]>([]);
   const [position, setPosition] = useState<PositionStructure[]>([]);
 
   const { isLoading, fetchData } = useFetch();
 
+  const {showToast} = useToastContext()
+
   const fetchAllOffice = async () => {
     await fetchData({
       url: "/api/admin/organization/office",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setOffice(responseData.offices || []);
       },
@@ -32,7 +33,7 @@ export default function Organization() {
   const fetchAllPosition = async () => {
     await fetchData({
       url: "/api/admin/organization/position",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setPosition(responseData.position || []);
       },
@@ -49,7 +50,6 @@ export default function Organization() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <Network className="w-2rem h-2rem" />

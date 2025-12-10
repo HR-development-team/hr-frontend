@@ -1,10 +1,16 @@
 import { Toast } from "primereact/toast";
 
+type ShowToastFn = (
+  severity: "success" | "info" | "warn" | "error",
+  summary: string,
+  detail: string
+) => void;
+
 interface FetchOptions {
   url: string;
   onSuccess: () => void;
   onError?: (message: string) => void;
-  toastRef?: React.RefObject<Toast>;
+  showToast?: ShowToastFn;
 }
 
 export const useDelete = () => {
@@ -12,7 +18,7 @@ export const useDelete = () => {
     url,
     onSuccess,
     onError,
-    toastRef,
+    showToast,
   }: FetchOptions) => {
     try {
       const res = await fetch(url, {
@@ -24,21 +30,18 @@ export const useDelete = () => {
       if (!res.ok)
         throw new Error(responseData.message || "Terjadi kesalahan sistem");
 
-      toastRef?.current?.show({
-        severity: "success",
-        summary: "Sukses",
-        detail: responseData.message || "Data berhasil dihapus",
-        life: 3000,
-      });
-
+      if (showToast) {
+        showToast(
+          "success",
+          "Sukses",
+          responseData.message || "Data berhasil dihapus"
+        );
+      }
       onSuccess();
     } catch (error: any) {
-      toastRef?.current?.show({
-        severity: "error",
-        summary: "Gagal",
-        detail: error.message,
-        life: 3000,
-      });
+      if (showToast) {
+        showToast("error", "Gagal", error.message);
+      }
     }
   };
 

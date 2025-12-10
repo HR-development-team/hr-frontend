@@ -11,7 +11,6 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import DataTableDepartment from "./components/DataTableDepartment";
 import { Dialog } from "primereact/dialog";
 import DepartmentDialogForm from "./components/DepartmentDialogForm";
-import { Toast } from "primereact/toast";
 import {
   GetAllDepartmentData,
   GetDepartmentByIdData,
@@ -21,9 +20,9 @@ import { useFetch } from "@/lib/hooks/useFetch";
 import { GetAllOfficeData } from "@/lib/types/office";
 import { useSubmit } from "@/lib/hooks/useSubmit";
 import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function Department() {
-  const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
   const [office, setOffice] = useState<GetAllOfficeData[]>([]);
@@ -47,10 +46,12 @@ export default function Department() {
   const { isSaving, submitData } = useSubmit();
   const deleteData = useDelete();
 
+  const {showToast} = useToastContext()
+
   const fetchAllDepartment = async () => {
     await fetchData({
       url: "/api/admin/master/department",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setDepartment(responseData.master_departments || []);
       },
@@ -104,7 +105,7 @@ export default function Department() {
     await submitData({
       url: url,
       payload: formData,
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: () => {
         fetchAllDepartment();
         setDialogMode(null);
@@ -155,7 +156,7 @@ export default function Department() {
         await deleteData({
           url: `/api/admin/master/department/${department.id}`,
           onSuccess: () => fetchAllDepartment(),
-          toastRef: toastRef,
+          showToast: showToast,
         });
       },
     });
@@ -167,7 +168,6 @@ export default function Department() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <Building className="w-2rem h-2rem" />

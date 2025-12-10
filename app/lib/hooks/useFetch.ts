@@ -1,5 +1,10 @@
-import { Toast } from "primereact/toast";
 import { useRef, useState } from "react";
+
+type ShowToastFn = (
+  severity: "success" | "info" | "warn" | "error",
+  summary: string,
+  detail: string
+) => void;
 
 interface ApiResponse<T> {
   status: string;
@@ -11,7 +16,7 @@ interface FetchOptions<T> {
   url: string;
   onSuccess: (data: ApiResponse<T>) => void;
   onError?: (message: string) => void;
-  toastRef?: React.RefObject<Toast>;
+  showToast?: ShowToastFn;
 }
 
 interface FetchMultipleOptions {
@@ -34,7 +39,7 @@ export const useFetch = () => {
     url,
     onSuccess,
     onError,
-    toastRef,
+    showToast,
   }: FetchOptions<T>) => {
     setIsLoading(true);
     try {
@@ -47,39 +52,26 @@ export const useFetch = () => {
       const responseData: ApiResponse<T> = await res.json();
 
       if (responseData && responseData.status === "00") {
-        if (isInitialLoad.current && toastRef?.current) {
-          toastRef.current.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dimuat",
-            life: 3000,
-          });
-          isInitialLoad.current = false;
+        if (isInitialLoad.current && showToast) {
+          showToast(
+            "success",
+            "Sukses",
+            responseData.message || "Data berhasil dimuat"
+          );
         }
+
+        isInitialLoad.current = false;
 
         onSuccess(responseData);
       } else {
         const msg = responseData.message || "Gagal mendapatkan data";
-        if (toastRef?.current) {
-          toastRef.current.show({
-            severity: "error",
-            summary: "Error",
-            detail: msg,
-            life: 3000,
-          });
-        }
+        if (showToast) showToast("error", "Error", msg);
         if (onError) onError(msg);
       }
     } catch (error: any) {
       const msg = error.message || "Terjadi kesalahan sistem";
-      if (toastRef?.current) {
-        toastRef.current.show({
-          severity: "error",
-          summary: "Error",
-          detail: msg,
-          life: 3000,
-        });
-      }
+
+      if (showToast) showToast("error", "Error", msg);
       if (onError) onError(msg);
     } finally {
       setIsLoading(false);

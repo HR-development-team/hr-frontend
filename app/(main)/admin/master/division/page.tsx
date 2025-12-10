@@ -8,7 +8,6 @@ import InputTextComponent from "@/components/Input";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { Toast } from "primereact/toast";
 import { GetAllDivisionData, GetDivisionByIdData } from "@/lib/types/division";
 import DivisionDialogForm from "./components/DivisionDialogForm";
 import DivisionDialogView from "./components/DivisionDialogView";
@@ -18,10 +17,9 @@ import { GetAllDepartmentData } from "@/lib/types/department";
 import { useFetch } from "@/lib/hooks/useFetch";
 import { useSubmit } from "@/lib/hooks/useSubmit";
 import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function Position() {
-  const toastRef = useRef<Toast>(null);
-
   const [department, setDepartment] = useState<GetAllDepartmentData[]>([]);
   const [division, setDivision] = useState<GetAllDivisionData[]>([]);
   const [viewDivision, setViewDivision] = useState<GetDivisionByIdData | null>(
@@ -43,10 +41,12 @@ export default function Position() {
   const { isSaving, submitData } = useSubmit();
   const deleteData = useDelete()
 
+  const {showToast} = useToastContext()
+
   const fetchAllDivision = async () => {
     await fetchData({
       url: "/api/admin/master/division",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setDivision(responseData.master_divisions || []);
       },
@@ -71,7 +71,7 @@ export default function Position() {
   const fetchDepartment = async () => {
     await fetchData({
       url: "/api/admin/master/department",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setDepartment(responseData.master_departments || []);
       },
@@ -104,7 +104,7 @@ export default function Position() {
     await submitData({
       url: url,
       payload: formData,
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: () => {
           fetchAllDivision();
           setDialogMode(null);
@@ -142,7 +142,7 @@ export default function Position() {
         await deleteData({
           url:`/api/admin/master/division/${division.id}`,
           onSuccess: () => fetchAllDivision(),
-          toastRef: toastRef
+          showToast: showToast
         })
       },
     });
@@ -155,7 +155,6 @@ export default function Position() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <GitFork className="w-2rem h-2rem" />
