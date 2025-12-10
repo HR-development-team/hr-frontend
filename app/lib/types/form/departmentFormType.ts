@@ -3,7 +3,6 @@ import { GetAllOfficeData } from "../office";
 
 export interface DepartmentFormProps {
   departmentData: DepartementFormData | null;
-  dialogMode: "view" | "add" | "edit" | null;
   officeOptions: GetAllOfficeData[];
   onSubmit: (formData: DepartementFormData) => Promise<void>;
   isSubmitting: boolean;

@@ -3,8 +3,8 @@
 import { useAuth } from "@/components/AuthContext";
 import DashboardStats from "./components/DashboardStats";
 import QuickActions from "./components/QuickActions";
-import { CalendarDays, LayoutDashboard } from "lucide-react";
-import { Card } from "primereact/card";
+import DashboardCalendar from "./components/DashboardCalendar";
+import { LayoutDashboard } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Toast } from "primereact/toast";
 import { StatData } from "@/lib/types/statData";
@@ -22,11 +22,9 @@ export default function Dashboard() {
   const toastRef = useRef<Toast>(null);
 
   const [metric, setMetric] = useState<StatData>(metricDefaultValues);
-
   const [todayDate, setTodayDate] = useState<string>("...");
 
   const { user, isLoading: isAuthLoading } = useAuth();
-
   const { isLoading: isMetricLoading, fetchData } = useFetch();
 
   const fetchMetricData = async () => {
@@ -63,7 +61,7 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* Welcome Section */}
+      <Toast ref={toastRef} />
       <div className="flex gap-3 align-items-center mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <LayoutDashboard className="h-2rem w-2rem" />
@@ -90,36 +88,17 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-
-      {/* Statistics */}
-      <DashboardStats data={metric} isLoading={isMetricLoading} />
-
-      {/* Main Content Grid */}
-      <div className="mt-1 grid">
-        {/* Left Column */}
-        <div className="col-12 md:col-6">
+      <div className="grid">
+        <div className="col-12 md:col-6 flex-order-1 md:flex-order-3">
+          <DashboardCalendar />
+        </div>
+        <div className="col-12 flex-order-2 md:flex-order-1">
+          <DashboardStats data={metric} isLoading={isMetricLoading} />
+        </div>
+        <div className="col-12 md:col-6 flex-order-3 md:flex-order-2">
           <QuickActions data={metric.totalLeaveRequest} />
         </div>
 
-        {/* Calendar Widget */}
-        <div className="col-12 md:col-6">
-          <Card>
-            <div className="flex flex-column gap-4">
-              <div className="flex gap-2 align-items-center">
-                <CalendarDays className="h-2" />
-                <span className="text-sm font-semibold text-800">Kalender</span>
-              </div>
-              <div className="text-center p-4 bg-blue-50 border-round-lg">
-                <p className="text-base md:text-lg font-bold text-800">
-                  {todayDate}
-                </p>
-                <p className="text-sm text-500 md:text-md">
-                  Tidak ada hari libur
-                </p>
-              </div>
-            </div>
-          </Card>
-        </div>
       </div>
     </>
   );

@@ -15,12 +15,12 @@ import AttendanceModal from "./components/AttendanceModal";
 
 // --- MOCK DATA ---
 const MOCK_EMPLOYEE_DETAILS: EmployeeDetails = {
-    officeName: "Headquarters Jakarta (HQ)",
-    officeAddress: "Gedung Menara Multimedia Lt. 5, Jl. Kebon Sirih No. 12, Gambir, Jakarta Pusat, DKI Jakarta 10110",
+    officeName: "PT MARSTECH GLOBAL",
+    officeAddress: "Jl. Margatama Asri IV, Kanigoro, Kec. Kartoharjo, Kota Madiun, Jawa Timur 63118",
     division: "Engineering",
     position: "Senior Frontend Developer",
-    officeLat: -6.1835,
-    officeLon: 106.8304,
+    officeLat: -7.636902589335165,
+    officeLon: 111.54261553695524,
     maxDistance: 100, // dalam meter
 };
 
