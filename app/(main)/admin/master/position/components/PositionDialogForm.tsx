@@ -16,6 +16,7 @@ import { InputNumberValueChangeEvent } from "primereact/inputnumber";
 
 export default function PositionDialogForm({
   positionData,
+  positionOptions,
   onSubmit,
   divisionOptions,
   isSubmitting,
@@ -62,7 +63,23 @@ export default function PositionDialogForm({
           ...formik.getFieldProps("name"),
         }}
         fieldName={"name"}
-        label="Nama Posisi"
+        label="Nama Jabatan"
+        isFieldInvalid={isFieldInvalid}
+        getFieldError={getFieldError}
+      />
+
+      <FormDropdown
+        props={{
+          ...formik.getFieldProps("parent_position_code"),
+          options: positionOptions,
+          optionLabel: "name",
+          optionValue: "position_code",
+          placeholder: "Pilih Induk Jabatan",
+          filter: true,
+          filterDelay: 400,
+        }}
+        fieldName={"parent_position_code"}
+        label="Pilih Induk Jabatan"
         isFieldInvalid={isFieldInvalid}
         getFieldError={getFieldError}
       />

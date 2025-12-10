@@ -254,6 +254,7 @@ export default function Office() {
           <div className={dialogMode !== "view" ? "block" : "hidden"}>
             <OfficeDialogForm
               officeData={cleanOfficeDataForm}
+              officeOptions={office}
               onSubmit={handleSubmit}
               isSubmitting={isSaving}
             />

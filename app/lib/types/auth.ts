@@ -4,19 +4,32 @@ import { GetEmployeeByIdData } from "./employee";
 export interface AuthUser {
   id: number; // Ini adalah ID User
   email: string;
-  role: "admin" | "employee";
+  user_code: string;
+  employee_code: string;
+  role_code: string;
 }
 
 export interface User extends GetEmployeeByIdData {
   email: string;
-  role: "admin" | "employee";
+  role_code: string;
+}
+
+export interface LoginResponse {
+  status: string;
+  message: string;
+  auth: {
+    token: string;
+    user: AuthUser;
+  };
+  meta?: {
+    role_mapping: Record<string, string>;
+  };
 }
 
 export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (credentials: LoginFormData) => Promise<AuthUser>;
+  login: (credentials: LoginFormData) => Promise<LoginResponse>;
   logout: () => Promise<void>;
-
   updateAuthUser: (newUserData: Partial<User>) => void;
 }
