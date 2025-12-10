@@ -288,7 +288,6 @@ export default function Department() {
             <DepartmentDialogForm
               departmentData={cleanDepartmentData}
               officeOptions={office}
-              dialogMode={dialogMode}
               onSubmit={handleSubmit}
               isSubmitting={isSaving}
               isOfficeLoading={isOfficeLoading}

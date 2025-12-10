@@ -1,7 +1,7 @@
 "use client";
 
 import { LoginFormData } from "@/lib/schemas/loginFormSchema";
-import { AuthContextType, AuthUser, User } from "@/lib/types/auth";
+import { AuthContextType, AuthUser, LoginResponse, User } from "@/lib/types/auth";
 import { GetEmployeeByIdData } from "@/lib/types/employee";
 import {
   createContext,
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ...profileUser,
 
         email: authData.email,
-        role: authData.role,
+        role_code: authData.role_code,
       };
 
       setUser(fullUserData);
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (values: LoginFormData): Promise<AuthUser> => {
+  const login = async (values: LoginFormData): Promise<LoginResponse> => {
     setIsloading(true);
     try {
       const res = await fetch("/api/auth/login", {
@@ -74,11 +74,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log("Login success", responseData.message);
 
-      const authUser: AuthUser = responseData.auth.user;
+      if (responseData.meta && responseData.meta.role_mapping) {
+        localStorage.setItem("ROLE_MAP", JSON.stringify(responseData.meta.role_mapping)) 
+      }
+
+      // const authUser: AuthUser = responseData.auth.user;
 
       await fetchUserData();
 
-      return authUser;
+      return responseData as LoginResponse;
     } catch (error: any) {
       setUser(null);
       setIsloading(false);
@@ -95,6 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!res.ok) {
         throw new Error("Gagal untuk logout");
       }
+
+      localStorage.removeItem("ROLE_MAP")
     } catch (error: any) {
       console.error("Gagal untuk logout", error);
     } finally {

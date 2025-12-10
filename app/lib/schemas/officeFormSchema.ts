@@ -1,7 +1,7 @@
 import z from "zod";
 
 export const officeFormSchema = z.object({
-  // parent_office_code: z.string().nullable().optional(),
+  parent_office_code: z.string().nullable().optional(),
   name: z
     .string()
     .min(3, "Nama kantor harus minimal 3 karakter")

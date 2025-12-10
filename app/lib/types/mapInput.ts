@@ -1,8 +1,3 @@
-// export interface LatLng {
-//   lat: number;
-//   lng: number;
-// }
-
 import { LatLngLiteral } from "leaflet";
 
 export type LatLng = LatLngLiteral;

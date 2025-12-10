@@ -15,6 +15,9 @@ const defaultValues: LoginFormData = {
   password: "",
 };
 
+const ADMIN_ROLES = ["ROL0000001", "ROL0000002"];
+const EMPLOYEE_ROLES = ["ROL0000003", "ROL0000004", "ROL0000005"];
+
 export default function Home() {
   const toastRef = useRef<Toast>(null);
 
@@ -61,20 +64,20 @@ export default function Home() {
       setIsSubmitting(true);
 
       try {
-        const loggedInUser = await login(values);
+        const response = await login(values);
 
-        const role = loggedInUser.role;
+        const roleCode = response.auth.user.role_code;
 
-        console.log("Login success", loggedInUser);
+        console.log("Login success, Role", roleCode);
 
         router.refresh();
 
-        if (role === "admin") {
+        if (ADMIN_ROLES.includes(roleCode)) {
           setTimeout(() => {
             router.push("/admin/dashboard");
           }, 1500);
-        } else if (role === "employee") {
-          router.push("karyawan");
+        } else if (EMPLOYEE_ROLES.includes(roleCode)) {
+          router.push("karyawan/Dashboard");
         }
       } catch (error: any) {
         setStatus(error.message);
@@ -95,22 +98,30 @@ export default function Home() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      toastRef.current?.show({
-        severity: "success",
-        summary: "Sukses",
-        detail: `Mengarahkan ke dashboard ${
-          user.role === "admin" ? "Admin" : "Karyawan"
-        }`,
-        life: 3000,
-      });
+      const roleCode = user.role_code;
+      let destination = "";
+      let roleLabel = "";
 
-      if (user.role === "admin") {
-        setTimeout(() => {
-          router.push("/admin/dashboard");
-        }, 1500);
-      } else if (user.role === "employee") {
-        router.push("/karyawan/Dashboard");
+      if (ADMIN_ROLES.includes(roleCode)) {
+        destination = "/admin/dashboard";
+        roleLabel = "Admin";
+      } else if (EMPLOYEE_ROLES.includes(roleCode)) {
+        destination = "/Karyawan/Dashboard";
+        roleLabel = "Karyawan";
       }
+
+      if (destination) {
+        toastRef.current?.show({
+          severity: "success",
+          summary: "Selamat Datang Kembali",
+          detail: `Mengarahkan ke dashboard ${roleLabel}`,
+          life: 3000,
+        });
+      }
+
+      setTimeout(() => {
+        router.push(destination);
+      }, 2000);
     }
   }, [user, isLoading, router]);
 

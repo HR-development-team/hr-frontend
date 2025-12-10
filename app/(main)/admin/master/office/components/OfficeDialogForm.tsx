@@ -15,6 +15,7 @@ import { useCallback } from "react";
 import FormInputNumber from "@/components/form/FormInputNumber";
 import { InputNumberValueChangeEvent } from "primereact/inputnumber";
 import { Button } from "primereact/button";
+import FormDropdown from "@/components/form/FormDropdown";
 
 const MapInput = dynamic(
   () =>
@@ -27,6 +28,7 @@ const MapInput = dynamic(
 
 export default function OfficeDialogForm({
   officeData,
+  officeOptions,
   onSubmit,
   isSubmitting,
 }: OfficeFormProps) {
@@ -162,6 +164,24 @@ export default function OfficeDialogForm({
             }}
             fieldName={"radius_meters"}
             label="Radius Kantor (dalam meter)"
+            isFieldInvalid={isFieldInvalid}
+            getFieldError={getFieldError}
+          />
+        </div>
+
+        <div className="col-12 md:col-6">
+          <FormDropdown
+            props={{
+              ...formik.getFieldProps("parent_office_code"),
+              options: officeOptions,
+              optionLabel: "name",
+              optionValue: "office_code",
+              placeholder: "Pilih Induk Kantor",
+              filter: true,
+              filterDelay: 400,
+            }}
+            fieldName={"parent_office_code"}
+            label="Pilih Induk Kantor"
             isFieldInvalid={isFieldInvalid}
             getFieldError={getFieldError}
           />

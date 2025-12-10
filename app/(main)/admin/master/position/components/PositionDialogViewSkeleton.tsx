@@ -3,6 +3,7 @@ import { Card } from "primereact/card";
 import { Skeleton } from "primereact/skeleton";
 
 export default function PositionDialogViewSkeleton() {
+
   return (
     <div>
       <Card>
@@ -34,10 +35,14 @@ export default function PositionDialogViewSkeleton() {
             <Skeleton className="w-8rem" />
           </div>
 
-          <div className="flex justify-content-between gap-4">
-            <Skeleton className="w-full h-5rem" />
+          <div>
+            <div className="flex flex-column md:flex-row justify-content-between gap-4">
+              <Skeleton className="w-full h-5rem" />
 
-            <Skeleton className="w-full h-5rem" />
+              <Skeleton className="w-full h-5rem" />
+            </div>
+
+            <Skeleton className="md:w-6 mx-auto mt-4 h-5rem" />
           </div>
 
           <div className="mt-4 flex flex-column gap-4 xl:flex-row xl:align-items-center justify-content-between font-italic text-xs">

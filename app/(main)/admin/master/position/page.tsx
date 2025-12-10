@@ -136,7 +136,7 @@ export default function Position() {
     confirmDialog({
       icon: "pi pi-exclamation-triangle text-red-400 mr-2",
       header: "Konfirmasi Hapus",
-      message: `Yakin ingin menghapus posisi ${position.name}`,
+      message: `Yakin ingin menghapus jabatan ${position.name}`,
       acceptLabel: "Hapus",
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
@@ -176,7 +176,7 @@ export default function Position() {
         <div className="flex flex-column gap-4">
           <div className="flex gap-2 align-items-center">
             <UserCheck className="h-2" />
-            <h2 className="text-base text-800">Master Data Posisi</h2>
+            <h2 className="text-base text-800">Master Data Jabatan</h2>
           </div>
 
           {/* filters */}
@@ -276,6 +276,7 @@ export default function Position() {
           >
             <PositionDialogForm
               positionData={cleanPositionDataForm}
+              positionOptions={position}
               onSubmit={handleSubmit}
               divisionOptions={division}
               isSubmitting={isSaving}

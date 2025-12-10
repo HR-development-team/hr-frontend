@@ -29,7 +29,7 @@ export default function PositionDialogView({
             <div className="w-full text-base font-medium">
               <span className="text-500">Nama Posisi</span>
               <p>{data?.name ? data.name : "-"}</p>
-              <p className="text-sm font-light font-italic">
+              <p className="text-sm font-light font-mono">
                 {data?.position_code ? data.position_code : "-"}
               </p>
             </div>
@@ -56,20 +56,32 @@ export default function PositionDialogView({
             <span className="font-medium text-800">Struktur Organisasi</span>
           </div>
 
-          <div className="flex justify-content-between gap-4">
-            <div className="w-full text-base font-medium bg-gray-100 p-3 border-round-xl md:w-6">
-              <span className="text-500">Departemen</span>
-              <p>{data?.department_name ? data.department_name : "-"}</p>
-              <p className="text-sm text-500 font-light font-italic">
-                {data?.department_code ? data.department_code : "-"}
-              </p>
+          <div >
+            <div className="flex flex-column md:flex-row md:justify-content-between gap-4">
+              <div className="w-full text-base font-medium bg-gray-100 p-3 border-round-xl md:w-6">
+                <span className="text-500">Departemen</span>
+                <p>{data?.department_name ? data.department_name : "-"}</p>
+                <p className="text-sm text-500 font-light font-mono">
+                  {data?.department_code ? data.department_code : "-"}
+                </p>
+              </div>
+
+              <div className="w-full text-base font-medium bg-gray-100 p-3 border-round-xl md:w-6">
+                <span className="text-500">Divisi</span>
+                <p>{data?.division_name ? data.division_name : "-"}</p>
+                <p className="text-sm text-500 font-light font-mono">
+                  {data?.division_code ? data.division_code : "-"}
+                </p>
+              </div>
             </div>
 
-            <div className="w-full text-base font-medium bg-gray-100 p-3 border-round-xl md:w-6">
-              <span className="text-500">Divisi</span>
-              <p>{data?.division_name ? data.division_name : "-"}</p>
+            <div className="w-full text-base font-medium bg-gray-100 p-3 border-round-xl mt-4 mx-auto md:w-6">
+              <span className="text-500">Induk Jabatan</span>
+              <p>
+                {data?.parent_position_name ? data.parent_position_name : "-"}
+              </p>
               <p className="text-sm text-500 font-light font-italic">
-                {data?.division_code ? data.division_code : "-"}
+                {data?.parent_position_code ? data.parent_position_code : "-"}
               </p>
             </div>
           </div>
