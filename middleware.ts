@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/utils/verifyToken";
+import path from "path";
 
 const ADMIN_ROLES = ["ROL0000001", "ROL0000002"];
 const EMPLOYEE_ROLES = ["ROL0000003", "ROL0000004", "ROL0000005"];
@@ -50,12 +51,16 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    if (pathname.startsWith("/karyawan")) {
+    if (pathname.startsWith("/karyawan") || pathname.startsWith("/admin")) {
       if (
         !EMPLOYEE_ROLES.includes(userRole) &&
         !ADMIN_ROLES.includes(userRole)
       ) {
-        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+        const response = NextResponse.redirect(
+          new URL("/admin/dashboard", request.url)
+        );
+        response.cookies.delete("token");
+        return response;
       }
     }
   }
