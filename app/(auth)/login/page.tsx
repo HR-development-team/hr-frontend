@@ -1,23 +1,24 @@
 "use client";
 
 import { useAuth } from "@/components/AuthContext";
+import { useToastContext } from "@/components/ToastProvider";
 import { LoginFormData, loginFormSchema } from "@/lib/schemas/loginFormSchema";
 import { useFormik } from "formik";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { Toast } from "primereact/toast";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const defaultValues: LoginFormData = {
   email: "",
   password: "",
 };
 
-export default function Home() {
-  const toastRef = useRef<Toast>(null);
+const ADMIN_ROLES = ["ROL0000001", "ROL0000002"];
+const EMPLOYEE_ROLES = ["ROL0000003", "ROL0000004", "ROL0000005"];
 
+export default function Home() {
   const { login, user, isLoading } = useAuth();
 
   const [passowrdVisible, setPasswordVisible] = useState<boolean>(false);
@@ -25,6 +26,8 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const router = useRouter();
+
+  const { showToast } = useToastContext();
 
   const FormError = ({
     error,
@@ -61,30 +64,27 @@ export default function Home() {
       setIsSubmitting(true);
 
       try {
-        const loggedInUser = await login(values);
+        const response = await login(values);
 
-        const role = loggedInUser.role;
+        const roleCode = response.auth.user.role_code;
 
-        console.log("Login success", loggedInUser);
+        console.log("Login success, Role", roleCode);
 
         router.refresh();
 
-        if (role === "admin") {
+        if (ADMIN_ROLES.includes(roleCode)) {
           setTimeout(() => {
             router.push("/admin/dashboard");
           }, 1500);
-        } else if (role === "employee") {
-          router.push("karyawan");
+        } else if (EMPLOYEE_ROLES.includes(roleCode)) {
+          router.push("karyawan/Dashboard");
         }
+
+        showToast("success", response.message, "Selamat Datang Kembali");
       } catch (error: any) {
         setStatus(error.message);
 
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Login Gagal",
-          detail: error.message,
-          life: 3000,
-        });
+        showToast("error", "Login Gagal", error.message);
       } finally {
         setIsSubmitting(false);
       }
@@ -95,29 +95,26 @@ export default function Home() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      toastRef.current?.show({
-        severity: "success",
-        summary: "Sukses",
-        detail: `Mengarahkan ke dashboard ${
-          user.role === "admin" ? "Admin" : "Karyawan"
-        }`,
-        life: 3000,
-      });
+      const roleCode = user.role_code;
+      let destination = "";
+      let roleLabel = "";
 
-      if (user.role === "admin") {
-        setTimeout(() => {
-          router.push("/admin/dashboard");
-        }, 1500);
-      } else if (user.role === "employee") {
-        router.push("/karyawan/Dashboard");
+      if (ADMIN_ROLES.includes(roleCode)) {
+        destination = "/admin/dashboard";
+        roleLabel = "Admin";
+      } else if (EMPLOYEE_ROLES.includes(roleCode)) {
+        destination = "/Karyawan/Dashboard";
+        roleLabel = "Karyawan";
       }
+
+      setTimeout(() => {
+        router.push(destination);
+      }, 2000);
     }
   }, [user, isLoading, router]);
 
   return (
     <main className="relative min-h-screen">
-      <Toast ref={toastRef} />
-
       <div className="absolute h-full w-full bg-login-pattern" />
 
       <div className="absolute inset-0 h-full w-full bg-black/10" />

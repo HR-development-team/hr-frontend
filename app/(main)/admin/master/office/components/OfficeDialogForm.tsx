@@ -11,10 +11,11 @@ import {
 import { OfficeFormProps } from "@/lib/types/form/officeFormType";
 import { officeDefaultValues } from "@/lib/values/officeDefaultValue";
 import { useFormik } from "formik";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import FormInputNumber from "@/components/form/FormInputNumber";
 import { InputNumberValueChangeEvent } from "primereact/inputnumber";
 import { Button } from "primereact/button";
+import FormDropdown from "@/components/form/FormDropdown";
 
 const MapInput = dynamic(
   () =>
@@ -27,6 +28,7 @@ const MapInput = dynamic(
 
 export default function OfficeDialogForm({
   officeData,
+  officeOptions,
   onSubmit,
   isSubmitting,
 }: OfficeFormProps) {
@@ -91,7 +93,7 @@ export default function OfficeDialogForm({
       <FormInputTextarea
         props={{
           ...formik.getFieldProps("address"),
-          rows: 5
+          rows: 5,
         }}
         fieldName={"address"}
         label="Alamat Kantor"
@@ -107,57 +109,95 @@ export default function OfficeDialogForm({
         />
       </div>
 
-      <div className="flex flex-column lg:flex-row gap-3">
-        <FormInputNumber
-          props={{
-            value: formik.values.latitude,
-            onValueChange: (e: InputNumberValueChangeEvent) => {
-              formik.setFieldValue("latitude", e.value);
-            },
-            onBlur: formik.handleBlur,
-            min: -90,
-            max: 90,
-            maxFractionDigits: 8,
-          }}
-          fieldName={"latitude"}
-          label="Latitude"
-          isFieldInvalid={isFieldInvalid}
-          getFieldError={getFieldError}
-        />
+      <div className="grid">
+        <div className="col-12 md:col-6">
+          <FormInputNumber
+            props={{
+              value: formik.values.latitude,
+              onValueChange: (e: InputNumberValueChangeEvent) => {
+                formik.setFieldValue("latitude", e.value);
+              },
+              onBlur: formik.handleBlur,
+              min: -90,
+              max: 90,
+              maxFractionDigits: 8,
+            }}
+            fieldName={"latitude"}
+            label="Latitude"
+            isFieldInvalid={isFieldInvalid}
+            getFieldError={getFieldError}
+          />
+        </div>
 
-        <FormInputNumber
-          props={{
-            value: formik.values.longitude,
-            onValueChange: (e: InputNumberValueChangeEvent) => {
-              formik.setFieldValue("longitude", e.value);
-            },
-            onBlur: formik.handleBlur,
-            min: -180,
-            max: 180,
-            maxFractionDigits: 8,
-          }}
-          fieldName={"longitude"}
-          label="Longitude"
-          isFieldInvalid={isFieldInvalid}
-          getFieldError={getFieldError}
-        />
+        <div className="col-12 md:col-6">
+          <FormInputNumber
+            props={{
+              value: formik.values.longitude,
+              onValueChange: (e: InputNumberValueChangeEvent) => {
+                formik.setFieldValue("longitude", e.value);
+              },
+              onBlur: formik.handleBlur,
+              min: -180,
+              max: 180,
+              maxFractionDigits: 8,
+            }}
+            fieldName={"longitude"}
+            label="Longitude"
+            isFieldInvalid={isFieldInvalid}
+            getFieldError={getFieldError}
+          />
+        </div>
       </div>
 
-      <FormInputNumber
+      <div className="grid">
+        <div className="col-12 md:col-6">
+          <FormInputNumber
+            props={{
+              value: formik.values.radius_meters,
+              onValueChange: (e: InputNumberValueChangeEvent) => {
+                formik.setFieldValue("radius_meters", e.value);
+              },
+              onBlur: formik.handleBlur,
+              min: -180,
+              max: 180,
+              maxFractionDigits: 8,
+            }}
+            fieldName={"radius_meters"}
+            label="Radius Kantor (dalam meter)"
+            isFieldInvalid={isFieldInvalid}
+            getFieldError={getFieldError}
+          />
+        </div>
+
+        <div className="col-12 md:col-6">
+          <FormDropdown
+            props={{
+              ...formik.getFieldProps("parent_office_code"),
+              options: officeOptions,
+              optionLabel: "name",
+              optionValue: "office_code",
+              placeholder: "Pilih Induk Kantor",
+              filter: true,
+              filterDelay: 400,
+            }}
+            fieldName={"parent_office_code"}
+            label="Pilih Induk Kantor"
+            isFieldInvalid={isFieldInvalid}
+            getFieldError={getFieldError}
+          />
+        </div>
+      </div>
+
+      <FormInputTextarea
         props={{
-          value: formik.values.radius_meters,
-          onValueChange: (e: InputNumberValueChangeEvent) => {
-            formik.setFieldValue("radius_meters", e.value);
-          },
-          onBlur: formik.handleBlur,
-          min: -180,
-          max: 180,
-          maxFractionDigits: 8,
+          ...formik.getFieldProps("description"),
+          rows: 5,
         }}
-        fieldName={"radius_meters"}
-        label="Radius Kantor (dalam meter)"
+        fieldName={"description"}
+        label="Deskripsi Kantor"
         isFieldInvalid={isFieldInvalid}
         getFieldError={getFieldError}
+        optional
       />
 
       <div className="flex justify-content-end mt-4">

@@ -8,7 +8,6 @@ import InputTextComponent from "@/components/Input";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { Toast } from "primereact/toast";
 import {
   GetAllLeaveTypeData,
   GetLeaveTypeByIdData,
@@ -18,9 +17,11 @@ import { LeaveTypeFormData } from "@/lib/schemas/leaveTypeFormSchema";
 import LeaveTypeDialogForm from "./components/LeaveTypeDialogForm";
 import LeaveTypeDialogView from "./components/LeaveTypeDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function LeaveType() {
-  const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
   const [leaveType, setLeaveType] = useState<GetAllLeaveTypeData[]>([]);
@@ -34,18 +35,20 @@ export default function LeaveType() {
     "Lihat Data Tipe Cuti" | "Edit Tipe Cuti" | "Tambah Tipe Cuti" | null
   >(null);
 
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
   );
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete();
+
+  const {showToast} = useToastContext()
 
   const fetchLeaveType = async () => {
     await fetchData({
       url: "/api/admin/master/leave-type",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setLeaveType(responseData.leave_types || []);
       },
@@ -80,47 +83,25 @@ export default function LeaveType() {
   }, [viewLeaveType]);
 
   const handleSubmit = async (formData: LeaveTypeFormData) => {
-    setIsSaving(true);
-    try {
-      const method = dialogMode === "add" ? "POST" : "PUT";
+    const method = dialogMode === "add" ? "POST" : "PUT";
 
-      const url =
-        dialogMode === "add"
-          ? "/api/admin/master/leave-type"
-          : `/api/admin/master/leave-type/${currentEditedId}`;
+    const url =
+      dialogMode === "add"
+        ? "/api/admin/master/leave-type"
+        : `/api/admin/master/leave-type/${currentEditedId}`;
 
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(formData),
-      });
-
-      const responseData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(responseData.message || "Terjadi kesalahan");
-      }
-
-      toastRef.current?.show({
-        severity: "success",
-        summary: "Sukses",
-        detail: responseData.message || "Data berhasil disimpan",
-        life: 3000,
-      });
-
-      fetchLeaveType();
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "success",
-        summary: "Sukses",
-        detail: error.message,
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    await submitData({
+      url: url,
+      payload: formData,
+      showToast: showToast,
+      onSuccess: () => {
+        fetchLeaveType();
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
+      },
+      method: method,
+    });
   };
 
   const handleView = (leaveType: GetAllLeaveTypeData) => {
@@ -147,40 +128,11 @@ export default function LeaveType() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(
-            `/api/admin/master/leave-type/${leaveType.id}`,
-            {
-              method: "DELETE",
-            }
-          );
-
-          const responseData = await res.json();
-
-          if (!res.ok) {
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-          }
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchLeaveType();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/master/leave-type/${leaveType.id}`,
+          onSuccess: () => fetchLeaveType(),
+          showToast: showToast,
+        });
       },
     });
   };
@@ -191,7 +143,6 @@ export default function LeaveType() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <TicketsPlane className="w-2rem h-2rem" />

@@ -11,19 +11,15 @@ import { Dialog } from "primereact/dialog";
 import UserDialogForm from "./components/UserDialogForm";
 import { UserFormData } from "@/lib/schemas/userFormSchema";
 import DataTableUser from "./components/DataTableUser";
-import { Toast } from "primereact/toast";
 import { GetAllEmployeeData } from "@/lib/types/employee";
 import { GetAllUserData, GetUserByIdData } from "@/lib/types/user";
 import UserDialogView from "./components/UserDialogView";
-import { email } from "zod";
 import { useFetch } from "@/lib/hooks/useFetch";
-
-// interface CombinedUserData extends UserData {
-//   employee_first_name: string;
-// }
+import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function UserPage() {
-  const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
   const [employee, setEmployee] = useState<GetAllEmployeeData[]>([]);
@@ -37,18 +33,20 @@ export default function UserPage() {
     "Lihat Data User" | "Edit User" | "Tambah User" | null
   >(null);
 
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
   );
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete()
+
+  const {showToast} = useToastContext()
 
   const fetchAllUserData = async () => {
     await fetchData({
       url: "/api/admin/master/user",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setUser(responseData.users || []);
       },
@@ -57,62 +55,6 @@ export default function UserPage() {
       },
     });
   };
-
-  // const fetchAllUserData = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const [employeeRes, userRes] = await Promise.all([
-  //       fetch("/api/admin/master/employee"),
-  //       fetch("/api/admin/master/user"),
-  //     ]);
-
-  //     // const res = await fetch("/api/admin/master/user");
-
-  //     if (!employeeRes.ok || !userRes.ok)
-  //       throw new Error("Gagal mendapatkan data user dari server");
-
-  //     const [employeeData, userData] = await Promise.all([
-  //       employeeRes.json(),
-  //       userRes.json(),
-  //     ]);
-
-  //     if (
-  //       employeeData &&
-  //       userData &&
-  //       employeeData.status === "00" &&
-  //       userData.status === "00"
-  //     ) {
-  //       if (isInitialLoad.current) {
-  //         toastRef.current?.show({
-  //           severity: "success",
-  //           summary: "Sukses",
-  //           detail: userData.message,
-  //           life: 3000,
-  //         });
-
-  //         isInitialLoad.current = false;
-  //       }
-  //       setEmployee(employeeData.master_employees || []);
-  //       setUser(userData.users || []);
-  //     } else {
-  //       toastRef.current?.show({
-  //         severity: "error",
-  //         summary: "Gagal",
-  //         detail: userData.message,
-  //         life: 3000,
-  //       });
-  //       setEmployee([]);
-  //       setUser([]);
-  //     }
-  //   } catch (error: any) {
-  //     console.log(error.message);
-
-  //     setEmployee([]);
-  //     setUser([]);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const fetchUserById = async (id: number) => {
     await fetchDataById({
@@ -126,31 +68,6 @@ export default function UserPage() {
     });
   };
 
-  // const fetchUserById = async (id: number) => {
-  //   setIsLoading(true);
-  //   try {
-  //     const res = await fetch(`/api/admin/master/user/${id}`);
-
-  //     if (!res.ok) {
-  //       throw new Error("Gagal mendapatkan user bredasarkan id");
-  //     }
-
-  //     const responseData = await res.json();
-
-  //     if (responseData && responseData.status === "00") {
-  //       setViewUser(responseData.users || null);
-  //     } else {
-  //       setViewUser(null);
-  //     }
-  //   } catch (error: any) {
-  //     console.log(error.message);
-
-  //     setViewUser(null);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
   const cleanUserDataForm = useMemo(() => {
     if (!viewUser) {
       return null;
@@ -163,8 +80,6 @@ export default function UserPage() {
   }, [viewUser]);
 
   const handleSubmit = async (formData: UserFormData) => {
-    setIsSaving(true);
-
     const url =
       dialogMode === "edit"
         ? `/api/admin/master/user/${currentEditedId}`
@@ -178,101 +93,49 @@ export default function UserPage() {
       role: formData.role,
     };
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(payload),
-      });
-
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
+    await submitData({
+      url: url,
+      payload: payload,
+      showToast: showToast,
+      onSuccess: () => {
         fetchAllUserData();
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: response?.errors?.[0]?.message || "Gagal menyimpan data user",
-          life: 3000,
-        });
-      }
-
-      fetchAllUserData();
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.message || "Terjadi kesalahan koneksi",
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
+      },
+      method: method,
+    });
   };
 
-  const handleView = (data: GetAllUserData) => {
+  const handleView = (user: GetAllUserData) => {
     setDialogMode("view");
     setIsDialogVisible(true);
     setDialogLabel("Lihat Data User");
-    fetchUserById(data.id);
+    fetchUserById(user.id);
   };
 
-  const handleEdit = (data: GetAllUserData) => {
+  const handleEdit = (user: GetAllUserData) => {
     setDialogMode("edit");
     setIsDialogVisible(true);
-    setCurrentEditedId(data.id);
+    setCurrentEditedId(user.id);
     setDialogLabel("Edit User");
-    fetchUserById(data.id);
+    fetchUserById(user.id);
   };
 
-  const handleDelete = (data: GetAllUserData) => {
+  const handleDelete = (user: GetAllUserData) => {
     confirmDialog({
       icon: "pi pi-exclamation-triangle text-red-400 mr-2",
       header: "Konfirmasi Hapus",
-      message: `Yakin ingin menghapus user ${data.email}`,
+      message: `Yakin ingin menghapus user ${user.email}`,
       acceptLabel: "Hapus",
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(`/api/admin/master/user/${data.id}`, {
-            method: "DELETE",
-          });
-
-          const responseData = await res.json();
-
-          if (!res.ok)
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllUserData();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message || "Terjadi kesalahan koneksi",
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/master/user/${user.id}`,
+          onSuccess: () => fetchAllUserData(),
+          showToast: showToast
+        })
       },
     });
   };
@@ -283,7 +146,6 @@ export default function UserPage() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <User className="w-2rem h-2rem" />

@@ -112,4 +112,10 @@ export const API_ENDPOINTS = {
   GETPAYROLLBYID: (id: string) => `${API_URL}/payrolls/${id}`, // Get Payroll By Id
   EDITPAYROLL: (id: string) => `${API_URL}/payrolls/${id}`, // Update Payroll By Id
   DELETEPAYROLL: (id: string) => `${API_URL}/payrolls/${id}`, // DELETE Payroll by id
+
+  // --- INI TAMBAHAN: roles ---
+  GETALLROLES: `${API_URL}/roles`,
+
+  // --- INI TAMBAHAN: organization ---
+  GETOFFICEORGANIZATION: `${API_URL}/master-offices/organization`,
 };

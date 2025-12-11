@@ -6,8 +6,7 @@ import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Card } from "primereact/card";
 import DataTableOffice from "./components/DataTableOffice";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Toast } from "primereact/toast";
+import { useEffect, useMemo, useState } from "react";
 import { GetAllOfficeData, GetOfficeByIdData } from "@/lib/types/office";
 import { OfficeFormData } from "@/lib/schemas/officeFormSchema";
 import { Dialog } from "primereact/dialog";
@@ -15,18 +14,17 @@ import OfficeDialogForm from "./components/OfficeDialogForm";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import OfficeDialogView from "./components/OfficeDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function Office() {
-  const toastRef = useRef<Toast>(null);
-  const isInitialLoad = useRef<boolean>(true);
-
   const [office, setOffice] = useState<GetAllOfficeData[]>([]);
   const [viewOffice, setViewOffice] = useState<GetOfficeByIdData | null>(null);
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -36,13 +34,17 @@ export default function Office() {
   >(null);
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete();
+
+  const { showToast } = useToastContext();
 
   const fetchAllOffice = async () => {
     await fetchData({
       url: "/api/admin/master/office",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
-        setOffice(responseData.master_offices || []);
+        setOffice(responseData.offices || []);
       },
       onError: () => {
         setOffice([]);
@@ -54,7 +56,7 @@ export default function Office() {
     await fetchDataById({
       url: `/api/admin/master/office/${id}`,
       onSuccess: (responseData) => {
-        setViewOffice(responseData.master_offices || null);
+        setViewOffice(responseData.offices || null);
       },
       onError: () => {
         setViewOffice(null);
@@ -73,14 +75,12 @@ export default function Office() {
       latitude: parseFloat(viewOffice.latitude),
       longitude: parseFloat(viewOffice.longitude),
       radius_meters: viewOffice.radius_meters,
+      // sort_order: viewOffice.sort_order,
+      // description: viewOffice.description,
     };
   }, [viewOffice]);
 
   const handleSubmit = async (formData: OfficeFormData) => {
-    setIsSaving(true);
-
-    console.log(JSON.stringify(formData));
-
     const url =
       dialogMode === "add"
         ? "/api/admin/master/office"
@@ -88,44 +88,18 @@ export default function Office() {
 
     const method = dialogMode === "add" ? "POST" : "PUT";
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(formData),
-      });
-
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
+    await submitData({
+      url: url,
+      payload: formData,
+      showToast: showToast,
+      onSuccess: () => {
         fetchAllOffice();
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: response.message,
-          life: 3000,
-        });
-      }
-
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.message,
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
+      },
+      method: method,
+    });
   };
 
   const handleView = (office: GetAllOfficeData) => {
@@ -152,37 +126,11 @@ export default function Office() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(`/api/admin/master/office/${office.id}`, {
-            method: "DELETE",
-          });
-
-          const responseData = await res.json();
-
-          if (!res.ok) {
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-          }
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllOffice();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/master/office/${office.id}`,
+          onSuccess: () => fetchAllOffice(),
+          showToast: showToast,
+        });
       },
     });
   };
@@ -193,7 +141,6 @@ export default function Office() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <Building className="w-2rem h-2rem" />
@@ -306,6 +253,7 @@ export default function Office() {
           <div className={dialogMode !== "view" ? "block" : "hidden"}>
             <OfficeDialogForm
               officeData={cleanOfficeDataForm}
+              officeOptions={office}
               onSubmit={handleSubmit}
               isSubmitting={isSaving}
             />

@@ -1,6 +1,7 @@
 import z from "zod";
 
 export const positionFormSchema = z.object({
+  parent_position_code: z.string().nullable().optional(),
   name: z
     .string()
     .nonempty("Nama divisi wajib diisi")

@@ -11,25 +11,29 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import DataTableDepartment from "./components/DataTableDepartment";
 import { Dialog } from "primereact/dialog";
 import DepartmentDialogForm from "./components/DepartmentDialogForm";
-import { Toast } from "primereact/toast";
 import {
   GetAllDepartmentData,
   GetDepartmentByIdData,
 } from "@/lib/types/department";
 import DepartmentDialogView from "./components/DepartmentDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { GetAllOfficeData } from "@/lib/types/office";
+import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function Department() {
-  const toastRef = useRef<Toast>(null);
+  const isInitialLoad = useRef<boolean>(true);
 
+  const [office, setOffice] = useState<GetAllOfficeData[]>([]);
   const [department, setDepartment] = useState<GetAllDepartmentData[]>([]);
   const [viewDepartment, setViewDepartment] =
     useState<GetDepartmentByIdData | null>(null);
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
+  const [isOfficeLoading, setIsOfficeLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -38,12 +42,16 @@ export default function Department() {
     "Lihat Data Departement" | "Edit Departemen" | "Tambah Departemen" | null
   >(null);
 
-  const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isLoading, fetchData, fetchDataById, fetchMultiple } = useFetch();
+  const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete();
+
+  const {showToast} = useToastContext()
 
   const fetchAllDepartment = async () => {
     await fetchData({
       url: "/api/admin/master/department",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setDepartment(responseData.master_departments || []);
       },
@@ -65,49 +73,47 @@ export default function Department() {
     });
   };
 
-  const handleSubmit = async (formData: DepartementFormData) => {
-    setIsSaving(true);
-    try {
-      const method = dialogMode === "add" ? "POST" : "PUT";
+  const fetchAllOffice = async () => {
+    if (isInitialLoad.current) {
+      setIsOfficeLoading(true);
 
-      const url =
-        dialogMode === "add"
-          ? "/api/admin/master/department"
-          : `/api/admin/master/department/${currentEditedId}`;
-
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(formData),
+      await fetchMultiple({
+        urls: ["/api/admin/master/office"],
+        onSuccess: (resultArray) => {
+          const [officeData] = resultArray;
+          setOffice(officeData.master_offices || []);
+        },
+        onError: () => {
+          setOffice([]);
+        },
       });
 
-      const responseData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(responseData.message || "Terjadi kesalahan");
-      }
-
-      toastRef.current?.show({
-        severity: "success",
-        summary: "Sukses",
-        detail: responseData.message || "Data berhasil disimpan",
-        life: 3000,
-      });
-
-      fetchAllDepartment();
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Gagal",
-        detail: error.message,
-        life: 3000,
-      });
-      throw error;
-    } finally {
-      setIsSaving(false);
+      setIsOfficeLoading(false);
     }
+
+    isInitialLoad.current = false;
+  };
+
+  const handleSubmit = async (formData: DepartementFormData) => {
+    const method = dialogMode === "add" ? "POST" : "PUT";
+
+    const url =
+      dialogMode === "add"
+        ? "/api/admin/master/department"
+        : `/api/admin/master/department/${currentEditedId}`;
+
+    await submitData({
+      url: url,
+      payload: formData,
+      showToast: showToast,
+      onSuccess: () => {
+        fetchAllDepartment();
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
+      },
+      method: method,
+    });
   };
 
   const cleanDepartmentData = useMemo(() => {
@@ -116,6 +122,7 @@ export default function Department() {
     }
 
     return {
+      office_code: viewDepartment.office_code,
       name: viewDepartment.name,
       description: viewDepartment.description,
     };
@@ -134,6 +141,7 @@ export default function Department() {
     setCurrentEditedId(department.id);
     setDialogLabel("Edit Departemen");
     fetchDepartmentById(department.id);
+    fetchAllOffice();
   };
 
   const handleDelete = (department: GetAllDepartmentData) => {
@@ -145,47 +153,11 @@ export default function Department() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(
-            `/api/admin/master/department/${department.id}`,
-            {
-              method: "DELETE",
-            }
-          );
-
-          const responseData = await res.json();
-
-          if (!res.ok) {
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-          }
-
-          if (responseData && responseData.status === "00") {
-            toastRef.current?.show({
-              severity: "success",
-              summary: "Sukses",
-              detail: responseData.message,
-              life: 3000,
-            });
-
-            fetchAllDepartment();
-          } else {
-            toastRef.current?.show({
-              severity: "error",
-              summary: "Error",
-              detail: responseData.message,
-              life: 3000,
-            });
-          }
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        }
+        await deleteData({
+          url: `/api/admin/master/department/${department.id}`,
+          onSuccess: () => fetchAllDepartment(),
+          showToast: showToast,
+        });
       },
     });
   };
@@ -196,7 +168,6 @@ export default function Department() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <Building className="w-2rem h-2rem" />
@@ -279,6 +250,7 @@ export default function Department() {
                     setDialogLabel("Tambah Departemen");
                     setCurrentEditedId(null);
                     setIsDialogVisible(true);
+                    fetchAllOffice();
                   }}
                 />
               </div>
@@ -315,9 +287,10 @@ export default function Department() {
           >
             <DepartmentDialogForm
               departmentData={cleanDepartmentData}
-              dialogMode={dialogMode}
+              officeOptions={office}
               onSubmit={handleSubmit}
               isSubmitting={isSaving}
+              isOfficeLoading={isOfficeLoading}
             />
           </div>
 

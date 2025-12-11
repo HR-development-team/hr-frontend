@@ -42,15 +42,19 @@ export default function StatsCard({
         },
       }}
     >
-      <div className="flex align-items-center justify-content-between mb-4">
-        <div className={`p-3 ${iconClassName} border-round-lg`}>
-          <span>{icon}</span>
+      <div className="flex md:flex-column gap-3">
+        <div className="flex align-items-center justify-content-between mb-4">
+          <div className={`p-3 ${iconClassName} border-round-lg`}>
+            <span>{icon}</span>
+          </div>
         </div>
-      </div>
-      <h3 className="text-lg font-semibold text-gray-700 mb-2">{title}</h3>
-      <div className="flex align-items-center gap-2">
-        <p className="text-2xl font-bold text-900 mb-1">{value || 0}</p>
-        <p className="text-sm text-gray-500">{description}</p>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">{title}</h3>
+          <div className="flex align-items-center gap-2">
+            <p className="text-2xl font-bold text-900 mb-1">{value || 0}</p>
+            <p className="text-sm text-gray-500">{description}</p>
+          </div>
+        </div>
       </div>
 
       {showProgress && (

@@ -8,7 +8,6 @@ import InputTextComponent from "@/components/Input";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { Toast } from "primereact/toast";
 import PositionDialogForm from "./components/PositionDialogForm";
 import DataTablePosition from "./components/DataTablePosition";
 import { PositionFormData } from "@/lib/schemas/positionFormSchema";
@@ -16,9 +15,11 @@ import { GetAllPositionData, GetPositionByIdData } from "@/lib/types/position";
 import { GetAllDivisionData } from "@/lib/types/division";
 import PositionDialogView from "./components/PositionDialogView";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function Position() {
-  const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
   const [division, setDivision] = useState<GetAllDivisionData[]>([]);
@@ -30,7 +31,6 @@ export default function Position() {
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -40,11 +40,15 @@ export default function Position() {
   >(null);
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete();
+
+  const { showToast } = useToastContext();
 
   const fetchAllPosition = async () => {
     await fetchData({
       url: "/api/admin/master/position",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setPosition(responseData.master_positions || []);
       },
@@ -69,7 +73,7 @@ export default function Position() {
   const fetchDivision = async () => {
     await fetchData({
       url: "/api/admin/master/division",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setDivision(responseData.master_divisions || []);
       },
@@ -93,8 +97,6 @@ export default function Position() {
   }, [viewPosition]);
 
   const handleSubmit = async (formData: PositionFormData) => {
-    setIsSaving(true);
-
     const url =
       dialogMode === "edit"
         ? `/api/admin/master/position/${currentEditedId}`
@@ -102,44 +104,18 @@ export default function Position() {
 
     const method = dialogMode === "edit" ? "PUT" : "POST";
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(formData),
-      });
-
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
+    await submitData({
+      url: url,
+      payload: formData,
+      showToast: showToast,
+      onSuccess: () => {
         fetchAllPosition();
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: response.error[0].message || "Gagal menyimpan data divisi",
-          life: 3000,
-        });
-      }
-
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.message || "Terjadi kesalahan koneksi",
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
+      },
+      method: method,
+    });
   };
 
   const handleView = (position: GetAllPositionData) => {
@@ -161,41 +137,16 @@ export default function Position() {
     confirmDialog({
       icon: "pi pi-exclamation-triangle text-red-400 mr-2",
       header: "Konfirmasi Hapus",
-      message: `Yakin ingin menghapus posisi ${position.name}`,
+      message: `Yakin ingin menghapus jabatan ${position.name}`,
       acceptLabel: "Hapus",
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(`/api/admin/master/position/${position.id}`, {
-            method: "DELETE",
-          });
-
-          const responseData = await res.json();
-
-          if (!res.ok)
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllPosition();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message || "Terjadi kesalahan koneksi",
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/master/position/${position.id}`,
+          onSuccess: () => fetchAllPosition(),
+          showToast: showToast,
+        });
       },
     });
   };
@@ -207,14 +158,13 @@ export default function Position() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <UserCheck className="w-2rem h-2rem" />
         </div>
         <div>
           <h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-            Master Data Posisi
+            Master Data Jabatan
           </h1>
           <p className="text-sm md:text-md text-gray-500">
             Kelola data posisi atau jabatan
@@ -226,7 +176,7 @@ export default function Position() {
         <div className="flex flex-column gap-4">
           <div className="flex gap-2 align-items-center">
             <UserCheck className="h-2" />
-            <h2 className="text-base text-800">Master Data Posisi</h2>
+            <h2 className="text-base text-800">Master Data Jabatan</h2>
           </div>
 
           {/* filters */}
@@ -326,6 +276,7 @@ export default function Position() {
           >
             <PositionDialogForm
               positionData={cleanPositionDataForm}
+              positionOptions={position}
               onSubmit={handleSubmit}
               divisionOptions={division}
               isSubmitting={isSaving}

@@ -1,5 +1,6 @@
 "use client";
 
+import FormDropdown from "@/components/form/FormDropdown";
 import FormInputText from "@/components/form/FormInputText";
 import FormInputTextarea from "@/components/form/FormInputTextarea";
 import {
@@ -13,9 +14,10 @@ import { Button } from "primereact/button";
 
 export default function DepartmentDialogForm({
   departmentData,
-  dialogMode,
+  officeOptions,
   onSubmit,
   isSubmitting,
+  isOfficeLoading
 }: DepartmentFormProps) {
   const formik = useFormik({
     initialValues: departmentData || departmentDefaultValues,
@@ -57,6 +59,23 @@ export default function DepartmentDialogForm({
 
   return (
     <form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
+      <FormDropdown
+        props={{
+          ...formik.getFieldProps("office_code"),
+          options: officeOptions,
+          optionLabel: "name",
+          optionValue: "office_code",
+          filter: true,
+          filterDelay: 400,
+          placeholder: "Pilih Kantor",
+          loading: isOfficeLoading
+        }}
+        fieldName={"office_code"}
+        label="Kantor Cabang"
+        isFieldInvalid={isFieldInvalid}
+        getFieldError={getFieldError}
+      />
+
       <FormInputText
         props={{
           ...formik.getFieldProps("name"),

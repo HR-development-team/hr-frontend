@@ -12,25 +12,24 @@ import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { OrganizationChart } from "primereact/organizationchart";
 import { TreeNode } from "primereact/treenode";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import OfficeNodeCard from "./OfficeNodeCard";
 import PositionNodeCard from "./PositionNodeCard";
 
 interface OrganizationNodeProps {
   initialOfficeData: OfficeStructure[];
   initialPositionData: PositionStructure[];
-  isLoading: boolean;
+  isOfficeLoading: boolean;
 }
 
 export default function OrganizationNode({
   initialOfficeData,
   initialPositionData,
-  isLoading,
+  isOfficeLoading,
 }: OrganizationNodeProps) {
   const [selection, setSelection] = useState<TreeNode | TreeNode[] | null>(
     null
   );
-  const [officeData, setOfficeData] = useState<SafeTreeNode[]>([]);
   const [employeeData, setEmployeeData] = useState<SafeTreeNode[]>([]);
 
   const [viewMode, setViewMode] = useState<"office" | "employee">("office");
@@ -120,7 +119,7 @@ export default function OrganizationNode({
     return <PositionNodeCard data={node.data as PositionNodeData} />;
   };
 
-  if (isLoading) {
+  if (isOfficeLoading) {
     return (
       <Card>
         <div className="flex justify-content-center align-items-center p-5">
@@ -159,6 +158,11 @@ export default function OrganizationNode({
               size="small"
               outlined
               onClick={handleBack}
+              pt={{
+                icon: {
+                  className: "mr-2",
+                },
+              }}
             />
           )}
         </div>

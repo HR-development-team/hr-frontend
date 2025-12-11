@@ -7,10 +7,13 @@ export interface GetAllPositionData {
   division_name: string;
   department_code: string;
   department_name: string;
+  sort_order: number;
+  parent_position_code: string | null;
 }
 
 export interface GetPositionByIdData extends GetAllPositionData {
-  description: string;
+  parent_position_name: string | null;
+  description: string | null;
   created_at: string;
   updated_at: string;
 }
