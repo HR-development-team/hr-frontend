@@ -34,6 +34,7 @@ export default function DataTableOffice({
               icon="pi pi-eye text-sm"
               size="small"
               severity="success"
+              tooltip="Lihat Detail"
                 onClick={() => {
                   onView(row);
                 }}
@@ -43,6 +44,7 @@ export default function DataTableOffice({
               icon="pi pi-pencil text-sm"
               size="small"
               severity="warning"
+              tooltip="Edit Data"
               onClick={() => {
                 onEdit(row);
               }}
@@ -52,6 +54,7 @@ export default function DataTableOffice({
               icon="pi pi-trash text-sm"
               size="small"
               severity="danger"
+              tooltip="Hapus Data"
                 onClick={() => {
                   onDelete(row);
                 }}

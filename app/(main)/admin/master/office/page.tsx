@@ -7,7 +7,11 @@ import { Calendar } from "primereact/calendar";
 import { Card } from "primereact/card";
 import DataTableOffice from "./components/DataTableOffice";
 import { useEffect, useMemo, useState } from "react";
-import { GetAllOfficeData, GetOfficeByIdData } from "@/lib/types/office";
+import {
+  GetAllOfficeData,
+  GetOfficeByIdData,
+  ParentOfficeCode,
+} from "@/lib/types/office";
 import { OfficeFormData } from "@/lib/schemas/officeFormSchema";
 import { Dialog } from "primereact/dialog";
 import OfficeDialogForm from "./components/OfficeDialogForm";
@@ -75,8 +79,8 @@ export default function Office() {
       latitude: parseFloat(viewOffice.latitude),
       longitude: parseFloat(viewOffice.longitude),
       radius_meters: viewOffice.radius_meters,
-      // sort_order: viewOffice.sort_order,
-      // description: viewOffice.description,
+      parent_office_code: viewOffice.parent_office_code,
+      description: viewOffice.description,
     };
   }, [viewOffice]);
 
