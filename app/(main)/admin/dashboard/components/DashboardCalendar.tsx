@@ -7,7 +7,6 @@ import { Dialog } from "primereact/dialog";
 import { Calendar } from "primereact/calendar";
 import { addLocale, locale } from "primereact/api";
 import { Button } from "primereact/button"; 
-
 import 'primeicons/primeicons.css'; 
 
 export default function DashboardCalendar() {
@@ -15,6 +14,7 @@ export default function DashboardCalendar() {
   const [visible, setVisible] = useState<boolean>(false);
 
   useEffect(() => {
+    // Setup Bahasa Indonesia untuk Kalender
     addLocale('id', {
         firstDayOfWeek: 1,
         dayNames: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
@@ -27,6 +27,7 @@ export default function DashboardCalendar() {
     });
     locale('id');
 
+    // Jam Digital
     const timer = setInterval(() => {
       setDate(new Date());
     }, 1000);

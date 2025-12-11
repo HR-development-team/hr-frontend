@@ -90,6 +90,13 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* GRID SYSTEM
+         Urutan komponen di sini menentukan urutan tampilan Mobile (atas ke bawah).
+         1. Stats (Atas)
+         2. Quick Actions (Tengah)
+         3. Calendar (Bawah)
+      */}
       <div className="grid">
         
         {/* 1. STATS (Full Width) */}
