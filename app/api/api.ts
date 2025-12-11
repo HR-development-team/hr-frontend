@@ -48,6 +48,21 @@ export const API_ENDPOINTS = {
   DELETEUSER: (id: string) => `${API_URL}/users/${id}`, // Delete User
   GETUSERBYID: (id: string) => `${API_URL}/users/${id}`, // Get User
 
+  // --- Role  ---
+  ADDROLE: `${API_URL}/roles`, // Create Role
+  GETALLROLE: `${API_URL}/roles`, // Get All Role
+  EDITROLE: (id: string) => `${API_URL}/roles/${id}`, // Update Role
+  DELETEROLE: (id: string) => `${API_URL}/roles/${id}`, // Delete Role
+  GETROLEBYID: (id: string) => `${API_URL}/roles/${id}`, // Get Role
+  GETROLEBYCODE: (code: string) => `${API_URL}/roles/code/${code}`, // Get Role
+
+  // --- Permission  ---
+  GETPERMISSIONBYROLECODE: (code: string) =>
+    `${API_URL}/permissions/role/${code}`, // Get Permission By Role Code
+  GETCURRENTUSERPERMISSION: `${API_URL}/permissions/me/`, // Get Current User Permission
+  EDITPERMISSIONBYROLECODE: (code: string) =>
+    `${API_URL}/permissions/role/${code}`, // Update Permission By Role Code
+
   // --- Master Leave Type ---
   ADDLEAVETYPE: `${API_URL}/master-leave-types`, // Create New Leave Type
   GETALLLEAVETYPE: `${API_URL}/master-leave-types`, // Get All Leave Type

@@ -1,28 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import FormDropdown from "@/components/form/FormDropdown";
 import FormInputText from "@/components/form/FormInputText";
 import FormInputTextarea from "@/components/form/FormInputTextarea";
-import {
-  DepartementFormData,
-  departmentFormSchema,
-} from "@/lib/schemas/departmentFormSchema";
-import { DepartmentFormProps } from "@/lib/types/form/departmentFormType";
-import { departmentDefaultValues } from "@/lib/values/departmentDefaultValue";
+import { RoleFormData, roleFormSchema } from "@/lib/schemas/roleFormSchema";
+import { RoleFormProps } from "@/lib/types/form/roleFormType";
+import { roleDefaultValues } from "@/lib/values/roleDefaultValue";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 
-export default function DepartmentDialogForm({
-  departmentData,
-  officeOptions,
+export default function RoleDialogForm({
+  roleData,
   onSubmit,
   isSubmitting,
-  isOfficeLoading,
-}: DepartmentFormProps) {
+}: RoleFormProps) {
   const formik = useFormik({
-    initialValues: departmentData || departmentDefaultValues,
+    initialValues: roleData || roleDefaultValues,
     validate: (values) => {
-      const validation = departmentFormSchema.safeParse(values);
+      const validation = roleFormSchema.safeParse(values);
 
       if (validation.success) {
         return {};
@@ -48,10 +43,10 @@ export default function DepartmentDialogForm({
     enableReinitialize: true,
   });
 
-  const isFieldInvalid = (fieldName: keyof DepartementFormData) =>
+  const isFieldInvalid = (fieldName: keyof RoleFormData) =>
     !!(formik.touched[fieldName] && formik.errors[fieldName]);
 
-  const getFieldError = (fieldName: keyof DepartementFormData) => {
+  const getFieldError = (fieldName: keyof RoleFormData) => {
     return isFieldInvalid(fieldName)
       ? (formik.errors[fieldName] as string)
       : undefined;
@@ -59,29 +54,12 @@ export default function DepartmentDialogForm({
 
   return (
     <form onSubmit={formik.handleSubmit} className="flex flex-column gap-3">
-      <FormDropdown
-        props={{
-          ...formik.getFieldProps("office_code"),
-          options: officeOptions,
-          optionLabel: "name",
-          optionValue: "office_code",
-          filter: true,
-          filterDelay: 400,
-          placeholder: "Pilih Kantor",
-          loading: isOfficeLoading,
-        }}
-        fieldName={"office_code"}
-        label="Kantor Cabang"
-        isFieldInvalid={isFieldInvalid}
-        getFieldError={getFieldError}
-      />
-
       <FormInputText
         props={{
           ...formik.getFieldProps("name"),
         }}
         fieldName={"name"}
-        label="Nama Departemen"
+        label="Nama Role"
         isFieldInvalid={isFieldInvalid}
         getFieldError={getFieldError}
       />

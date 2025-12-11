@@ -6,6 +6,7 @@ import {
   FileText,
   LayoutDashboard,
   MonitorCheck,
+  Users2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -103,6 +104,21 @@ const menuItems: MenuItems[] = [
       // 	label: "Pengajuan Lembur",
       // 	href: "#",
       // },
+    ],
+  },
+  {
+    id: "user-management",
+    label: "Manajemen",
+    icon: <Users2 />,
+    children: [
+      {
+        label: "Manajemen Pengguna",
+        href: "/admin/management/user",
+      },
+      {
+        label: "Role & Permissions",
+        href: "/admin/management/role-permission",
+      },
     ],
   },
   {
