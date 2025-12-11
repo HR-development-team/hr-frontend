@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
 import { Menu } from "primereact/menu";
@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthContext";
 import { Skeleton } from "primereact/skeleton";
 import { useToastContext } from "./ToastProvider";
+import Image from "next/image";
 
 const getMenuitems = (logoutHandler: () => void): MenuItem[] => [
   {
@@ -80,12 +81,8 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
       }, 1500);
     } catch (error: any) {
       console.error("Gagal untuk logout", error);
-      
-      showToast(
-        "error",
-        "Gagal Logout",
-        "Terjadi kesalahan sistem"
-      );
+
+      showToast("error", "Gagal Logout", "Terjadi kesalahan sistem");
     }
   };
 
@@ -119,28 +116,18 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
               text
             />
             <div className="surface-50 p-2 border-round-lg">
-              <img
+              <Image
                 src="/img/logo.png"
                 alt="logo"
-                className="w-2rem md:w-3rem"
+                className="w-2rem md:w-3rem h-auto"
+                width={0}
+                height={0}
+                sizes="100vw"
               />
             </div>
-            <div className="flex flex-column gap-1">
-              <h1 className="text-sm md:text-lg font-bold text-800">
-                HR Marstech
-              </h1>
-              {isLoading ? (
-                <Skeleton width="5rem" height="0.8rem" />
-              ) : (
-                <p className="text-500 text-xs md:text-sm">
-                  {user?.role === "admin"
-                    ? "Admin"
-                    : user?.role === "employee"
-                      ? "Karyawan"
-                      : "Admin"}
-                </p>
-              )}
-            </div>
+            <h1 className="text-sm md:text-lg font-bold text-800">
+              HR Marstech
+            </h1>
           </div>
           <div>
             <Menu

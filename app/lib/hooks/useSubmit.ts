@@ -10,7 +10,7 @@ interface FetchOptions<T> {
   url: string;
   payload?: T;
   showToast?: ShowToastFn;
-  onSuccess: () => void;
+  onSuccess: (data?: any) => void | Promise<void>;
   onError?: (message: string) => void;
   method: "PUT" | "POST";
 }
@@ -39,7 +39,9 @@ export const useSubmit = () => {
         if (showToast) {
           showToast("success", "Sukses", response.message);
         }
-        onSuccess();
+        await onSuccess(response);
+
+        return response
       } else {
         const msg = response.message || "Gagal menyimpan data";
 

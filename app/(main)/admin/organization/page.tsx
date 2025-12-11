@@ -9,13 +9,12 @@ import { useFetch } from "@/lib/hooks/useFetch";
 import { useToastContext } from "@/components/ToastProvider";
 
 export default function Organization() {
-
   const [office, setOffice] = useState<OfficeStructure[]>([]);
   const [position, setPosition] = useState<PositionStructure[]>([]);
 
-  const { isLoading, fetchData } = useFetch();
+  const { isLoading: isOfficeLoading, fetchData } = useFetch();
 
-  const {showToast} = useToastContext()
+  const { showToast } = useToastContext();
 
   const fetchAllOffice = async () => {
     await fetchData({
@@ -33,7 +32,7 @@ export default function Organization() {
   const fetchAllPosition = async () => {
     await fetchData({
       url: "/api/admin/organization/position",
-      showToast: showToast,
+      // showToast: showToast,
       onSuccess: (responseData) => {
         setPosition(responseData.position || []);
       },
@@ -45,7 +44,6 @@ export default function Organization() {
 
   useEffect(() => {
     fetchAllOffice();
-    fetchAllPosition();
   }, []);
 
   return (
@@ -67,7 +65,7 @@ export default function Organization() {
       <OrganizationNode
         initialOfficeData={office}
         initialPositionData={position}
-        isLoading={isLoading}
+        isOfficeLoading={isOfficeLoading}
       />
     </div>
   );

@@ -42,9 +42,14 @@ export default function OfficeDialogView({
 
           <div className="grid">
             <div className="col-12 lg:col-4">
-              <h2 className="mb-2">
-                {data?.name ? data.name : "Kantor belum diberi nama"}
-              </h2>
+              <div className="mb-2 border-bottom-1 border-gray-200">
+                <h2>
+                  {data?.name ? data.name : "Kantor belum diberi nama"}
+                </h2>
+                <p className="font-medium font-mono mb-2">
+                  {data?.office_code ? data.office_code : "-"}
+                </p>
+              </div>
               <div className="flex flex-column gap-4">
                 <div className="w-full text-base font-medium">
                   <span className="text-500">Alamat Lengkap</span>
@@ -75,7 +80,9 @@ export default function OfficeDialogView({
 
                 <div className="w-full text-base font-medium">
                   <span className="text-500">Deskripsi Kantor</span>
-                  <p className="bg-gray-100 p-2 border-round-lg">{data?.description ? data.description : "-"}</p>
+                  <p className="bg-gray-100 p-2 border-round-lg">
+                    {data?.description ? data.description : "-"}
+                  </p>
                 </div>
               </div>
             </div>

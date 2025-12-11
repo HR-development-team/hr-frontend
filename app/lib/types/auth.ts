@@ -10,8 +10,7 @@ export interface AuthUser {
 }
 
 export interface User extends GetEmployeeByIdData {
-  email: string;
-  role_code: string;
+  email: string | null;
 }
 
 export interface LoginResponse {
