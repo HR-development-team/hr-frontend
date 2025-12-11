@@ -23,8 +23,8 @@ export default function DepartmentDialogView({
           <span className="font-medium text-800">Detail Departemen</span>
         </div>
         <div className="grid">
-          <div className="col-12 flex justify-content-between border-bottom-1 border-gray-400 py-4">
-            <div className="text-base font-medium">
+          <div className="col-12 grid border-bottom-1 border-gray-400 py-4">
+            <div className="text-base font-medium col-12 md:col-6 ">
               <span className="text-500">Nama Kantor</span>
               <p>{data?.office_name ? data.office_name : "-"}</p>
               <p className="font-mono font-light py-1 px-2 bg-gray-50 border-round-xl max-w-min">
@@ -32,7 +32,7 @@ export default function DepartmentDialogView({
               </p>
             </div>
 
-            <div className="text-base font-medium">
+            <div className="text-base font-medium col-12 md:col-6">
               <span className="text-500">Nama Departemen</span>
               <p>{data?.name ? data.name : "-"}</p>
               <p className="font-mono font-light py-1 px-2 bg-gray-50 border-round-xl max-w-min">

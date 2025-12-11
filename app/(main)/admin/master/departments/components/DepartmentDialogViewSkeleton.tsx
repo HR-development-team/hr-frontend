@@ -11,13 +11,13 @@ export default function DepartmentDialogViewSkeleton() {
           <Skeleton className="w-10rem" />
         </div>
         <div className="grid">
-          <div className="col-12 flex justify-content-between border-bottom-1 border-gray-400 py-4">
-            <div className="flex flex-column gap-2">
+          <div className="col-12 grid border-bottom-1 border-gray-400 py-4">
+            <div className="col-12 md:col-6 flex flex-column gap-2">
               <Skeleton className="w-10rem" />
               <Skeleton className="w-8rem" />
             </div>
 
-            <div className="flex flex-column gap-2">
+            <div className="col-12 md:col-6 flex flex-column gap-2">
               <Skeleton className="w-10rem" />
               <Skeleton className="w-8rem" />
             </div>

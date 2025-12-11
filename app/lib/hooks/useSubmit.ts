@@ -41,7 +41,7 @@ export const useSubmit = () => {
         }
         await onSuccess(response);
 
-        return response
+        return response;
       } else {
         const msg = response.message || "Gagal menyimpan data";
 
