@@ -17,9 +17,8 @@ export const officeFormSchema = z.object({
     .max(180, "Longitude maksimal 180 derajat"),
   radius_meters: z
     .number()
-    .min(0, "Radius jarak harus berupa bilangan positif"),
-  // sort_order: z.number().positive("Harus berupa bilangan positif").nullable().optional(),
-  // description: z.string().nullable().optional()
+    .min(1, "Radius jarak harus berupa bilangan positif"),
+  description: z.string().nullable().optional()
 });
 
 export type OfficeFormData = z.infer<typeof officeFormSchema>;

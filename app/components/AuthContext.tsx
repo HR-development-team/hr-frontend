@@ -1,7 +1,9 @@
 "use client";
 
+import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
 import { LoginFormData } from "@/lib/schemas/loginFormSchema";
-import { AuthContextType, AuthUser, LoginResponse, User } from "@/lib/types/auth";
+import { AuthContextType, LoginResponse, User } from "@/lib/types/auth";
 import { GetEmployeeByIdData } from "@/lib/types/employee";
 import {
   createContext,
@@ -17,41 +19,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsloading] = useState(true);
 
+  const { fetchMultiple } = useFetch();
+  const { submitData } = useSubmit();
+
   const fetchUserData = async () => {
     try {
-      const meRes = await fetch("/api/auth/me");
-      const meData = await meRes.json();
+      await fetchMultiple({
+        urls: ["/api/auth/me", "/api/auth/profile"],
+        onSuccess: (resultArray) => {
+          const [meData, profileData] = resultArray;
 
-      if (!meData || meData.status !== "00" || !meData.users) {
-        throw new Error("Sesi tidak valid");
-      }
+          const profileUser: GetEmployeeByIdData = profileData.users;
 
-      const authData: AuthUser = meData.users;
+          if (meData && profileData) {
+            const fullUserData: User = {
+              ...profileUser,
 
-      // const userRes = await fetch(
-      //  `/api/admin/master/employee/${authData.employee_id}`
-      // );
+              email: meData.users.email,
+            };
 
-      const profileRes = await fetch("/api/auth/profile");
-      const profileData = await profileRes.json();
-      // const userData = await userRes.json();
-
-      if (!profileData || profileData.status !== "00" || !profileData.users) {
-        throw new Error("Profil karyawan tidak ditemukan atau data korup.");
-      }
-
-      const profileUser: GetEmployeeByIdData = profileData.users;
-
-      const fullUserData: User = {
-        ...profileUser,
-
-        email: authData.email,
-        role_code: authData.role_code,
-      };
-
-      setUser(fullUserData);
-    } catch (error: any) {
-      setUser(null);
+            setUser(fullUserData);
+          }
+        },
+        onError: () => {
+          console.log("Gagal mengambil data user");
+        },
+      });
+    } catch (error) {
+      console.log("Gagal mendapatkan data user:", error);
     } finally {
       setIsloading(false);
     }
@@ -59,35 +54,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (values: LoginFormData): Promise<LoginResponse> => {
     setIsloading(true);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
+    const result = await submitData({
+      url: "/api/auth/login",
+      payload: values,
+      method: "POST",
+      onSuccess: async (responseData: any) => {
+        if (responseData.meta && responseData.meta.role_mapping) {
+          localStorage.setItem(
+            "ROLE_MAP",
+            JSON.stringify(responseData.meta.role_mapping)
+          );
+        }
 
-      const responseData = await res.json();
+        await fetchUserData();
+      },
+    });
 
-      if (!res.ok) throw new Error(responseData.message || "Terjadi kesalahan");
-
-      console.log("Login success", responseData.message);
-
-      if (responseData.meta && responseData.meta.role_mapping) {
-        localStorage.setItem("ROLE_MAP", JSON.stringify(responseData.meta.role_mapping)) 
-      }
-
-      // const authUser: AuthUser = responseData.auth.user;
-
-      await fetchUserData();
-
-      return responseData as LoginResponse;
-    } catch (error: any) {
-      setUser(null);
-      setIsloading(false);
-      throw error;
-    }
+    return result as LoginResponse;
   };
 
   const logout = async () => {
@@ -100,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("Gagal untuk logout");
       }
 
-      localStorage.removeItem("ROLE_MAP")
+      localStorage.removeItem("ROLE_MAP");
     } catch (error: any) {
       console.error("Gagal untuk logout", error);
     } finally {
