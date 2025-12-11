@@ -14,6 +14,10 @@ export default function DashboardCalendar() {
   const [visible, setVisible] = useState<boolean>(false);
 
   useEffect(() => {
+<<<<<<< HEAD
+    // Setup Bahasa Indonesia untuk Kalender
+=======
+>>>>>>> b6c9a76a55b9a676ec370d1dc9b18cefd9bba566
     addLocale('id', {
         firstDayOfWeek: 1,
         dayNames: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
