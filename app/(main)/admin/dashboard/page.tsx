@@ -30,7 +30,6 @@ export default function Dashboard() {
   const fetchMetricData = async () => {
     await fetchData({
       url: "/api/admin/dashboard/metric",
-      toastRef: toastRef,
       onSuccess: (responseData) => {
         setMetric(responseData.master_employees);
       },
