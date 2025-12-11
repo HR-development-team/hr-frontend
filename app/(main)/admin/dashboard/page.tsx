@@ -10,7 +10,6 @@ import { Toast } from "primereact/toast";
 import { StatData } from "@/lib/types/statData";
 import { Skeleton } from "primereact/skeleton";
 import { useFetch } from "@/lib/hooks/useFetch";
-import { useToastContext } from "@/components/ToastProvider";
 
 const metricDefaultValues: StatData = {
   totalEmployee: 0,
@@ -28,12 +27,10 @@ export default function Dashboard() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const { isLoading: isMetricLoading, fetchData } = useFetch();
 
-  const {showToast} = useToastContext()
-
   const fetchMetricData = async () => {
     await fetchData({
       url: "/api/admin/dashboard/metric",
-      showToast: showToast,
+      toastRef: toastRef,
       onSuccess: (responseData) => {
         setMetric(responseData.master_employees);
       },
@@ -64,6 +61,9 @@ export default function Dashboard() {
 
   return (
     <>
+      <Toast ref={toastRef} />
+
+      {/* Header Section */}
       <div className="flex gap-3 align-items-center mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <LayoutDashboard className="h-2rem w-2rem" />
@@ -90,15 +90,32 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* GRID SYSTEM
+         Urutan komponen di sini menentukan urutan tampilan Mobile (atas ke bawah).
+         1. Stats (Atas)
+         2. Quick Actions (Tengah)
+         3. Calendar (Bawah)
+      */}
       <div className="grid">
-        <div className="col-12 md:col-6 flex-order-1 md:flex-order-3">
-          <DashboardCalendar />
-        </div>
-        <div className="col-12 flex-order-2 md:flex-order-1">
+        
+        {/* 1. STATS (Full Width) */}
+        <div className="col-12">
           <DashboardStats data={metric} isLoading={isMetricLoading} />
         </div>
-        <div className="col-12 md:col-6 flex-order-3 md:flex-order-2">
-          <QuickActions data={metric.totalLeaveRequest} />
+
+        {/* 2. QUICK ACTIONS (Kiri di Desktop, Tengah di Mobile) */}
+        <div className="col-12 md:col-6">
+          <div className="h-full">
+            <QuickActions data={metric.totalLeaveRequest} />
+          </div>
+        </div>
+
+        {/* 3. CALENDAR (Kanan di Desktop, Bawah di Mobile) */}
+        <div className="col-12 md:col-6">
+          <div className="h-full">
+            <DashboardCalendar />
+          </div>
         </div>
 
       </div>
