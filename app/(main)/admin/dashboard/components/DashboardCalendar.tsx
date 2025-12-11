@@ -6,8 +6,7 @@ import { Skeleton } from "primereact/skeleton";
 import { Dialog } from "primereact/dialog";
 import { Calendar } from "primereact/calendar";
 import { addLocale, locale } from "primereact/api";
-import { Button } from "primereact/button"; // Tombol close custom
-
+import { Button } from "primereact/button"; 
 import 'primeicons/primeicons.css'; 
 
 export default function DashboardCalendar() {
@@ -15,7 +14,6 @@ export default function DashboardCalendar() {
   const [visible, setVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    // Setup Locale Bahasa Indonesia
     addLocale('id', {
         firstDayOfWeek: 1,
         dayNames: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
@@ -28,6 +26,7 @@ export default function DashboardCalendar() {
     });
     locale('id');
 
+    // Jam Digital
     const timer = setInterval(() => {
       setDate(new Date());
     }, 1000);
@@ -53,10 +52,9 @@ export default function DashboardCalendar() {
     second: "2-digit",
   });
 
-  // Custom Header untuk Dialog agar lebih Clean
   const dialogHeader = (
     <div className="flex align-items-center justify-content-between w-full pt-2 px-2">
-        <span className="text-xl font-bold text-gray-800">Kalender Agenda</span>
+        <span className="text-lg font-bold text-gray-800">Kalender Agenda</span>
         <Button 
             icon="pi pi-times" 
             text 
@@ -76,11 +74,11 @@ export default function DashboardCalendar() {
             relative h-full overflow-hidden border-none border-round-2xl cursor-pointer 
             surface-card shadow-2 
             transition-all transition-duration-300 
-            hover:shadow-6 hover:-translate-y-1
+            hover:shadow-4 hover:-translate-y-1
         "
         onClick={() => setVisible(true)}
       >
-        {/* Latar Belakang Dekoratif (Gradient Mesh Halus) */}
+        {/* Background Mesh */}
         <div className="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none"
              style={{
                 background: `radial-gradient(circle at 100% 0%, #dbeafe 0%, transparent 50%), 
@@ -90,7 +88,7 @@ export default function DashboardCalendar() {
 
         {/* Icon Background */}
         <i className="pi pi-calendar absolute -bottom-4 -right-4 text-blue-500 opacity-10" 
-           style={{ fontSize: '10rem', transform: 'rotate(-15deg)' }}>
+           style={{ fontSize: '8rem', transform: 'rotate(-15deg)' }}>
         </i>
 
         {/* KONTEN UTAMA */}
@@ -98,27 +96,31 @@ export default function DashboardCalendar() {
           
           {/* Bagian Tanggal */}
           <div className="text-center">
-            <span className="inline-block px-3 py-1 mb-2 text-xs font-bold tracking-widest text-blue-600 uppercase bg-blue-50 border-round-pill">
+            {/* Hari (Badge) */}
+            <span className="inline-block px-2 py-1 mb-2 text-xs font-bold tracking-wider text-blue-600 uppercase bg-blue-50 border-round-md">
               {date.toLocaleDateString("id-ID", { weekday: "long" })}
             </span>
+
+            {/* Tanggal & Bulan */}
             <div className="flex align-items-center justify-content-center gap-2 text-gray-800">
-                <span className="text-5xl font-bold">{date.getDate()}</span>
+                <span className="text-4xl font-bold">{date.getDate()}</span>
                 <div className="flex flex-column align-items-start line-height-1">
-                    <span className="text-xl font-semibold">{date.toLocaleDateString("id-ID", { month: "long" })}</span>
-                    <span className="text-sm text-gray-500">{date.getFullYear()}</span>
+                    <span className="text-base font-semibold">{date.toLocaleDateString("id-ID", { month: "long" })}</span>
+                    <span className="text-xs text-gray-500">{date.getFullYear()}</span>
                 </div>
             </div>
           </div>
 
-          <div className="w-8 border-top-1 border-gray-100"></div>
+          {/* Garis Pembatas */}
+          <div className="w-6 border-top-1 border-gray-100"></div>
 
           {/* Bagian Jam */}
           <div className="text-center">
             <div className="flex align-items-baseline justify-content-center text-blue-600 line-height-1">
-                <span className="text-6xl font-bold tracking-tight">{timeString}</span>
-                <span className="text-2xl font-medium opacity-60 ml-1">{secondString}</span>
+                <span className="text-5xl font-bold tracking-tight">{timeString}</span>
+                <span className="text-lg font-medium opacity-60 ml-1">{secondString}</span>
             </div>
-            <p className="m-0 mt-2 text-xs text-gray-400 font-medium tracking-wide uppercase">
+            <p className="m-0 mt-2 text-xs text-gray-400 font-medium tracking-wide uppercase" style={{fontSize: '0.65rem'}}>
                 Waktu Indonesia Barat
             </p>
           </div>
@@ -129,40 +131,32 @@ export default function DashboardCalendar() {
       <Dialog 
         visible={visible} 
         onHide={() => setVisible(false)}
-        
-        // Style Layout
-        className="w-full md:w-auto" // Full width di mobile, auto di desktop
-        style={{ maxWidth: '90vw' }} // Mencegah overflow lebar layar
-        breakpoints={{ '960px': '75vw', '641px': '90vw' }} // Responsif di HP
-        
-        // Style Visual
-        showHeader={false} // Kita pakai custom header di dalam content
-        contentClassName="border-round-2xl shadow-none p-0 overflow-hidden" // Round corner, hapus padding default
-        maskClassName="backdrop-blur-sm bg-black-alpha-40" // Efek blur di background belakang popup
-        dismissableMask // Klik di luar untuk tutup
+        className="w-full md:w-auto"
+        style={{ maxWidth: '90vw' }}
+        breakpoints={{ '960px': '75vw', '641px': '90vw' }}
+        showHeader={false}
+        contentClassName="border-round-2xl shadow-none p-0 overflow-hidden"
+        maskClassName="backdrop-blur-sm bg-black-alpha-40"
+        dismissableMask
         modal
       >
-        {/* Container Isi Dialog */}
-        <div className="bg-white p-4">
+        <div className="bg-white p-3">
             {dialogHeader}
             
-            <div className="flex justify-content-center mt-3">
+            <div className="flex justify-content-center mt-2">
                 <Calendar 
                     value={date} 
                     onChange={(e) => setDate(e.value as Date)} 
                     inline 
                     locale="id"
-                    // Style Kalender agar Clean (tanpa border luar)
                     className="w-full border-none shadow-none"
-                    // Menggunakan PassThrough (pt) atau class bawaan PrimeFlex
                     panelClassName="border-none shadow-none w-full"
                 />
             </div>
 
-            {/* Tombol Aksi Bawah (Opsional) */}
-            <div className="border-top-1 border-gray-100 pt-3 mt-2 flex justify-content-end">
-                <Button label="Tutup" link onClick={() => setVisible(false)} size="small" />
-                <Button label="Hari Ini" size="small" onClick={() => setDate(new Date())} />
+            <div className="border-top-1 border-gray-100 pt-2 mt-2 flex justify-content-end">
+                <Button label="Tutup" link onClick={() => setVisible(false)} size="small" className="text-sm" />
+                <Button label="Hari Ini" size="small" className="text-sm" onClick={() => setDate(new Date())} />
             </div>
         </div>
       </Dialog>

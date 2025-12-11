@@ -71,7 +71,6 @@ export default function Position() {
   const fetchDepartment = async () => {
     await fetchData({
       url: "/api/admin/master/department",
-      showToast: showToast,
       onSuccess: (responseData) => {
         setDepartment(responseData.master_departments || []);
       },
