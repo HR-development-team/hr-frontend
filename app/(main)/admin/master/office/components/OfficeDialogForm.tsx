@@ -186,29 +186,9 @@ export default function OfficeDialogForm({
             getFieldError={getFieldError}
           />
         </div>
-
-        {/* <div className="col-12 md:col-6">
-          <FormInputNumber
-            props={{
-              value: formik.values.sort_order,
-              onValueChange: (e: InputNumberValueChangeEvent) => {
-                formik.setFieldValue("sort_order", e.value);
-              },
-              onBlur: formik.handleBlur,
-              min: -180,
-              max: 180,
-              maxFractionDigits: 8,
-            }}
-            fieldName={"sort_order"}
-            label="Urutan Pengurutan"
-            isFieldInvalid={isFieldInvalid}
-            getFieldError={getFieldError}
-            optional
-          />
-        </div> */}
       </div>
 
-      {/* <FormInputTextarea
+      <FormInputTextarea
         props={{
           ...formik.getFieldProps("description"),
           rows: 5,
@@ -218,7 +198,7 @@ export default function OfficeDialogForm({
         isFieldInvalid={isFieldInvalid}
         getFieldError={getFieldError}
         optional
-      /> */}
+      />
 
       <div className="flex justify-content-end mt-4">
         <Button
