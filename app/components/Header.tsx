@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef } from "react";
 import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
 import { Menu } from "primereact/menu";
 import { classNames } from "primereact/utils";
 import { MenuItem } from "primereact/menuitem";
 import { useRouter } from "next/navigation";
-import { Toast } from "primereact/toast";
 import { useAuth } from "@/components/AuthContext";
 import { Skeleton } from "primereact/skeleton";
+import { useToastContext } from "./ToastProvider";
+import Image from "next/image";
 
 const getMenuitems = (logoutHandler: () => void): MenuItem[] => [
   {
@@ -57,21 +58,21 @@ interface HeaderProps {
 
 export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
   const menu = useRef<Menu>(null);
-  const toast = useRef<Toast>(null);
   const router = useRouter();
 
   const { user, isLoading, logout } = useAuth();
+
+  const { showToast } = useToastContext();
 
   const handleLogout = async () => {
     try {
       await logout();
 
-      toast.current?.show({
-        severity: "success",
-        summary: "Berhasil Logout",
-        detail: "Logout berhasil. Sesi telah diakhiri",
-        life: 3000,
-      });
+      showToast(
+        "success",
+        "Berhasil Logout",
+        "Logout berhasil. Sesi telah diakhiri"
+      );
 
       router.refresh();
 
@@ -81,12 +82,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
     } catch (error: any) {
       console.error("Gagal untuk logout", error);
 
-      toast.current?.show({
-        severity: "error",
-        summary: "Gagal Logout",
-        detail: "Terjadi kesalahan",
-        life: 3000,
-      });
+      showToast("error", "Gagal Logout", "Terjadi kesalahan sistem");
     }
   };
 
@@ -108,13 +104,8 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
     return initialName || <i className="pi pi-exclamation-circle"></i>;
   };
 
-  // if (!isLoading && !user) {
-  // 	return null;
-  // }
-
   return (
     <header className="fixed top-0 z-5 w-full bg-white shadow-1 border-b py-2">
-      <Toast ref={toast} />
       <div className="px-4 md:px-6">
         <div className="flex justify-content-between align-items-center h-16">
           <div className="flex gap-2 md:gap-4 align-items-center">
@@ -125,28 +116,18 @@ export default function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
               text
             />
             <div className="surface-50 p-2 border-round-lg">
-              <img
+              <Image
                 src="/img/logo.png"
                 alt="logo"
-                className="w-2rem md:w-3rem"
+                className="w-2rem md:w-3rem h-auto"
+                width={0}
+                height={0}
+                sizes="100vw"
               />
             </div>
-            <div className="flex flex-column gap-1">
-              <h1 className="text-sm md:text-lg font-bold text-800">
-                HR Marstech
-              </h1>
-              {isLoading ? (
-                <Skeleton width="5rem" height="0.8rem" />
-              ) : (
-                <p className="text-500 text-xs md:text-sm">
-                  {user?.role === "admin"
-                    ? "Admin"
-                    : user?.role === "employee"
-                      ? "Karyawan"
-                      : "Admin"}
-                </p>
-              )}
-            </div>
+            <h1 className="text-sm md:text-lg font-bold text-800">
+              HR Marstech
+            </h1>
           </div>
           <div>
             <Menu

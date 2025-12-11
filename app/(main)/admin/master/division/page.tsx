@@ -8,7 +8,6 @@ import InputTextComponent from "@/components/Input";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { Toast } from "primereact/toast";
 import { GetAllDivisionData, GetDivisionByIdData } from "@/lib/types/division";
 import DivisionDialogForm from "./components/DivisionDialogForm";
 import DivisionDialogView from "./components/DivisionDialogView";
@@ -16,10 +15,11 @@ import DataTableDivision from "./components/DataTableDivision";
 import { DivisionFormData } from "@/lib/schemas/divisionFormSchema";
 import { GetAllDepartmentData } from "@/lib/types/department";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function Position() {
-  const toastRef = useRef<Toast>(null);
-
   const [department, setDepartment] = useState<GetAllDepartmentData[]>([]);
   const [division, setDivision] = useState<GetAllDivisionData[]>([]);
   const [viewDivision, setViewDivision] = useState<GetDivisionByIdData | null>(
@@ -29,7 +29,6 @@ export default function Position() {
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -39,11 +38,15 @@ export default function Position() {
   >(null);
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete()
+
+  const {showToast} = useToastContext()
 
   const fetchAllDivision = async () => {
     await fetchData({
       url: "/api/admin/master/division",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setDivision(responseData.master_divisions || []);
       },
@@ -68,7 +71,7 @@ export default function Position() {
   const fetchDepartment = async () => {
     await fetchData({
       url: "/api/admin/master/department",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setDepartment(responseData.master_departments || []);
       },
@@ -91,10 +94,6 @@ export default function Position() {
   }, [viewDivision]);
 
   const handleSubmit = async (formData: DivisionFormData) => {
-    setIsSaving(true);
-
-    const {} = formData;
-
     const url =
       dialogMode === "edit"
         ? `/api/admin/master/division/${currentEditedId}`
@@ -102,45 +101,18 @@ export default function Position() {
 
     const method = dialogMode === "edit" ? "PUT" : "POST";
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(formData),
-      });
-
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
-        fetchAllDivision();
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: response.error[0].message || "Gagal menyimpan data divisi",
-          life: 3000,
-        });
-      }
-
-      fetchAllDivision();
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: "Terjadi kesalahan koneksi",
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    await submitData({
+      url: url,
+      payload: formData,
+      showToast: showToast,
+      onSuccess: () => {
+          fetchAllDivision();
+          setDialogMode(null);
+          setIsDialogVisible(false);
+          setCurrentEditedId(null);
+      },
+      method: method
+    });
   };
 
   const handleView = (division: GetAllDivisionData) => {
@@ -167,36 +139,11 @@ export default function Position() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(`/api/admin/master/division/${division.id}`, {
-            method: "DELETE",
-          });
-
-          const responseData = await res.json();
-
-          if (!res.ok)
-            throw new Error(
-              responseData.message || "Gagal menghapus data divisi"
-            );
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllDivision();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url:`/api/admin/master/division/${division.id}`,
+          onSuccess: () => fetchAllDivision(),
+          showToast: showToast
+        })
       },
     });
   };
@@ -208,7 +155,6 @@ export default function Position() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <GitFork className="w-2rem h-2rem" />

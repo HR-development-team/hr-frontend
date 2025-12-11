@@ -14,6 +14,7 @@ import { Button } from "primereact/button";
 export default function AttendanceSessionDialogForm({
   sessionData,
   onSubmit,
+  isSubmitting
 }: AttendanceSessionFormProps) {
   const formik = useFormik<AttendanceSessionFormData>({
     initialValues: sessionData || AttendanceSessioFormDefaultValues,
@@ -134,6 +135,7 @@ export default function AttendanceSessionDialogForm({
           label="Simpan"
           icon="pi pi-save"
           severity="success"
+          loading={isSubmitting}
           pt={{
             icon: {
               className: "mr-2",

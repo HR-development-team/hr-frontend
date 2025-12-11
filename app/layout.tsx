@@ -3,6 +3,7 @@ import { Inter, Roboto_Mono } from "next/font/google";
 import { ClientOnlyTopLoader } from "@/components/ClientOnlyTopLoader";
 import { PrimeReactProvider } from "primereact/api";
 import { AuthProvider } from "@/components/AuthContext";
+import ToastProvider from "./components/ToastProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,7 +29,8 @@ export default function RootLayout({
         <PrimeReactProvider>
           <ClientOnlyTopLoader />
           <body className={`${inter.className} ${robotoMono.variable}`}>
-            {children}
+            <ToastProvider>{children}</ToastProvider>
+            {/* {children} */}
           </body>
         </PrimeReactProvider>
       </AuthProvider>

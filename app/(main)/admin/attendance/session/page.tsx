@@ -19,6 +19,9 @@ import { Dialog } from "primereact/dialog";
 import AttendanceSessionDialogForm from "./components/AttendanceSessionDialogForm";
 import { formatDateToYYYYMMDD, formatTime } from "@/lib/utils/dateFormat";
 import AttendanceSessionDialogView from "./components/AttendanceSessionDialogView";
+import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
 
 export default function AttendanceSession() {
   const toastRef = useRef<Toast>(null);
@@ -32,9 +35,7 @@ export default function AttendanceSession() {
 
   const [currentEditedId, setCurrentEditedId] = useState<number | null>(null);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -43,60 +44,33 @@ export default function AttendanceSession() {
     "Lihat Sesi" | "Edit Sesi" | "Tambah Sesi" | null
   >(null);
 
+  const { isLoading, fetchData, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete();
+
   const fetchAllSessions = async () => {
-    setIsLoading(true);
-
-    try {
-      const res = await fetch("/api/admin/attendance/session");
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        if (isInitialLoad.current) {
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: response.message,
-            life: 3000,
-          });
-          isInitialLoad.current = false;
-        }
-        setAttendanceSessions(response.attendance_sessions || []);
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: response.message,
-          life: 3000,
-        });
+    await fetchData({
+      url: "/api/admin/attendance/session",
+      toastRef: toastRef,
+      onSuccess: (responseData) => {
+        setAttendanceSessions(responseData.attendance_sessions || []);
+      },
+      onError: () => {
         setAttendanceSessions([]);
-      }
-    } catch (error: any) {
-      console.log(error);
-      setAttendanceSessions([]);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
 
   const fetchSessionById = async (id: number) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/admin/attendance/session/${id}`);
-      if (!res.ok) {
-        throw new Error("Gagal mendapatkan data sesi berdasarkan id");
-      }
-
-      const responseData = await res.json();
-
-      if (responseData && responseData.status === "00") {
+    await fetchDataById({
+      url: `/api/admin/attendance/session/${id}`,
+      onSuccess: (responseData) => {
         setViewSession(responseData.attendance_sessions || null);
-      }
-    } catch (error: any) {
-      console.log(error);
-      setViewSession(null);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: () => {
+        setViewSession(null);
+      },
+    });
   };
 
   const cleanSessionData = useMemo(() => {
@@ -113,9 +87,6 @@ export default function AttendanceSession() {
   }, [viewSession]);
 
   const handleSubmit = async (formData: AttendanceSessionFormData) => {
-    setIsSaving(true);
-    setIsLoading(true);
-
     const payload = {
       ...formData,
       date: formData.date ? formatDateToYYYYMMDD(formData.date) : null,
@@ -134,45 +105,18 @@ export default function AttendanceSession() {
         ? "/api/admin/attendance/session"
         : `/api/admin/attendance/session/${currentEditedId}`;
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(payload),
-      });
-
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
+    await submitData({
+      url: url,
+      payload: payload,
+      toastRef: toastRef,
+      onSuccess: () => {
         fetchAllSessions();
-      } else {
-        console.log(response);
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail: response[0]?.message || "Gagal menyimpan data sesi absensi",
-          life: 3000,
-        });
-      }
-
-      fetchAllSessions();
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentEditedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Gagal",
-        detail: error.message,
-        life: 3000,
-      });
-      throw error;
-    }
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
+      },
+      method: method,
+    });
   };
 
   const handleView = (session: GetAllAttendanceSessionData) => {
@@ -199,40 +143,14 @@ export default function AttendanceSession() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(
-            `/api/admin/attendance/session/${session.id}/status`,
-            {
-              method: "PUT",
-            }
-          );
-
-          const responseData = await res.json();
-
-          if (!res.ok) {
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-          }
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Sesi berhasil ditutup",
-            life: 3000,
-          });
-
-          fetchAllSessions();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await submitData({
+          url: `/api/admin/attendance/session/${session.id}/status`,
+          toastRef: toastRef,
+          onSuccess: () => {
+            fetchAllSessions();
+          },
+          method: "PUT",
+        });
       },
     });
   };
@@ -246,40 +164,13 @@ export default function AttendanceSession() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(
-            `/api/admin/attendance/session/${session.id}`,
-            {
-              method: "DELETE",
-            }
-          );
-
-          const responseData = await res.json();
-
-          if (!res.ok) {
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-          }
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllSessions();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        } finally {
-          setCurrentEditedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/attendance/session/${session.id}`,
+          onSuccess: () => {
+            fetchAllSessions();
+          },
+          toastRef: toastRef,
+        });
       },
     });
   };

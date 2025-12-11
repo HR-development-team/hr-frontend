@@ -10,7 +10,6 @@ import EmployeeDialogForm from "./components/EmployeeDialogForm";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
-import { Toast } from "primereact/toast";
 import EmployeeDialogView from "./components/EmployeeDialogView";
 import { GetAllEmployeeData, GetEmployeeByIdData } from "@/lib/types/employee";
 import { GetAllPositionData } from "@/lib/types/position";
@@ -19,13 +18,14 @@ import { format } from "date-fns";
 import { GetAllUserData } from "@/lib/types/user";
 import { GetAllOfficeData } from "@/lib/types/office";
 import { useFetch } from "@/lib/hooks/useFetch";
+import { useSubmit } from "@/lib/hooks/useSubmit";
+import { useDelete } from "@/lib/hooks/useDelete";
+import { useToastContext } from "@/components/ToastProvider";
 
 export default function Employees() {
-  const toastRef = useRef<Toast>(null);
   const isInitialLoad = useRef<boolean>(true);
 
   const [office, setOffice] = useState<GetAllOfficeData[]>([]);
-
   const [allEmployee, setAllEmployee] = useState<GetAllEmployeeData[]>([]);
   const [viewEmployee, setViewEmployee] = useState<GetEmployeeByIdData | null>(
     null
@@ -39,7 +39,6 @@ export default function Employees() {
   );
 
   const [isDialogVisible, setIsDialogVisible] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [dialogMode, setDialogMode] = useState<"view" | "add" | "edit" | null>(
     null
@@ -49,11 +48,15 @@ export default function Employees() {
   >(null);
 
   const { isLoading, fetchData, fetchMultiple, fetchDataById } = useFetch();
+  const { isSaving, submitData } = useSubmit();
+  const deleteData = useDelete();
+
+  const { showToast } = useToastContext();
 
   const fetchAllEmployee = async () => {
     await fetchData({
       url: "/api/admin/master/employee",
-      toastRef: toastRef,
+      showToast: showToast,
       onSuccess: (responseData) => {
         setAllEmployee(responseData.master_employees || []);
       },
@@ -82,8 +85,8 @@ export default function Employees() {
         "/api/admin/master/position",
         "/api/admin/master/user",
       ],
-      onSuccess: (resulArray) => {
-        const [officeData, positionData, userData] = resulArray;
+      onSuccess: (resultArray) => {
+        const [officeData, positionData, userData] = resultArray;
         setOffice(officeData.master_offices || []);
         setPosition(positionData.master_positions || []);
         setUser(userData.users || []);
@@ -131,8 +134,6 @@ export default function Employees() {
   }, [viewEmployee]);
 
   const handleSubmit = async (formData: EmployeeFormData) => {
-    setIsSaving(true);
-
     const { join_date, contact_phone, birth_date, ...restOfValues } = formData;
 
     const formattedBirthDate = birth_date
@@ -157,46 +158,18 @@ export default function Employees() {
 
     const method = dialogMode === "edit" ? "PUT" : "POST";
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        body: JSON.stringify(payload),
-      });
-
-      const response = await res.json();
-
-      if (response && response.status === "00") {
-        toastRef.current?.show({
-          severity: "success",
-          summary: "Sukses",
-          detail: response.message,
-          life: 3000,
-        });
+    await submitData({
+      url: url,
+      payload: payload,
+      showToast: showToast,
+      onSuccess: () => {
         fetchAllEmployee();
-      } else {
-        toastRef.current?.show({
-          severity: "error",
-          summary: "Gagal",
-          detail:
-            response?.errors?.[0]?.message || "Gagal menyimpan data karyawan",
-          life: 3000,
-        });
-      }
-
-      fetchAllEmployee();
-      setDialogMode(null);
-      setIsDialogVisible(false);
-      setCurrentSelectedId(null);
-    } catch (error: any) {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error,
-        life: 3000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentSelectedId(null);
+      },
+      method: method,
+    });
   };
 
   const handleView = (employee: GetAllEmployeeData) => {
@@ -223,36 +196,11 @@ export default function Employees() {
       rejectLabel: "Batal",
       acceptClassName: "p-button-danger",
       accept: async () => {
-        try {
-          const res = await fetch(`/api/admin/master/employee/${employee.id}`, {
-            method: "DELETE",
-          });
-
-          const responseData = await res.json();
-
-          if (!res.ok)
-            throw new Error(
-              responseData.message || "Terjadi kesalahan koneksi"
-            );
-
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sukses",
-            detail: responseData.message || "Data berhasil dihapus",
-            life: 3000,
-          });
-
-          fetchAllEmployee();
-        } catch (error: any) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Gagal",
-            detail: error.message,
-            life: 3000,
-          });
-        } finally {
-          setCurrentSelectedId(null);
-        }
+        await deleteData({
+          url: `/api/admin/master/employee/${employee.id}`,
+          onSuccess: () => fetchAllEmployee(),
+          showToast: showToast,
+        });
       },
     });
   };
@@ -264,7 +212,6 @@ export default function Employees() {
 
   return (
     <div>
-      <Toast ref={toastRef} />
       <div className="mb-6 flex align-items-center gap-3 mt-4">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <Users className="w-2rem h-2rem" />
