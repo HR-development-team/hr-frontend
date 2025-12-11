@@ -21,6 +21,7 @@ import { GetAllOfficeData } from "@/lib/types/office";
 import { useSubmit } from "@/lib/hooks/useSubmit";
 import { useDelete } from "@/lib/hooks/useDelete";
 import { useToastContext } from "@/components/ToastProvider";
+import { FormikHelpers } from "formik";
 
 export default function Department() {
   const isInitialLoad = useRef<boolean>(true);
@@ -46,7 +47,7 @@ export default function Department() {
   const { isSaving, submitData } = useSubmit();
   const deleteData = useDelete();
 
-  const {showToast} = useToastContext()
+  const { showToast } = useToastContext();
 
   const fetchAllDepartment = async () => {
     await fetchData({
@@ -65,7 +66,7 @@ export default function Department() {
     await fetchDataById({
       url: `/api/admin/master/department/${id}`,
       onSuccess: (responseData) => {
-        setViewDepartment(responseData.master_departments || null);
+        setViewDepartment(responseData.departments || null);
       },
       onError: () => {
         setViewDepartment(null);
@@ -81,7 +82,7 @@ export default function Department() {
         urls: ["/api/admin/master/office"],
         onSuccess: (resultArray) => {
           const [officeData] = resultArray;
-          setOffice(officeData.master_offices || []);
+          setOffice(officeData.offices || []);
         },
         onError: () => {
           setOffice([]);
@@ -94,7 +95,9 @@ export default function Department() {
     isInitialLoad.current = false;
   };
 
-  const handleSubmit = async (formData: DepartementFormData) => {
+  const handleSubmit = async (
+    formData: DepartementFormData,
+  ) => {
     const method = dialogMode === "add" ? "POST" : "PUT";
 
     const url =
@@ -242,6 +245,7 @@ export default function Department() {
                 <Button
                   icon="pi pi-plus"
                   label="Tambah"
+                  severity="info"
                   pt={{
                     icon: { className: "mr-2" },
                   }}

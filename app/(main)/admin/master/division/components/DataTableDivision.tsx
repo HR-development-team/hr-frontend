@@ -37,6 +37,11 @@ export default function DataTableDivision({
         style={{ width: "25%" }}
       />
       <Column
+        field="department_name"
+        header="Nama Departemen"
+        style={{ width: "25%" }}
+      />
+      <Column
         header="Aksi"
         body={(row: GetAllDivisionData) => (
           <div className="flex gap-2">

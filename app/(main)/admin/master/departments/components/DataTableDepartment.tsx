@@ -32,6 +32,7 @@ export default function DataTableDepartment({
     >
       <Column field="department_code" header="Kode" style={{ width: "25%" }} />
       <Column field="name" header="Nama Departemen" style={{ width: "25%" }} />
+      <Column field="office_name" header="Nama Kantor Cabang" style={{ width: "25%" }} />
       <Column
         header="Aksi"
         body={(row: GetAllDepartmentData) => (
@@ -40,6 +41,7 @@ export default function DataTableDepartment({
               icon="pi pi-eye text-sm"
               size="small"
               severity="success"
+              tooltip="Lihat Detail"
               onClick={() => {
                 onView(row);
               }}
@@ -49,6 +51,7 @@ export default function DataTableDepartment({
               icon="pi pi-pencil text-sm"
               size="small"
               severity="warning"
+              tooltip="Edit Data"
               onClick={() => {
                 onEdit(row);
               }}
@@ -58,6 +61,7 @@ export default function DataTableDepartment({
               icon="pi pi-trash text-sm"
               size="small"
               severity="danger"
+              tooltip="Hapus Data"
               onClick={() => {
                 onDelete(row);
               }}
