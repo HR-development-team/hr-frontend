@@ -5,6 +5,7 @@ import {
   FileText,
   LayoutDashboard,
   MonitorCheck,
+  OrigamiIcon,
   PiggyBank,
   PiIcon,
   Users,
@@ -17,7 +18,8 @@ import { Accordion, AccordionTab } from "primereact/accordion";
 import { ReactNode, useState } from "react";
 import { idText } from "typescript";
 import Attendance from "../../admin/attendance/page";
-import { FaUser, FaUserCheck } from "react-icons/fa";
+import { FaSitemap, FaUser, FaUserCheck } from "react-icons/fa";
+import { Orbit } from "next/font/google";
 
 interface ChildrenMenuItems {
   label: string;
@@ -77,6 +79,12 @@ const menuItems: MenuItems[] = [
     label: "Pembayaran",
     icon: <WalletIcon />,
     href: "/karyawan/Pembayaran",
+  },
+    {
+    id: "payrol",
+    label: "Struktur Organisasi",
+    icon: <FaSitemap/>,
+    href: "/karyawan/Organisasi",
   },
 ];
 

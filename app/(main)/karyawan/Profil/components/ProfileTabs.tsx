@@ -6,8 +6,6 @@ import { Dropdown } from "primereact/dropdown";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 // IMPORT DIPERBARUI
 import { UserProfile, OfficeInfo } from "@/lib/types/profil";
-
-// Import komponen-komponen kecil yang sudah dipecah
 import TabBasicInfo from "./TabBasicInfo";
 import TabJobInfo from "./TabJobInfo";
 import TabPersonalInfo from "./TabPersonalInfo";
