@@ -4,7 +4,7 @@ import { Building } from "lucide-react";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
-import InputTextComponent from "@/components/Input";
+import InputTextComponent from "@components/InputTextComponent";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DepartementFormData } from "@/lib/schemas/departmentFormSchema";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
@@ -95,9 +95,7 @@ export default function Department() {
     isInitialLoad.current = false;
   };
 
-  const handleSubmit = async (
-    formData: DepartementFormData,
-  ) => {
+  const handleSubmit = async (formData: DepartementFormData) => {
     const method = dialogMode === "add" ? "POST" : "PUT";
 
     const url =

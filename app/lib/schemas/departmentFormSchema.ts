@@ -6,7 +6,7 @@ export const departmentFormSchema = z.object({
     .string()
     .nonempty("Nama departemen wajib diisi")
     .min(3, "Nama departemen minimal 3 karakter"),
-  description: z.string().optional(),
+  description: z.string().optional().nullable(),
 });
 
 export type DepartementFormData = z.infer<typeof departmentFormSchema>;

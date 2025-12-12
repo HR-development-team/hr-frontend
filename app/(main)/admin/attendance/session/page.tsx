@@ -7,7 +7,7 @@ import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Toast } from "primereact/toast";
 import { useEffect, useMemo, useRef, useState } from "react";
-import InputTextComponent from "@/components/Input";
+import InputTextComponent from "@components/InputTextComponent";
 import DataTableSession from "./components/DataTableSession";
 import {
   GetAllAttendanceSessionData,
@@ -51,7 +51,7 @@ export default function AttendanceSession() {
   const fetchAllSessions = async () => {
     await fetchData({
       url: "/api/admin/attendance/session",
-      toastRef: toastRef,
+      // toastRef: toastRef,
       onSuccess: (responseData) => {
         setAttendanceSessions(responseData.attendance_sessions || []);
       },
@@ -108,7 +108,7 @@ export default function AttendanceSession() {
     await submitData({
       url: url,
       payload: payload,
-      toastRef: toastRef,
+      // toastRef: toastRef,
       onSuccess: () => {
         fetchAllSessions();
         setDialogMode(null);
@@ -145,7 +145,7 @@ export default function AttendanceSession() {
       accept: async () => {
         await submitData({
           url: `/api/admin/attendance/session/${session.id}/status`,
-          toastRef: toastRef,
+          // toastRef: toastRef,
           onSuccess: () => {
             fetchAllSessions();
           },
@@ -169,7 +169,7 @@ export default function AttendanceSession() {
           onSuccess: () => {
             fetchAllSessions();
           },
-          toastRef: toastRef,
+          // toastRef: toastRef,
         });
       },
     });

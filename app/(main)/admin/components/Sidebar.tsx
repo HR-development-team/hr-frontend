@@ -117,7 +117,7 @@ const menuItems: MenuItems[] = [
       },
       {
         label: "Role & Permissions",
-        href: "/admin/management/role-permission",
+        href: "/admin/management/roles",
       },
     ],
   },

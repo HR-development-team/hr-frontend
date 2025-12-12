@@ -1,7 +1,7 @@
 import { PositionStructure } from "@/lib/types/organization";
 import { NextResponse } from "next/server";
 
-export const positionDummyData: PositionStructure[] = [
+const positionDummyData: PositionStructure[] = [
   {
     id: 1,
     position_code: "JBT-HQ-001",

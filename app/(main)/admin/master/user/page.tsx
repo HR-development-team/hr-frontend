@@ -4,7 +4,7 @@ import { User } from "lucide-react";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
-import InputTextComponent from "@/components/Input";
+import InputTextComponent from "@components/InputTextComponent";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
@@ -39,9 +39,9 @@ export default function UserPage() {
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
   const { isSaving, submitData } = useSubmit();
-  const deleteData = useDelete()
+  const deleteData = useDelete();
 
-  const {showToast} = useToastContext()
+  const { showToast } = useToastContext();
 
   const fetchAllUserData = async () => {
     await fetchData({
@@ -134,8 +134,8 @@ export default function UserPage() {
         await deleteData({
           url: `/api/admin/master/user/${user.id}`,
           onSuccess: () => fetchAllUserData(),
-          showToast: showToast
-        })
+          showToast: showToast,
+        });
       },
     });
   };

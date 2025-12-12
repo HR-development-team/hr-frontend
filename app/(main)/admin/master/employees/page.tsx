@@ -5,7 +5,7 @@ import { Card } from "primereact/card";
 import DataTableEmployees from "./components/DataTableEmployees";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
-import InputTextComponent from "@/components/Input";
+import InputTextComponent from "@components/InputTextComponent";
 import EmployeeDialogForm from "./components/EmployeeDialogForm";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";

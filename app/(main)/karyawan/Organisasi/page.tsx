@@ -19,7 +19,7 @@ export default function Organization() {
   const fetchAllOffice = async () => {
     await fetchData({
       url: "/api/admin/organization/office",
-      toastRef: toastRef,
+      // toastRef: toastRef,
       onSuccess: (responseData) => {
         setOffice(responseData.offices || []);
       },
@@ -32,7 +32,7 @@ export default function Organization() {
   const fetchAllPosition = async () => {
     await fetchData({
       url: "/api/admin/organization/position",
-      toastRef: toastRef,
+      // toastRef: toastRef,
       onSuccess: (responseData) => {
         setPosition(responseData.position || []);
       },

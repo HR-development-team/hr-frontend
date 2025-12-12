@@ -4,7 +4,7 @@ import { GitFork } from "lucide-react";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
-import InputTextComponent from "@/components/Input";
+import InputTextComponent from "@components/InputTextComponent";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
@@ -39,9 +39,9 @@ export default function Position() {
 
   const { isLoading, fetchData, fetchDataById } = useFetch();
   const { isSaving, submitData } = useSubmit();
-  const deleteData = useDelete()
+  const deleteData = useDelete();
 
-  const {showToast} = useToastContext()
+  const { showToast } = useToastContext();
 
   const fetchAllDivision = async () => {
     await fetchData({
@@ -105,12 +105,12 @@ export default function Position() {
       payload: formData,
       showToast: showToast,
       onSuccess: () => {
-          fetchAllDivision();
-          setDialogMode(null);
-          setIsDialogVisible(false);
-          setCurrentEditedId(null);
+        fetchAllDivision();
+        setDialogMode(null);
+        setIsDialogVisible(false);
+        setCurrentEditedId(null);
       },
-      method: method
+      method: method,
     });
   };
 
@@ -139,10 +139,10 @@ export default function Position() {
       acceptClassName: "p-button-danger",
       accept: async () => {
         await deleteData({
-          url:`/api/admin/master/division/${division.id}`,
+          url: `/api/admin/master/division/${division.id}`,
           onSuccess: () => fetchAllDivision(),
-          showToast: showToast
-        })
+          showToast: showToast,
+        });
       },
     });
   };

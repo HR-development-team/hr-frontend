@@ -4,7 +4,7 @@ import { TicketsPlane } from "lucide-react";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Button } from "primereact/button";
-import InputTextComponent from "@/components/Input";
+import InputTextComponent from "@components/InputTextComponent";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
@@ -43,7 +43,7 @@ export default function LeaveType() {
   const { isSaving, submitData } = useSubmit();
   const deleteData = useDelete();
 
-  const {showToast} = useToastContext()
+  const { showToast } = useToastContext();
 
   const fetchLeaveType = async () => {
     await fetchData({

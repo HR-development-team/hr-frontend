@@ -33,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           if (meData && profileData) {
             const fullUserData: User = {
+              role_code: meData.users.role_code,
               ...profileUser,
 
               email: meData.users.email,

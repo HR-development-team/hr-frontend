@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { API_ENDPOINTS } from "@/api/api";
 import { getAuthToken } from "@/lib/utils/authUtils";
 import { Axios } from "@/lib/utils/axios";
@@ -6,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 interface paramsProp {
   params: {
     roleCode: string;
+    id: string;
   };
 }
 

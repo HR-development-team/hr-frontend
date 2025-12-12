@@ -1,4 +1,4 @@
-import InputTextComponent from "@/components/Input";
+import InputTextComponent from "@components/InputTextComponent";
 import { ClockFading } from "lucide-react";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
@@ -85,12 +85,12 @@ export default function Shift() {
                   pt={{
                     icon: { className: "mr-2" },
                   }}
-                //   onClick={() => {
-                //     setDialogMode("add");
-                //     setDialogLabel("Tambah Tipe Cuti");
-                //     setCurrentEditedId(null);
-                //     setIsDialogVisible(true);
-                //   }}
+                  //   onClick={() => {
+                  //     setDialogMode("add");
+                  //     setDialogLabel("Tambah Tipe Cuti");
+                  //     setCurrentEditedId(null);
+                  //     setIsDialogVisible(true);
+                  //   }}
                 />
               </div>
             </div>
