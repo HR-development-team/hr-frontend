@@ -15,22 +15,21 @@ export function usePageUser() {
 
   const { users, user, fetchUsers, fetchUserById, isLoading } = useFetchUser();
 
-  const refreshData = useCallback(() => {
-    fetchUsers(false, filter.queryParams);
-  }, [fetchUsers, filter.queryParams]);
+  const refreshData = useCallback(
+    (showToast: boolean = false) => {
+      fetchUsers(showToast, filter.queryParams);
+    },
+    [fetchUsers, filter.queryParams]
+  );
 
   const { saveUser, isSaving } = useSaveUser(() => {
     dialog.close();
-    refreshData();
+    refreshData(false);
   });
 
   const deleteAction = useDeleteUser(() => {
-    refreshData();
+    refreshData(false);
   });
-
-  useEffect(() => {
-    refreshData();
-  }, [refreshData]);
 
   const handleSave = async (values: UserFormData) => {
     await saveUser(values, dialog.currentUser?.id);
@@ -41,6 +40,9 @@ export function usePageUser() {
     await fetchUserById(row.id);
   };
 
+  useEffect(() => {
+    refreshData(true);
+  }, [refreshData]);
   return {
     // Data & Status
     users,

@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { API_ENDPOINTS } from "@/api/api";
-import { getAuthToken } from "@/lib/utils/authUtils";
-import { Axios } from "@/lib/utils/axios";
+import { getAuthToken } from "@features/auth/utils/authUtils";
+import { Axios } from "@/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
 
 const tokenAvailable = (token: string | null) => {
@@ -14,7 +16,7 @@ const tokenAvailable = (token: string | null) => {
   return null;
 };
 
-export const GET = async (request: NextRequest) => {
+export const GET = async () => {
   const token = getAuthToken();
 
   const unauthorizedResponse = tokenAvailable(token);

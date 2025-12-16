@@ -5,15 +5,15 @@ import { TabView, TabPanel } from "primereact/tabview";
 import { Dropdown } from "primereact/dropdown";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 // IMPORT DIPERBARUI
-import { UserProfile, OfficeInfo } from "@/lib/types/profil";
+// import { UserProfile, OfficeInfo } from "@/lib/types/profil";
 import TabBasicInfo from "./TabBasicInfo";
 import TabJobInfo from "./TabJobInfo";
 import TabPersonalInfo from "./TabPersonalInfo";
 import TabFinancialInfo from "./TabFinancialInfo";
 
 interface ProfileTabsProps {
-  profile: UserProfile;
-  officeInfo: OfficeInfo;
+  // profile: UserProfile;
+  // officeInfo: OfficeInfo;
   activeIndex: number;
   setActiveIndex: (index: number) => void;
   isEditMode: boolean;
@@ -28,8 +28,8 @@ interface ProfileTabsProps {
 }
 
 export default function ProfileTabs({
-  profile,
-  officeInfo,
+  // profile,
+  // officeInfo,
   activeIndex,
   setActiveIndex,
   isEditMode,
@@ -50,33 +50,33 @@ export default function ProfileTabs({
   ];
 
   // Logic rendering berdasarkan Active Index
-  const renderTabContent = () => {
-    switch (activeIndex) {
-      case 0:
-        return (
-          <TabBasicInfo
-            profile={profile}
-            isEditMode={isEditMode}
-            isSubmitting={isSubmitting}
-            handleEdit={handleEdit}
-            handleCancel={handleCancel}
-            handleSave={handleSave}
-            formData={formData}
-            setFormData={setFormData}
-            fileUploadRef={fileUploadRef}
-            handleFileSelect={handleFileSelect}
-          />
-        );
-      case 1:
-        return <TabJobInfo profile={profile} officeInfo={officeInfo} />;
-      case 2:
-        return <TabPersonalInfo profile={profile} />;
-      case 3:
-        return <TabFinancialInfo profile={profile} />;
-      default:
-        return null;
-    }
-  };
+  // const renderTabContent = () => {
+  //   switch (activeIndex) {
+  //     case 0:
+  //       return (
+  //         <TabBasicInfo
+  //           profile={profile}
+  //           isEditMode={isEditMode}
+  //           isSubmitting={isSubmitting}
+  //           handleEdit={handleEdit}
+  //           handleCancel={handleCancel}
+  //           handleSave={handleSave}
+  //           formData={formData}
+  //           setFormData={setFormData}
+  //           fileUploadRef={fileUploadRef}
+  //           handleFileSelect={handleFileSelect}
+  //         />
+  //       );
+  //     case 1:
+  //       return <TabJobInfo profile={profile} officeInfo={officeInfo} />;
+  //     case 2:
+  //       return <TabPersonalInfo profile={profile} />;
+  //     case 3:
+  //       return <TabFinancialInfo profile={profile} />;
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   return (
     <>
@@ -88,11 +88,7 @@ export default function ProfileTabs({
           className="shadow-2 h-full"
         >
           {tabOptions.map((tab) => (
-            <TabPanel
-              key={tab.value}
-              header={tab.label}
-              leftIcon={tab.icon}
-            />
+            <TabPanel key={tab.value} header={tab.label} leftIcon={tab.icon} />
           ))}
         </TabView>
       </div>
@@ -113,7 +109,7 @@ export default function ProfileTabs({
 
       {/* Container Konten Tab */}
       <div className="card shadow-2 p-0 lg:p-0 border-none">
-        {renderTabContent()}
+        {/* {renderTabContent()} */}
       </div>
     </>
   );

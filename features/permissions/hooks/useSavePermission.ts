@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { updatePermissions } from "../services/permissionApi";
-import { useToastContext } from "@/components/ToastProvider";
+import { useToastContext } from "@components/ToastProvider";
 import {
   FeaturePermission,
   UpdatePermissionsPayload,

@@ -1,10 +1,12 @@
-import { Axios } from "@/lib/utils/axios";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { Axios } from "@/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
 import { API_ENDPOINTS } from "@/api/api";
 import { cookies } from "next/headers";
 
 // FUNGSI GET ANDA (TETAP SAMA)
-export const GET = async (request: NextRequest) => {
+export const GET = async () => {
   try {
     const token = cookies().get("token")?.value;
 

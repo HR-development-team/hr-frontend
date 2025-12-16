@@ -5,8 +5,10 @@ import { Network } from "lucide-react";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import OrganizationNode from "./components/OrganizationNode";
-import { PositionStructure, OfficeStructure } from "@/lib/types/organization";
-import { useFetch } from "@/lib/hooks/useFetch";
+import {
+  PositionStructure,
+  OfficeStructure,
+} from "@features/office-organization/schemas/officeOrganizationSchema";
 
 export default function Organization() {
   const toastRef = useRef<Toast>(null);
@@ -14,32 +16,32 @@ export default function Organization() {
   const [office, setOffice] = useState<OfficeStructure[]>([]);
   const [position, setPosition] = useState<PositionStructure[]>([]);
 
-  const { isLoading, fetchData } = useFetch();
+  //   const { isLoading, fetchData } = useFetch();
 
   const fetchAllOffice = async () => {
-    await fetchData({
-      url: "/api/admin/organization/office",
-      // toastRef: toastRef,
-      onSuccess: (responseData) => {
-        setOffice(responseData.offices || []);
-      },
-      onError: () => {
-        setOffice([]);
-      },
-    });
+    // await fetchData({
+    //   url: "/api/admin/organization/office",
+    //   // toastRef: toastRef,
+    //   onSuccess: (responseData) => {
+    //     setOffice(responseData.offices || []);
+    //   },
+    //   onError: () => {
+    //     setOffice([]);
+    //   },
+    // });
   };
 
   const fetchAllPosition = async () => {
-    await fetchData({
-      url: "/api/admin/organization/position",
-      // toastRef: toastRef,
-      onSuccess: (responseData) => {
-        setPosition(responseData.position || []);
-      },
-      onError: () => {
-        setPosition([]);
-      },
-    });
+    // await fetchData({
+    //   url: "/api/admin/organization/position",
+    //   // toastRef: toastRef,
+    //   onSuccess: (responseData) => {
+    //     setPosition(responseData.position || []);
+    //   },
+    //   onError: () => {
+    //     setPosition([]);
+    //   },
+    // });
   };
 
   useEffect(() => {
@@ -64,11 +66,11 @@ export default function Organization() {
         </div>
       </div>
 
-      <OrganizationNode
+      {/* <OrganizationNode
         initialOfficeData={office}
         initialPositionData={position}
         isLoading={isLoading}
-      />
+      /> */}
     </div>
   );
 }

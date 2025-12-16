@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import FormInputText from "@/components/form/FormInputText";
-import FormInputTextarea from "@/components/form/FormInputTextarea";
+import FormInputText from "@components/FormInputText";
+import FormInputTextarea from "@components/FormInputTextarea";
 import { RoleFormData, RoleBaseSchema } from "../schemas/roleSchema";
 import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
-import { toFormikValidation } from "../utils/formikHelpers";
+import { toFormikValidation } from "@utils/formikHelpers";
 
 interface RoleSaveDialogProps {
   isOpen: boolean;
@@ -18,7 +18,7 @@ interface RoleSaveDialogProps {
   isSubmitting: boolean;
 }
 
-export const roleDefaultValues: RoleFormData = {
+const roleDefaultValues: RoleFormData = {
   name: "",
   description: null,
 };

@@ -1,4 +1,4 @@
-import { PositionStructure } from "@/lib/types/organization";
+import { PositionStructure } from "@features/office-organization/schemas/officeOrganizationSchema";
 import { NextResponse } from "next/server";
 
 const positionDummyData: PositionStructure[] = [

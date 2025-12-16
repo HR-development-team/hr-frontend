@@ -5,7 +5,7 @@ export const userRoleCodeSchema = z.string().min(1, "Role wajib dipilih");
 export const userSchema = z.object({
   id: z.number(),
   user_code: z.string(),
-  email: z.string().email("Format email tidak valid"),
+  email: z.email("Format email tidak valid"),
   role_code: z.string(),
   role_name: z.string(),
   employee_name: z.string().nullable(),

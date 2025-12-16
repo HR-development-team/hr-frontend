@@ -37,10 +37,10 @@ export default function RoleManagementPage() {
         </div>
         <div>
           <h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
-            Manajemen Pengguna
+            Manajemen Role
           </h1>
           <p className="text-sm md:text-md text-gray-500">
-            Kelola data diri dan informasi User
+            Kelola data dan informasi Role
           </p>
         </div>
       </div>

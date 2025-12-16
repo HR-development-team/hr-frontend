@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { deleteUser } from "../services/userApi";
-import { useToastContext } from "@/components/ToastProvider";
+import { useToastContext } from "@components/ToastProvider";
 import { User } from "../schemas/userSchema";
 
 export function useDeleteUser(onSuccess?: () => void) {

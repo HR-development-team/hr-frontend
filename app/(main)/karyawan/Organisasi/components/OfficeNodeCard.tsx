@@ -1,4 +1,4 @@
-import { OfficeNodeData } from "@/lib/types/organization";
+import { OfficeNodeData } from "@features/office-organization/schemas/officeOrganizationSchema";
 import { Building2, ChevronRight, Users } from "lucide-react";
 
 interface OfficeNodeCardProps {

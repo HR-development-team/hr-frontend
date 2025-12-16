@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import FormInputText from "@/components/form/FormInputText";
+import FormInputText from "@components/FormInputText";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
@@ -24,8 +24,6 @@ interface UserSaveDialogProps {
   isSubmitting: boolean;
   roleOptions: RoleOption[];
 }
-
-// Default values for the form
 const userDefaultValues: UserFormData = {
   email: "",
   role_code: "",
@@ -125,7 +123,7 @@ export default function UserSaveDialog({
             className={classNames("w-full", {
               "p-invalid": isFieldInvalid("role_code"),
             })}
-            filter // Allows searching inside the dropdown
+            filter
           />
           {isFieldInvalid("role_code") && (
             <small className="p-error">{getFieldError("role_code")}</small>
@@ -136,7 +134,7 @@ export default function UserSaveDialog({
         <FormInputText
           props={{
             ...formik.getFieldProps("password"),
-            type: "password", // Mask characters
+            type: "password",
             autoComplete: "new-password",
           }}
           fieldName="password"

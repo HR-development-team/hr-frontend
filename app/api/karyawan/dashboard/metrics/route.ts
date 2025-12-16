@@ -1,6 +1,8 @@
-import { Axios } from "@/lib/utils/axios";
-import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "@/api/api"; // Pastikan GETEMPLOYEEDASHBOARD ada di sini
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { API_ENDPOINTS } from "@/api/api";
+import { Axios } from "@/utils/axios";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 /**
@@ -8,7 +10,7 @@ import { cookies } from "next/headers";
  * @description Meneruskan request untuk mengambil metrik dashboard karyawan
  * dari API backend setelah memverifikasi token.
  */
-export const GET = async (request: NextRequest) => {
+export const GET = async () => {
   try {
     // 1. Dapatkan token dari cookies
     const token = cookies().get("token")?.value;
@@ -32,7 +34,6 @@ export const GET = async (request: NextRequest) => {
 
     // 4. Kembalikan data dari API Backend ke client
     return NextResponse.json(response.data, { status: 200 });
-
   } catch (error: any) {
     // 5. Penanganan error (mengikuti model Anda)
     console.error("Gagal mendapatkan data dashboard:", error.message || error);

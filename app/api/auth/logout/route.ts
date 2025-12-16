@@ -1,9 +1,11 @@
-import { Axios } from "@/lib/utils/axios";
-import { NextRequest, NextResponse } from "next/server";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { Axios } from "@/utils/axios";
+import { NextResponse } from "next/server";
 import { cookies } from "next/dist/client/components/headers";
 import { API_ENDPOINTS } from "@/api/api";
 
-export const DELETE = async (request: NextRequest) => {
+export const DELETE = async () => {
   const tokenCookie = cookies().get("token");
 
   if (!tokenCookie) {

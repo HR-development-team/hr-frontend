@@ -27,12 +27,6 @@ export function usePagePermission() {
     if (roleCode) fetchPermissions(roleCode, false);
   });
 
-  useEffect(() => {
-    if (roleCode) {
-      fetchPermissions(roleCode);
-    }
-  }, [roleCode, fetchPermissions]);
-
   const handleSave = async () => {
     if (roleData && roleCode) {
       await savePermissions(roleCode, roleData.permissions);
@@ -42,6 +36,11 @@ export function usePagePermission() {
   const roleName = roleData?.role_name || "Memuat...";
   const permissionsList = roleData?.permissions || [];
 
+  useEffect(() => {
+    if (roleCode) {
+      fetchPermissions(roleCode, true);
+    }
+  }, [roleCode, fetchPermissions]);
   return {
     // Data
     roleCode,

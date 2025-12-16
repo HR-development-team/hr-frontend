@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Axios } from "@/lib/utils/axios";
+
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthToken } from "@/lib/utils/authUtils";
+import { getAuthToken } from "@features/auth/utils/authUtils";
+import { Axios } from "@/utils/axios";
 import { API_ENDPOINTS } from "@/api/api";
 
 export const GET = async (request: NextRequest) => {

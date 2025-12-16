@@ -6,22 +6,22 @@ import { Avatar } from "primereact/avatar";
 import { Tag } from "primereact/tag";
 import { Divider } from "primereact/divider";
 // IMPORT DIPERBARUI
-import { UserProfile, OfficeInfo } from "@/lib/types/profil";
+// import { UserProfile, OfficeInfo } from "@/lib/types/profil";
 
 interface ProfileSidebarProps {
-  profile: UserProfile;
-  officeInfo: OfficeInfo;
+  // profile: UserProfile;
+  // officeInfo: OfficeInfo;
   imagePreview: string | null;
 }
 
 export default function ProfileSidebar({
-  profile,
-  officeInfo,
+  // profile,
+  // officeInfo,
   imagePreview,
 }: ProfileSidebarProps) {
   return (
     <Card className="shadow-4 border-none p-0 overflow-hidden h-full flex flex-column">
-      <div
+      {/* <div
         className="relative w-full h-8rem bg-blue-600"
         style={{
           background:
@@ -114,7 +114,7 @@ export default function ProfileSidebar({
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </Card>
   );
 }

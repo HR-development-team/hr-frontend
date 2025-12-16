@@ -7,7 +7,7 @@ import {
   RolePermissionsData,
 } from "../schemas/permissionSchema";
 import { getPermissionsByRoleCode } from "../services/permissionApi";
-import { useToastContext } from "@/components/ToastProvider";
+import { useToastContext } from "@components/ToastProvider";
 
 export function useFetchPermissions() {
   const { showToast } = useToastContext();

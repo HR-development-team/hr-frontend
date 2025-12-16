@@ -4,10 +4,10 @@ import React from "react";
 import { Card } from "primereact/card";
 import { Divider } from "primereact/divider";
 // IMPORT DIPERBARUI
-import { UserProfile, InfoItem } from "@/lib/types/profil";
+// import { UserProfile, InfoItem } from "@/lib/types/profil";
 
 interface TabPersonalInfoProps {
-  profile: UserProfile;
+  profile: [];
 }
 
 export default function TabPersonalInfo({ profile }: TabPersonalInfoProps) {
@@ -27,7 +27,7 @@ export default function TabPersonalInfo({ profile }: TabPersonalInfoProps) {
 
   return (
     <Card className="border-none shadow-none h-full">
-      <h3 className="m-0 mb-4 text-900 font-bold">Data Personal</h3>
+      {/* <h3 className="m-0 mb-4 text-900 font-bold">Data Personal</h3>
 
       <div className="mb-4">
         <span className="block text-xs font-bold text-500 uppercase mb-3 tracking-wide">
@@ -80,7 +80,7 @@ export default function TabPersonalInfo({ profile }: TabPersonalInfoProps) {
             value={profile.blood_type || "-"}
           />
         </div>
-      </div>
+      </div> */}
     </Card>
   );
 }

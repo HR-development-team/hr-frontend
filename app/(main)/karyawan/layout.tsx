@@ -12,7 +12,7 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 import "./globals.css";
-import Header from "@/components/Header";
+import Header from "@features/layout/header/Header";
 import SidebarPopup from "./components/Sidebar";
 
 export default function RootLayout({

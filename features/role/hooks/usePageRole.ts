@@ -17,9 +17,12 @@ export function usePageRole() {
 
   const { roles, fetchRoles, isLoading } = useFetchRoles();
 
-  const refreshData = useCallback(() => {
-    fetchRoles(false, filter.queryParams);
-  }, [fetchRoles, filter.queryParams]);
+  const refreshData = useCallback(
+    (showToast: boolean = false) => {
+      fetchRoles(showToast, filter.queryParams);
+    },
+    [fetchRoles, filter.queryParams]
+  );
 
   const { saveRole, isSaving } = useSaveRole(() => {
     dialog.close();
@@ -30,10 +33,6 @@ export function usePageRole() {
     refreshData();
   });
 
-  useEffect(() => {
-    refreshData();
-  }, [refreshData]);
-
   const handleSave = async (values: RoleFormData) => {
     await saveRole(values, dialog.currentRole?.id);
   };
@@ -42,6 +41,9 @@ export function usePageRole() {
     router.push(`/admin/management/roles/${role.role_code}`);
   };
 
+  useEffect(() => {
+    refreshData(true);
+  }, [refreshData]);
   return {
     // Data & Status
     roles,

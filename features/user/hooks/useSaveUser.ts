@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { UserFormData } from "../schemas/userSchema";
 import { createUser, updateUser } from "../services/userApi";
-import { useToastContext } from "@/components/ToastProvider";
+import { useToastContext } from "@components/ToastProvider";
 
 export function useSaveUser(onSuccess?: () => void) {
   const { showToast } = useToastContext();

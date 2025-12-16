@@ -1,7 +1,8 @@
-// /app/api/karyawan/profil/route.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { NextRequest, NextResponse } from "next/server";
-import { Axios } from "@/lib/utils/axios";
-import { getAuthToken } from "@/lib/utils/authUtils";
+import { Axios } from "@/utils/axios";
+import { getAuthToken } from "@features/auth/utils/authUtils";
 import { API_ENDPOINTS } from "../../api";
 
 // GET: Ambil data profil

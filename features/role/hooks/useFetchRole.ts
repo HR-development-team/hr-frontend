@@ -4,7 +4,7 @@
 import { useCallback, useState } from "react";
 import { Role } from "../schemas/roleSchema";
 import { getAllRoles, getRoleById } from "../services/roleApi";
-import { useToastContext } from "@/components/ToastProvider";
+import { useToastContext } from "@components/ToastProvider";
 
 export function useFetchRoles() {
   const { showToast } = useToastContext();

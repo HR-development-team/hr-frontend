@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { deleteRole } from "../services/roleApi";
-import { useToastContext } from "@/components/ToastProvider";
+import { useToastContext } from "@components/ToastProvider";
 import { Role } from "../schemas/roleSchema";
 
 export function useDeleteRole(onSuccess?: () => void) {

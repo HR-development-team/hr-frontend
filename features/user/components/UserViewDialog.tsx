@@ -5,7 +5,7 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 
 import { UserDetail } from "../schemas/userSchema";
-import UserDialogViewSkeleton from "./UserDialogViewSkeleton";
+import UserDialogViewSkeleton from "./UserViewDialogSkeleton";
 
 interface UserViewDialogProps {
   isOpen: boolean;
@@ -20,12 +20,6 @@ export default function UserViewDialog({
   user,
   isLoading,
 }: UserViewDialogProps) {
-  const renderFooter = () => (
-    <div className="flex justify-content-end">
-      <Button label="Tutup" icon="pi pi-times" text onClick={onClose} />
-    </div>
-  );
-
   return (
     <Dialog
       header="Detail User"
@@ -33,7 +27,17 @@ export default function UserViewDialog({
       onHide={onClose}
       modal
       className="w-full md:w-5"
-      footer={renderFooter()}
+      footer={
+        <div className="flex justify-content-end">
+          <Button
+            className="flex gap-1"
+            label="Tutup"
+            icon="pi pi-times"
+            text
+            onClick={onClose}
+          />
+        </div>
+      }
     >
       {isLoading ? (
         <UserDialogViewSkeleton />

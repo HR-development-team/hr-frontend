@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { RoleFormData } from "../schemas/roleSchema";
 import { createRole, updateRole } from "../services/roleApi";
-import { useToastContext } from "@/components/ToastProvider";
+import { useToastContext } from "@components/ToastProvider";
 
 export function useSaveRole(onSuccess?: () => void) {
   const { showToast } = useToastContext();

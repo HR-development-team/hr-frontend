@@ -23,7 +23,7 @@
       "@/*": ["./app/*"],
       "@features/*": ["./features/*"],
       "@components/*": ["./components/*"],
-      "@utils/*": ["./utils/*"],
+      "@utils/*": ["./app/utils/*"],
       "@/api/*": ["./app/api/*"]
     }
   },

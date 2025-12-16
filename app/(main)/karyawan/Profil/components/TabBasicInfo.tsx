@@ -7,10 +7,10 @@ import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Divider } from "primereact/divider";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
-import { UserProfile, InfoItem } from "@/lib/types/profil";
+// import { UserProfile, InfoItem } from "@/lib/types/profil";
 
 interface TabBasicInfoProps {
-  profile: UserProfile;
+  // profile: UserProfile;
   isEditMode: boolean;
   isSubmitting: boolean;
   handleEdit: () => void;
@@ -23,7 +23,7 @@ interface TabBasicInfoProps {
 }
 
 export default function TabBasicInfo({
-  profile,
+  // profile,
   isEditMode,
   isSubmitting,
   handleEdit,
@@ -37,7 +37,7 @@ export default function TabBasicInfo({
   return (
     <Card className="border-none shadow-none h-full">
       {/* HEADER: Judul & Tombol Action */}
-      <div className="flex align-items-center justify-content-between mb-5">
+      {/* <div className="flex align-items-center justify-content-between mb-5">
         <h3 className="m-0 text-900 font-bold">Detail Dasar</h3>
         {!isEditMode ? (
           <Button
@@ -74,10 +74,10 @@ export default function TabBasicInfo({
             />
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* KONTEN: Form Edit vs Mode Baca */}
-      {isEditMode ? (
+      {/* {isEditMode ? (
         <div className="p-fluid grid formgrid">
           <div className="field col-12">
             <label className="font-semibold block mb-2">Ubah Foto Profil</label>
@@ -165,7 +165,7 @@ export default function TabBasicInfo({
             className="md:col-12"
           />
         </div>
-      )}
+      )} */}
     </Card>
   );
 }

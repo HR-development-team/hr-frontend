@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { API_ENDPOINTS } from "@/api/api";
-import { Axios } from "@/lib/utils/axios";
+import { Axios } from "@/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (request: NextRequest) => {

@@ -4,7 +4,7 @@
 import { useCallback, useState } from "react";
 import { User, UserDetail } from "../schemas/userSchema";
 import { getAllUsers, getUserById } from "../services/userApi";
-import { useToastContext } from "@/components/ToastProvider";
+import { useToastContext } from "@components/ToastProvider";
 
 export function useFetchUser() {
   const { showToast } = useToastContext();
