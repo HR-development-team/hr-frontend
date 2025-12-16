@@ -4,11 +4,11 @@ import React from "react";
 import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
 import { Divider } from "primereact/divider";
-import { UserProfile, OfficeInfo, InfoItem } from "@/lib/types/profil";
+// import { UserProfile, OfficeInfo, InfoItem } from "@/lib/types/profil";
 
 interface TabJobInfoProps {
-  profile: UserProfile;
-  officeInfo: OfficeInfo;
+  profile: [];
+  officeInfo: [];
 }
 
 export default function TabJobInfo({ profile, officeInfo }: TabJobInfoProps) {
@@ -26,17 +26,17 @@ export default function TabJobInfo({ profile, officeInfo }: TabJobInfoProps) {
     });
   };
 
-  const detailedOfficeAddress =
-    officeInfo.label === "Kantor Pusat"
-      ? "Gedung Menara HR, Jl. Jend. Sudirman, Jakarta Selatan"
-      : `${profile.office_name}, Indonesia`;
+  // const detailedOfficeAddress =
+  //   officeInfo.label === "Kantor Pusat"
+  //     ? "Gedung Menara HR, Jl. Jend. Sudirman, Jakarta Selatan"
+  //     : `${profile.office_name}, Indonesia`;
 
   return (
     <Card className="border-none shadow-none h-full">
-      <h3 className="m-0 mb-4 text-900 font-bold">Status & Penempatan</h3>
+      {/* <h3 className="m-0 mb-4 text-900 font-bold">Status & Penempatan</h3> */}
 
       {/* KARTU LOKASI */}
-      <div className="surface-50 border-1 border-gray-200 border-round-xl p-4 mb-5 hover:shadow-2 transition-duration-200">
+      {/* <div className="surface-50 border-1 border-gray-200 border-round-xl p-4 mb-5 hover:shadow-2 transition-duration-200">
         <div className="flex justify-content-between mb-3">
           <span className="text-blue-600 font-bold flex align-items-center gap-2">
             <i className="pi pi-building"></i> Lokasi Kerja
@@ -65,11 +65,10 @@ export default function TabJobInfo({ profile, officeInfo }: TabJobInfoProps) {
             <i className="pi pi-map-marker mr-1"></i> Lihat di Peta
           </a>
         </div>
-      </div>
+      </div> */}
 
       {/* GRID INFO PEKERJAAN */}
-      <div className="grid row-gap-4">
-        {/* Kode Karyawan DIHAPUS sesuai permintaan */}
+      {/* <div className="grid row-gap-4">
         
         <InfoItem
           icon="pi-briefcase"
@@ -96,7 +95,6 @@ export default function TabJobInfo({ profile, officeInfo }: TabJobInfoProps) {
           <Divider className="my-0 border-gray-100" />
         </div>
 
-        {/* Status Kepegawaian (Ikon dipastikan muncul) */}
         <InfoItem
           icon="pi-user-check"
           label="Status Kepegawaian"
@@ -121,7 +119,7 @@ export default function TabJobInfo({ profile, officeInfo }: TabJobInfoProps) {
             profile.resign_date ? formatLocalDate(profile.resign_date) : "-"
           }
         />
-      </div>
+      </div> */}
     </Card>
   );
 }

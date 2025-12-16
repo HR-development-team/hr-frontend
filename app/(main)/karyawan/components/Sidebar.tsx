@@ -17,7 +17,7 @@ import { usePathname } from "next/navigation";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { ReactNode, useState } from "react";
 import { idText } from "typescript";
-import Attendance from "../../admin/attendance/page";
+// import Attendance from "../../admin/attendance/page";
 import { FaSitemap, FaUser, FaUserCheck } from "react-icons/fa";
 import { Orbit } from "next/font/google";
 
@@ -80,10 +80,10 @@ const menuItems: MenuItems[] = [
     icon: <WalletIcon />,
     href: "/karyawan/Pembayaran",
   },
-    {
+  {
     id: "payrol",
     label: "Struktur Organisasi",
-    icon: <FaSitemap/>,
+    icon: <FaSitemap />,
     href: "/karyawan/Organisasi",
   },
 ];

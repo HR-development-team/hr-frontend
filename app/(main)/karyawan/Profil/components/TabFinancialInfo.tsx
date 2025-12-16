@@ -3,10 +3,10 @@
 import React from "react";
 import { Card } from "primereact/card";
 // IMPORT DIPERBARUI
-import { UserProfile, InfoItem } from "@/lib/types/profil";
+// import { UserProfile, InfoItem } from "@/lib/types/profil";
 
 interface TabFinancialInfoProps {
-  profile: UserProfile;
+  profile: [];
 }
 
 export default function TabFinancialInfo({ profile }: TabFinancialInfoProps) {
@@ -16,7 +16,7 @@ export default function TabFinancialInfo({ profile }: TabFinancialInfoProps) {
 
       <div className="grid">
         {/* Kartu Bank Style */}
-        <div className="col-12 md:col-6">
+        {/* <div className="col-12 md:col-6">
           <div
             className="p-4 border-round-xl h-full shadow-1"
             style={{
@@ -35,11 +35,11 @@ export default function TabFinancialInfo({ profile }: TabFinancialInfoProps) {
               {profile.bank_account || "Belum Terdaftar"}
             </div>
             <div className="text-sm font-medium">Bank Transfer</div>
-          </div>
-        </div>
+          </div> */}
+      </div>
 
-        {/* Kartu NPWP Style */}
-        <div className="col-12 md:col-6">
+      {/* Kartu NPWP Style */}
+      {/* <div className="col-12 md:col-6">
           <div className="p-4 surface-50 border-1 border-gray-200 border-round-xl h-full">
             <div className="flex align-items-center gap-3 mb-3">
               <div className="bg-yellow-100 text-yellow-700 p-2 border-round">
@@ -54,10 +54,10 @@ export default function TabFinancialInfo({ profile }: TabFinancialInfoProps) {
               Wajib Pajak Orang Pribadi
             </div>
           </div>
-        </div>
+        </div> */}
 
-        {/* Kartu BPJS */}
-        <div className="col-12 mt-3">
+      {/* Kartu BPJS */}
+      {/* <div className="col-12 mt-3">
           <div className="surface-card border-1 border-gray-200 border-round-xl p-0 overflow-hidden">
             <div className="bg-green-50 p-3 border-bottom-1 border-green-100 flex justify-content-between">
               <span className="font-bold text-green-800">
@@ -77,8 +77,8 @@ export default function TabFinancialInfo({ profile }: TabFinancialInfoProps) {
               />
             </div>
           </div>
-        </div>
-      </div>
+        </div> */}
+      {/* </div> */}
     </Card>
   );
 }

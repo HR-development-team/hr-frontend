@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Sidebar from "./components/Sidebar";
+import Sidebar from "@features/layout/sidebar/Sidebar";
 import { usePathname } from "next/navigation";
 import { PrimeReactProvider } from "primereact/api";
-import Header from "@/components/Header";
+import Header from "@features/layout/header/Header";
 
 export default function AdminLayout({
   children,
@@ -19,14 +19,11 @@ export default function AdminLayout({
   }, [pathName]);
   return (
     <PrimeReactProvider>
-      <div className="min-h-screen surface-50">
+      <div className="flex h-screen flex-column overflow-hidden surface-50">
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <div style={{ height: "calc(100vh - 5rem)" }} className="flex pt-8">
+        <div className="flex flex-1 overflow-hidden relative">
           <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-          <main
-            style={{ height: "calc(100vh - 5rem)" }}
-            className="relative flex-1 surface-100 transition-all animation-duration-300 min-w-0"
-          >
+          <main className="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-6">
             {/* backdrop for mobile sidebar */}
             {sidebarOpen && (
               <div
@@ -39,7 +36,7 @@ export default function AdminLayout({
               className="overflow-y-auto flex justify-content-center"
               // className="overflow-y-auto"
             >
-              <div className="w-full py-4 px-4 md:px-6">{children}</div>
+              <div className="w-full py-8 px-4 md:px-6">{children}</div>
             </div>
           </main>
         </div>

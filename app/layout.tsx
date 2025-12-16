@@ -1,9 +1,9 @@
 import "./globals.css";
 import { Inter, Roboto_Mono } from "next/font/google";
-import { ClientOnlyTopLoader } from "@/components/ClientOnlyTopLoader";
+import { ClientOnlyTopLoader } from "@components/ClientOnlyTopLoader";
 import { PrimeReactProvider } from "primereact/api";
-import { AuthProvider } from "@/components/AuthContext";
-import ToastProvider from "./components/ToastProvider";
+import { AuthProvider } from "@features/auth/context/AuthProvider";
+import ToastProvider from "../components/ToastProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 

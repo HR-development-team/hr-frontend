@@ -1,6 +1,8 @@
-import { getAuthToken } from "@/lib/utils/authUtils";
-import { verifyToken } from "@/lib/utils/verifyToken";
-import { Axios } from "@/lib/utils/axios";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { getAuthToken } from "@features/auth/utils/authUtils";
+import { verifyToken } from "@features/auth/utils/verifyToken";
+import { Axios } from "@/utils/axios";
 import { NextResponse } from "next/server";
 import { API_ENDPOINTS } from "@/api/api";
 
@@ -9,7 +11,7 @@ export const GET = async () => {
 
   try {
     if (token) {
-      const verifyJwtToken = await verifyToken(token);
+      await verifyToken(token);
     }
 
     const response = await Axios.get(API_ENDPOINTS.GETUSER, {

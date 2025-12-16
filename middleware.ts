@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/utils/verifyToken";
-import path from "path";
+import { verifyToken } from "@features/auth/utils/verifyToken";
 
 const ADMIN_ROLES = ["ROL0000001", "ROL0000002"];
 const EMPLOYEE_ROLES = ["ROL0000003", "ROL0000004", "ROL0000005"];

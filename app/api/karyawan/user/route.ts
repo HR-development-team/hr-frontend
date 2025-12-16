@@ -1,10 +1,11 @@
-// app/api/users/route.ts
-import { Axios } from "@/lib/utils/axios";
-import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS } from "@/api/api";
-import { getAuthToken } from "@/lib/utils/authUtils";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-export const GET = async (request: NextRequest) => {
+import { NextResponse } from "next/server";
+import { API_ENDPOINTS } from "@/api/api";
+import { getAuthToken } from "@features/auth/utils/authUtils";
+import { Axios } from "@/utils/axios";
+
+export const GET = async () => {
   const token = getAuthToken();
 
   if (!token) {
