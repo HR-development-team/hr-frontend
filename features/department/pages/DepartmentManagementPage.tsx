@@ -7,7 +7,9 @@ import { Card } from "primereact/card";
 // Components
 import DepartmentTable from "../components/DepartmentTable";
 import DepartmentDeleteDialog from "../components/DepartmentDeleteDialog";
-import DepartmentSaveDialog from "../components/DepartmentSaveDialog";
+import DepartmentSaveDialog, {
+  OfficeOption,
+} from "../components/DepartmentSaveDialog";
 import DepartmentViewDialog from "../components/DepartmentViewDialog";
 import TableToolbar from "@components/TableToolbar";
 import DateRangeFilter from "@components/DateRangeFilter";
@@ -15,6 +17,7 @@ import DateRangeFilter from "@components/DateRangeFilter";
 // Facade Hook
 import { usePageDepartment } from "../hooks/usePageDepartment";
 import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
+import { Dropdown } from "primereact/dropdown";
 
 export default function DepartmentManagementPage() {
   const {
@@ -37,6 +40,26 @@ export default function DepartmentManagementPage() {
       value: office.office_code,
     }));
   }, [offices]);
+
+  const filteredDepartments = useMemo(() => {
+    let result = departments;
+
+    if (filter.selectedOffice) {
+      result = result.filter(
+        (dept) => dept.office_code === filter.selectedOffice
+      );
+    }
+
+    if (filter.search) {
+      const lowerSearch = filter.search.toLowerCase();
+      result = result.filter(
+        (dept) =>
+          dept.name.toLowerCase().includes(lowerSearch) ||
+          dept.department_code?.toLowerCase().includes(lowerSearch)
+      );
+    }
+    return result;
+  }, [departments, filter.selectedOffice, filter.search]);
 
   useEffect(() => {
     fetchOffices();
@@ -77,26 +100,49 @@ export default function DepartmentManagementPage() {
             onSearchChange={(e) => filter.setSearch(e.target.value)}
             searchPlaceholder="Cari berdasarkan Nama Departemen"
             onAdd={dialog.openAdd}
-            addLabel="Tambah Departemen"
             filterContent={
-              <DateRangeFilter
-                startDate={filter.dates.start}
-                endDate={filter.dates.end}
-                onStartDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, start: e.value })
-                }
-                onEndDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, end: e.value })
-                }
-                onApply={filter.applyDateFilter}
-                onClear={filter.clearDateFilter}
+              <div className="w-full sm:w-auto">
+                <DateRangeFilter
+                  startDate={filter.dates.start}
+                  endDate={filter.dates.end}
+                  onStartDateChange={(e) =>
+                    filter.setDates({ ...filter.dates, start: e.value })
+                  }
+                  onEndDateChange={(e) =>
+                    filter.setDates({ ...filter.dates, end: e.value })
+                  }
+                  onApply={filter.applyDateFilter}
+                  onClear={filter.clearDateFilter}
+                />
+              </div>
+            }
+            actionContent={
+              <Dropdown
+                value={filter.selectedOffice}
+                options={officeOptions}
+                onChange={(e) => filter.setSelectedOffice(e.value)}
+                itemTemplate={(option: OfficeOption) => {
+                  if (!option) return null;
+                  return (
+                    <div className="flex align-items-center justify-content-between gap-2 w-full">
+                      <span>{option.label}</span>
+                      <span className="text-gray-500 text-xs font-mono bg-gray-100 px-2 py-1 border-round">
+                        {option.value}
+                      </span>
+                    </div>
+                  );
+                }}
+                placeholder="Filter Kantor"
+                className="w-full sm:w-15rem"
+                showClear
+                filter
               />
             }
           />
 
           {/* Data Table */}
           <DepartmentTable
-            data={departments}
+            data={filteredDepartments}
             isLoading={isLoading}
             onView={handleView}
             onEdit={dialog.openEdit}

@@ -4,6 +4,7 @@ export const officeSchema = z.object({
   id: z.number(),
   office_code: z.string(),
   parent_office_code: z.string().nullable(),
+  parent_office_name: z.string().nullable(),
   name: z.string(),
   address: z.string(),
   latitude: z.coerce.number(),

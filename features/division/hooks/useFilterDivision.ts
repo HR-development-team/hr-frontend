@@ -14,6 +14,7 @@ export const useFilterDivision = () => {
     start: null,
     end: null,
   });
+  const [selectedOffice, setSelectedOffice] = useState<string | null>(null);
 
   const [debouncedSearch] = useDebounce(search, 500);
   const [appliedDates, setAppliedDates] = useState<DateRangeState>({
@@ -46,6 +47,8 @@ export const useFilterDivision = () => {
     setDates,
     applyDateFilter,
     clearDateFilter,
+    selectedOffice,
+    setSelectedOffice,
     queryParams,
   };
 };
