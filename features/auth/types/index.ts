@@ -7,6 +7,8 @@ export interface AuthUser {
   user_code: string;
   employee_code: string;
   role_code: string;
+  office_code: string;
+  role_name: string;
 }
 
 export interface User extends EmployeeDetail {
@@ -15,6 +17,7 @@ export interface User extends EmployeeDetail {
   user_code: string;
   employee_code: string;
   role_code: string;
+  role_name: string;
 }
 
 export interface LoginResponse {

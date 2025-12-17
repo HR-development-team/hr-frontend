@@ -49,11 +49,8 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  console.log(token);
-
   try {
     const body = await request.json();
-    console.log("body: ", body);
     const response = await Axios.post(
       API_ENDPOINTS.ADDATTENDANCESESSION,
       body,
@@ -64,19 +61,17 @@ export const POST = async (request: NextRequest) => {
       }
     );
 
-    console.log("response: ", response);
-
     return NextResponse.json(response.data);
   } catch (error: any) {
     if (error.response) {
-      console.log("❌ BACKEND ERROR STATUS:", error.response.status);
-      console.log("❌ BACKEND ERROR DATA:", error.response.data);
+      console.error("❌ BACKEND ERROR STATUS:", error.response.status);
+      console.error("❌ BACKEND ERROR DATA:", error.response.data);
 
       return NextResponse.json(error.response.data.errors, {
         status: error.response.status,
       });
     } else {
-      console.log("⚠️ REQUEST SETUP ERROR:", error.message);
+      console.error("⚠️ REQUEST SETUP ERROR:", error.message);
       return NextResponse.json(
         { message: "Gagal menambahkan data master departemen" },
         { status: 500 }

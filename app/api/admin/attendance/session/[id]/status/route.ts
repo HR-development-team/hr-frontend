@@ -38,7 +38,6 @@ export const PUT = async (request: NextRequest, { params }: paramsProp) => {
   }
 
   try {
-    console.log("token: ", token);
     const response = await Axios.put(
       `${API_ENDPOINTS.CLOSEATTENDANCESESSION(params.id)}`,
       {},

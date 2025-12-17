@@ -15,8 +15,6 @@ export const POST = async (request: NextRequest) => {
 
     const roleMapping: Record<string, string> = {};
 
-    console.log(loginData);
-
     if (token) {
       try {
         const roleResponse = await Axios.get(API_ENDPOINTS.GETALLROLES, {
@@ -45,8 +43,6 @@ export const POST = async (request: NextRequest) => {
     };
 
     const responseToBrowser = NextResponse.json(finalResponse);
-
-    console.log(finalResponse);
 
     if (userRole) {
       responseToBrowser.cookies.set("token", token, {

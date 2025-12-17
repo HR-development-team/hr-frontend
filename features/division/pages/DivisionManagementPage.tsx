@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useEffect } from "react";
-import { Briefcase, Layers } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { Card } from "primereact/card";
 
 // Components
@@ -15,6 +15,7 @@ import DateRangeFilter from "@components/DateRangeFilter";
 // Facade Hook for Division
 import { usePageDivision } from "../hooks/usePageDivision";
 import { useFetchDepartment } from "@features/department/hooks/useFetchDepartment";
+import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
 
 export default function DivisionManagementPage() {
   const {
@@ -30,17 +31,27 @@ export default function DivisionManagementPage() {
   } = usePageDivision();
 
   const { departments, fetchDepartments } = useFetchDepartment();
+  const { offices, fetchOffices } = useFetchOffice();
+
+  const officeOptions = useMemo(() => {
+    return offices.map((office) => ({
+      label: office.name,
+      value: office.office_code || "",
+    }));
+  }, [offices]);
 
   const departmentOptions = useMemo(() => {
     return departments.map((dept) => ({
       label: dept.name,
       value: dept.department_code || "",
+      office_code: dept.office_code || "",
     }));
   }, [departments]);
 
   useEffect(() => {
     fetchDepartments();
-  }, [fetchDepartments]);
+    fetchOffices();
+  }, [fetchDepartments, fetchOffices]);
   // ---------------------------------------------------------------------
   //   Render
   // ---------------------------------------------------------------------
@@ -67,7 +78,7 @@ export default function DivisionManagementPage() {
         <div className="flex flex-column gap-4">
           {/* Section Header */}
           <div className="flex gap-2 align-items-center">
-            <Layers className="h-2" />
+            <Briefcase className="h-2" />
             <h2 className="text-base text-800">Daftar Divisi</h2>
           </div>
 
@@ -126,6 +137,7 @@ export default function DivisionManagementPage() {
           isSubmitting={isSaving}
           onClose={dialog.close}
           departmentOptions={departmentOptions}
+          officeOptions={officeOptions}
         />
       )}
 

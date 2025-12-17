@@ -1,49 +1,51 @@
-import { Layers } from "lucide-react";
 import { Skeleton } from "primereact/skeleton";
 
 export default function DivisionViewDialogSkeleton() {
   return (
-    <div className="flex flex-column gap-4 mt-2">
-      {/* Header Skeleton */}
-      <div className="bg-gray-50 p-3 border-round-xl border-1 border-gray-200">
-        <div className="flex gap-3 align-items-start">
-          <div className="p-2 bg-white flex align-items-center border-round-xl">
-            <Layers className="text-gray-300" size={32} />
+    <div className="flex flex-column gap-4">
+      <div className="flex flex-column align-items-center p-4 bg-gray-50 border-round-xl border-1 border-gray-200">
+        <Skeleton shape="circle" size="3rem" className="mb-3" />
+        <Skeleton width="60%" height="2rem" className="mb-2" />
+        <Skeleton width="25%" height="1.5rem" />
+      </div>
+
+      <div className="grid">
+        {/* Card 1 */}
+        <div className="col-12 md:col-6">
+          <div className="p-3 border-1 border-gray-200 border-round-lg h-full">
+            <div className="flex gap-2 mb-2">
+              <Skeleton width="1.5rem" height="1rem" />
+              <Skeleton width="40%" height="1rem" />
+            </div>
+            <Skeleton width="80%" height="1.5rem" className="mb-2" />{" "}
+            <Skeleton width="30%" height="1.2rem" />
           </div>
-          <div className="flex flex-column gap-2 w-full">
-            <Skeleton width="40%" height="1rem" />
-            <Skeleton width="60%" height="1.5rem" />
-            <Skeleton width="30%" height="1rem" className="mt-1" />
+        </div>
+
+        {/* Card 2 */}
+        <div className="col-12 md:col-6">
+          <div className="p-3 border-1 border-gray-200 border-round-lg h-full">
+            <div className="flex gap-2 mb-2">
+              <Skeleton width="1.5rem" height="1rem" />
+              <Skeleton width="40%" height="1rem" />
+            </div>
+            <Skeleton width="80%" height="1.5rem" className="mb-2" />
+            <Skeleton width="30%" height="1.2rem" />
           </div>
         </div>
       </div>
 
-      <div className="flex flex-column gap-4">
-        {/* Department Context Section */}
-        <div>
-          <div className="flex align-items-center gap-2 text-400 mb-2">
-            <Skeleton width="10rem" height="0.8rem" />
-          </div>
-          <Skeleton height="4rem" className="border-round-lg w-full" />
+      <div>
+        <div className="flex gap-2 mb-2">
+          <Skeleton width="1.5rem" height="1rem" />
+          <Skeleton width="20%" height="1rem" />
         </div>
-
-        {/* Description Section */}
-        <div>
-          <div className="flex align-items-center gap-2 text-400 mb-2">
-            <Skeleton width="6rem" height="0.8rem" />
-          </div>
-          <Skeleton height="5rem" className="border-round-lg w-full" />
-        </div>
+        <Skeleton height="5rem" className="w-full" />
       </div>
 
-      {/* Footer Timestamps */}
-      <div className="mt-2 flex flex-column xl:flex-row xl:align-items-center justify-content-between gap-2">
-        <div className="flex align-items-center gap-2">
-          <Skeleton width="8rem" height="0.8rem" />
-        </div>
-        <div className="flex align-items-center gap-2">
-          <Skeleton width="8rem" height="0.8rem" />
-        </div>
+      <div className="flex flex-column md:flex-row justify-content-between gap-2 mt-2 pt-3 border-top-1 border-gray-200">
+        <Skeleton width="30%" height="1rem" />
+        <Skeleton width="30%" height="1rem" />
       </div>
     </div>
   );

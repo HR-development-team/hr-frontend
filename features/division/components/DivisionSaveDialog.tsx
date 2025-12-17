@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
@@ -17,8 +17,13 @@ import {
 } from "../schemas/divisionSchema";
 import { toFormikValidation } from "@utils/formikHelpers";
 
-// Option type for the Department Dropdown
 export interface DepartmentOption {
+  label: string;
+  value: string;
+  office_code: string;
+}
+
+export interface OfficeOption {
   label: string;
   value: string;
 }
@@ -32,6 +37,7 @@ interface DivisionSaveDialogProps {
   onSubmit: (values: DivisionFormData) => Promise<void>;
   isSubmitting: boolean;
   departmentOptions: DepartmentOption[];
+  officeOptions: OfficeOption[];
 }
 
 const divisionDefaultValues: DivisionFormData = {
@@ -48,8 +54,10 @@ export default function DivisionSaveDialog({
   onClose,
   title,
   departmentOptions = [],
+  officeOptions = [],
 }: DivisionSaveDialogProps) {
-  // 1. Memoize Initial Values
+  const [selectedOffice, setSelectedOffice] = useState<string | null>(null);
+
   const initialValues = useMemo(() => {
     if (divisionData) {
       return {
@@ -90,6 +98,30 @@ export default function DivisionSaveDialog({
     onClose();
   };
 
+  // CHANGE 4: Filter Department Options based on selected Office
+  const filteredDepartments = useMemo(() => {
+    if (!selectedOffice) return [];
+    return departmentOptions.filter(
+      (dept) => dept.office_code === selectedOffice
+    );
+  }, [selectedOffice, departmentOptions]);
+
+  // CHANGE 3: Auto-select Office in "Edit Mode"
+  // When the dialog opens with data, find which office owns this department
+  useEffect(() => {
+    if (isOpen && divisionData?.department_code) {
+      const relatedDept = departmentOptions.find(
+        (d) => d.value === divisionData.department_code
+      );
+      if (relatedDept) {
+        setSelectedOffice(relatedDept.office_code);
+      }
+    } else if (isOpen && !divisionData) {
+      // Reset if opening in "Create" mode
+      setSelectedOffice(null);
+    }
+  }, [isOpen, divisionData, departmentOptions]);
+
   return (
     <Dialog
       header={title}
@@ -101,16 +133,16 @@ export default function DivisionSaveDialog({
         <div className="flex justify-content-end gap-2">
           <Button
             label="Batal"
+            className="gap-1"
             icon="pi pi-times"
-            className="flex gap-1"
             text
             onClick={handleHide}
             disabled={isSubmitting}
           />
           <Button
             label="Simpan"
+            className="gap-1"
             icon="pi pi-save"
-            className="flex gap-1"
             severity="success"
             onClick={() => formik.submitForm()}
             loading={isSubmitting}
@@ -123,7 +155,39 @@ export default function DivisionSaveDialog({
         onSubmit={formik.handleSubmit}
         className="flex flex-column gap-3 mt-2"
       >
-        {/* 1. Department Dropdown */}
+        {/* --- NEW: Office Dropdown (The Filter) --- */}
+        <div className="flex flex-column gap-2">
+          {/* Label Row: Text on Left, Badge on Right */}
+          <div className="flex align-items-center justify-content-between">
+            <label htmlFor="office_select" className="font-medium">
+              Pilih Kantor <span className="text-red-500">*</span>
+            </label>
+          </div>
+
+          <Dropdown
+            id="office_select"
+            value={selectedOffice}
+            options={officeOptions}
+            onChange={(e) => {
+              setSelectedOffice(e.value);
+              formik.setFieldValue("department_code", "");
+            }}
+            placeholder="Pilih Kantor"
+            className="w-full"
+            filter
+            showClear
+            itemTemplate={(option: any) => (
+              <div className="flex align-items-center justify-content-between gap-2 w-full">
+                <span>{option.label}</span>
+                <span className="text-gray-500 text-sm font-mono bg-gray-100 px-2 py-1 border-round">
+                  {option.value}
+                </span>
+              </div>
+            )}
+          />
+        </div>
+
+        {/* --- EXISTING: Department Dropdown (Filtered) --- */}
         <div className="flex flex-column gap-2">
           <label htmlFor="department_code" className="font-medium">
             Departemen <span className="text-red-500">*</span>
@@ -131,14 +195,27 @@ export default function DivisionSaveDialog({
           <Dropdown
             id="department_code"
             value={formik.values.department_code}
-            options={departmentOptions}
+            options={filteredDepartments} // Use the FILTERED list
             onChange={(e) => formik.setFieldValue("department_code", e.value)}
-            placeholder="Pilih Departemen"
+            placeholder={
+              selectedOffice
+                ? "Pilih Departemen"
+                : "Pilih Kantor Terlebih Dahulu"
+            }
             className={classNames("w-full", {
               "p-invalid": isFieldInvalid("department_code"),
             })}
+            disabled={!selectedOffice} // Disable if no office selected
             filter
             showClear
+            itemTemplate={(option: any) => (
+              <div className="flex align-items-center justify-content-between gap-2 w-full">
+                <span>{option.label}</span>
+                <span className="text-gray-500 text-sm font-mono bg-gray-100 px-2 py-1 border-round">
+                  {option.value}
+                </span>
+              </div>
+            )}
           />
           {isFieldInvalid("department_code") && (
             <small className="p-error">
@@ -147,7 +224,7 @@ export default function DivisionSaveDialog({
           )}
         </div>
 
-        {/* 2. Division Name */}
+        {/* Division Name */}
         <FormInputText
           props={formik.getFieldProps("name")}
           fieldName="name"
@@ -156,7 +233,7 @@ export default function DivisionSaveDialog({
           getFieldError={getFieldError}
         />
 
-        {/* 3. Description (Optional) */}
+        {/* Description */}
         <div className="flex flex-column gap-2">
           <label htmlFor="description" className="font-medium">
             Deskripsi (Opsional)
@@ -175,7 +252,6 @@ export default function DivisionSaveDialog({
           )}
         </div>
 
-        {/* Global Error Message */}
         {formik.status && (
           <div className="p-3 bg-red-50 text-red-500 border-round text-sm text-right">
             <i className="pi pi-exclamation-circle mr-2"></i>

@@ -44,7 +44,7 @@ export const UserDropdown = () => {
             </span>
             {/* Role Badge: moved to right for balance */}
             <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 border-round-2xl">
-              {user?.role_code === "ROL0000001" ? "Admin" : "Staff"}
+              {user?.role_name}
             </span>
           </div>
 
@@ -187,7 +187,7 @@ export const UserDropdown = () => {
             {user?.full_name?.split(" ")[0] || "User"}
           </span>
           <span className="text-xs text-500 font-medium">
-            {user?.role_code === "ROL0000001" ? "Administrator" : "Karyawan"}
+            {user?.role_name}
           </span>
         </div>
 
