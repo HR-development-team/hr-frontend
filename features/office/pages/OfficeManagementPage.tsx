@@ -69,7 +69,6 @@ export default function OfficeManagementPage() {
             onSearchChange={(e) => filter.setSearch(e.target.value)}
             searchPlaceholder="Cari berdasarkan Nama Kantor"
             onAdd={dialog.openAdd}
-            addLabel="Tambah Kantor"
             filterContent={
               <DateRangeFilter
                 startDate={filter.dates.start}

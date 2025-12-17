@@ -7,7 +7,9 @@ import { Card } from "primereact/card";
 // Components
 import DivisionTable from "../components/DivisionTable";
 import DivisionDeleteDialog from "../components/DivisionDeleteDialog";
-import DivisionSaveDialog from "../components/DivisionSaveDialog";
+import DivisionSaveDialog, {
+  OfficeOption,
+} from "../components/DivisionSaveDialog";
 import DivisionViewDialog from "../components/DivisionViewDialog";
 import TableToolbar from "@components/TableToolbar";
 import DateRangeFilter from "@components/DateRangeFilter";
@@ -16,6 +18,7 @@ import DateRangeFilter from "@components/DateRangeFilter";
 import { usePageDivision } from "../hooks/usePageDivision";
 import { useFetchDepartment } from "@features/department/hooks/useFetchDepartment";
 import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
+import { Dropdown } from "primereact/dropdown";
 
 export default function DivisionManagementPage() {
   const {
@@ -47,6 +50,26 @@ export default function DivisionManagementPage() {
       office_code: dept.office_code || "",
     }));
   }, [departments]);
+
+  const filteredDivisions = useMemo(() => {
+    let result = divisions;
+
+    if (filter.selectedOffice) {
+      result = result.filter(
+        (div) => div.office_code === filter.selectedOffice
+      );
+    }
+
+    if (filter.search) {
+      const lowerSearch = filter.search.toLowerCase();
+      result = result.filter(
+        (div) =>
+          div.name.toLowerCase().includes(lowerSearch) ||
+          div.division_code?.toLowerCase().includes(lowerSearch)
+      );
+    }
+    return result;
+  }, [divisions, filter.selectedOffice, filter.search]);
 
   useEffect(() => {
     fetchDepartments();
@@ -88,7 +111,6 @@ export default function DivisionManagementPage() {
             onSearchChange={(e) => filter.setSearch(e.target.value)}
             searchPlaceholder="Cari berdasarkan Nama Divisi"
             onAdd={dialog.openAdd}
-            addLabel="Tambah Divisi"
             filterContent={
               <DateRangeFilter
                 startDate={filter.dates.start}
@@ -103,11 +125,33 @@ export default function DivisionManagementPage() {
                 onClear={filter.clearDateFilter}
               />
             }
+            actionContent={
+              <Dropdown
+                value={filter.selectedOffice}
+                options={officeOptions}
+                onChange={(e) => filter.setSelectedOffice(e.value)}
+                itemTemplate={(option: OfficeOption) => {
+                  if (!option) return null;
+                  return (
+                    <div className="flex align-items-center justify-content-between gap-2 w-full">
+                      <span>{option.label}</span>
+                      <span className="text-gray-500 text-xs font-mono bg-gray-100 px-2 py-1 border-round">
+                        {option.value}
+                      </span>
+                    </div>
+                  );
+                }}
+                placeholder="Filter Kantor"
+                className="w-full sm:w-15rem"
+                showClear
+                filter
+              />
+            }
           />
 
           {/* Data Table */}
           <DivisionTable
-            data={divisions}
+            data={filteredDivisions}
             isLoading={isLoading}
             onView={handleView}
             onEdit={dialog.openEdit}

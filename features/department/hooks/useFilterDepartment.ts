@@ -9,11 +9,13 @@ export type DateRangeState = {
 };
 
 export const useFilterDepartment = () => {
+  // 1. Existing State
   const [search, setSearch] = useState("");
   const [dates, setDates] = useState<DateRangeState>({
     start: null,
     end: null,
   });
+  const [selectedOffice, setSelectedOffice] = useState<string | null>(null);
 
   const [debouncedSearch] = useDebounce(search, 500);
   const [appliedDates, setAppliedDates] = useState<DateRangeState>({
@@ -36,16 +38,26 @@ export const useFilterDepartment = () => {
       search: debouncedSearch,
       startDate: appliedDates.start,
       endDate: appliedDates.end,
+      // office_code: selectedOffice,
     };
   }, [debouncedSearch, appliedDates]);
 
   return {
+    // Search
     search,
     setSearch,
+
+    // Dates
     dates,
     setDates,
     applyDateFilter,
     clearDateFilter,
+
+    // Office (New)
+    selectedOffice,
+    setSelectedOffice,
+
+    // Combined Params
     queryParams,
   };
 };

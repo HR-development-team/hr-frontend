@@ -5,6 +5,7 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Office } from "../schemas/officeSchema";
+import { Tag } from "primereact/tag";
 
 export interface OfficeTableProps {
   data: Office[];
@@ -50,6 +51,29 @@ export default function OfficeTable({
         style={{ width: "20%" }}
       />
       <Column field="name" header="Nama Kantor" style={{ width: "25%" }} />
+      <Column
+        field="parent_office_name"
+        header="Nama Kantor Induk"
+        style={{ width: "25%" }}
+        body={(row: Office) => {
+          if (row.parent_office_name) {
+            return (
+              <span className="text-gray-800 font-medium">
+                {row.parent_office_name}
+              </span>
+            );
+          }
+
+          return (
+            <Tag
+              icon="pi pi-building"
+              value="Kantor Pusat"
+              severity="success"
+              className="px-2 text-xs gap-1"
+            />
+          );
+        }}
+      />
 
       {/* Actions Column */}
       <Column
