@@ -17,7 +17,6 @@ export async function getAllOffices(): Promise<Office[]> {
     }
 
     const data = await res.json();
-    console.log(data);
     return data.master_offices || [];
   } catch (error) {
     console.error("getAllOffices error:", error);

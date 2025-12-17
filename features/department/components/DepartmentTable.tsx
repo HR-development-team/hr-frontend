@@ -59,8 +59,8 @@ export default function DepartmentTable({
       />
 
       <Column
-        field="office_code"
-        header="Kode Kantor"
+        field="office_name"
+        header="Nama Kantor"
         sortable
         style={{ width: "20%" }}
       />

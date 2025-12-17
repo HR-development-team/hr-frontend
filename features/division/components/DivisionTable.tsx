@@ -65,6 +65,13 @@ export default function DivisionTable({
         style={{ width: "20%" }}
       />
 
+      <Column
+        field="office_name"
+        header="Nama Kantor"
+        sortable
+        style={{ width: "20%" }}
+      />
+
       {/* Actions Column */}
       <Column
         header="Aksi"

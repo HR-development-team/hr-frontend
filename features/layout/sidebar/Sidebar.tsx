@@ -78,7 +78,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
           </div>
 
           {/* Navigation Items */}
-          <nav className="flex flex-column gap-1 px-3 pt-8 pb-8 mt-4">
+          <nav className="flex flex-column gap-1 px-3 md:pt-8 pb-8 mt-4">
             {SIDEBAR_ITEMS.map((item) => renderItem(item))}
           </nav>
 

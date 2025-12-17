@@ -4,12 +4,14 @@ export const divisionSchema = z.object({
   id: z.number(),
   division_code: z.string().optional(),
   department_code: z.string(),
+  office_code: z.string(),
   name: z.string(),
+  department_name: z.string(),
+  office_name: z.string(),
   description: z.string().nullable().optional(),
 });
 
 export const divisionDetailSchema = divisionSchema.extend({
-  department_name: z.string().nullable().optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });

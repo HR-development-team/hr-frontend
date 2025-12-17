@@ -45,7 +45,8 @@ export async function getDepartmentById(
     }
 
     const data = await res.json();
-    return data.departments || null;
+
+    return data.master_departments || null;
   } catch (error) {
     console.error("getDepartmentById error:", error);
     return null;

@@ -25,7 +25,6 @@ export function useFetchOffice() {
       try {
         setIsLoading(true);
         const data = await getAllOffices();
-        console.log("Fetched offices:", data);
         setOffices(data);
 
         if (showToastMessage) {

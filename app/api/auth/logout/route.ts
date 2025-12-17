@@ -27,7 +27,6 @@ export const DELETE = async () => {
 
     const responseData = response.data;
     cookies().delete("token");
-    console.log(responseData);
 
     const responseToBrowser = NextResponse.json({ message: responseData });
 

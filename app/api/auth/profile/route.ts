@@ -26,7 +26,7 @@ export const GET = async () => {
 
     return NextResponse.json(response.data, { status: 200 });
   } catch (error: any) {
-    console.log("Gagal mendapatkan data profil:", error.response.data);
+    console.error("Gagal mendapatkan data profil:", error.response.data);
     if (error.response) {
       return NextResponse.json(
         {
