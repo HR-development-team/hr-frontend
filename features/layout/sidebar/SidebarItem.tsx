@@ -7,6 +7,7 @@ interface SidebarItemProps {
   href: string;
   icon?: LucideIcon;
   isActive: boolean;
+  className?: string;
 }
 
 export const SidebarItem = ({
@@ -14,20 +15,32 @@ export const SidebarItem = ({
   href,
   icon: Icon,
   isActive,
+  className,
 }: SidebarItemProps) => {
   return (
     <Link
       href={href}
       className={classNames(
-        "flex align-items-center gap-3 px-3 py-3 border-round-md transition-colors no-underline",
+        // PrimeFlex Layout & Spacing
+        "flex align-items-center gap-3 px-3 py-2 border-round transition-colors transition-duration-200 no-underline mb-1 cursor-pointer",
         {
-          "bg-blue-50 text-blue-700 font-bold": isActive,
-          "text-600 hover:surface-100 hover:text-900 font-medium": !isActive,
-        }
+          // Active State: Blue background, blue text
+          "bg-blue-50 text-blue-700 font-semibold": isActive,
+          // Inactive State: Gray text, hover light gray background
+          "text-600 hover:surface-100 hover:text-900": !isActive,
+        },
+        className
       )}
     >
       {Icon && (
-        <Icon size={20} className={isActive ? "text-blue-700" : "text-500"} />
+        <Icon
+          size={20}
+          strokeWidth={isActive ? 2.5 : 2}
+          className={classNames({
+            "text-blue-700": isActive,
+            "text-500": !isActive,
+          })}
+        />
       )}
       <span className="text-sm">{label}</span>
     </Link>

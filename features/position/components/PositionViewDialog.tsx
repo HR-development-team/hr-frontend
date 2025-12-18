@@ -14,28 +14,8 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { PositionDetail } from "../schemas/positionSchema";
 import PositionViewDialogSkeleton from "./PositionViewDialogSkeleton";
-
-// Helper for date formatting
-const formatDateIDN = (dateString?: string) => {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
-// Helper for Currency
-const formatRupiah = (value?: string | number) => {
-  if (!value) return "Rp 0";
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(Number(value));
-};
+import { formatDateIDN } from "@/utils/dateFormat";
+import { formatRupiah } from "@/utils/currencyFormat";
 
 interface PositionViewDialogProps {
   isOpen: boolean;

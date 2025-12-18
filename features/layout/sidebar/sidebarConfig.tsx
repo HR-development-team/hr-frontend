@@ -10,6 +10,7 @@ import {
 export interface SubMenuItem {
   label: string;
   href: string;
+  requiredFeature?: string;
 }
 
 export interface MenuItem {
@@ -18,8 +19,8 @@ export interface MenuItem {
   icon: LucideIcon;
   href?: string;
   children?: SubMenuItem[];
-  // Optional: Add roles if you want to filter later
   allowedRoles?: string[];
+  requiredFeature?: string;
 }
 
 export const SIDEBAR_ITEMS: MenuItem[] = [
@@ -28,19 +29,39 @@ export const SIDEBAR_ITEMS: MenuItem[] = [
     label: "Dashboard",
     icon: LayoutDashboard,
     href: "/admin/dashboard",
+    // No requiredFeature means it's always visible (or you can add a 'Dashboard' feature)
   },
   {
     id: "master",
     label: "Master Data",
     icon: FileText,
+    // Parent doesn't need a feature, it relies on children visibility
     children: [
-      { label: "Master Kantor", href: "/admin/master/office" },
-      { label: "Master Departemen", href: "/admin/master/departments" },
-      { label: "Master Divisi", href: "/admin/master/division" },
-      { label: "Master Jabatan", href: "/admin/master/position" },
-      { label: "Master Karyawan", href: "/admin/master/employees" },
-      // { label: "Master Tipe Cuti", href: "/admin/master/leave-type" },
-      // { label: "Master Shift", href: "/admin/master/shift" },
+      {
+        label: "Master Kantor",
+        href: "/admin/master/office",
+        requiredFeature: "Office Management",
+      },
+      {
+        label: "Master Departemen",
+        href: "/admin/master/departments",
+        requiredFeature: "Department Management",
+      },
+      {
+        label: "Master Divisi",
+        href: "/admin/master/division",
+        requiredFeature: "Division Management",
+      },
+      {
+        label: "Master Jabatan",
+        href: "/admin/master/position",
+        requiredFeature: "Position Management",
+      },
+      {
+        label: "Master Karyawan",
+        href: "/admin/master/employees",
+        requiredFeature: "Employee Management",
+      },
     ],
   },
   {
@@ -48,8 +69,17 @@ export const SIDEBAR_ITEMS: MenuItem[] = [
     label: "Transaksi",
     icon: ClipboardList,
     children: [
-      { label: "Pengajuan Cuti", href: "/admin/transaction/leave-request" },
-      { label: "Saldo Cuti", href: "/admin/transaction/leave-balance" },
+      {
+        label: "Pengajuan Cuti",
+        href: "/admin/transaction/leave-request",
+        // Example feature name
+        requiredFeature: "Leave Request",
+      },
+      {
+        label: "Saldo Cuti",
+        href: "/admin/transaction/leave-balance",
+        requiredFeature: "Leave Balance",
+      },
     ],
   },
   {
@@ -57,8 +87,16 @@ export const SIDEBAR_ITEMS: MenuItem[] = [
     label: "Manajemen",
     icon: Users2,
     children: [
-      { label: "Manajemen Pengguna", href: "/admin/management/user" },
-      { label: "Role & Permissions", href: "/admin/management/roles" },
+      {
+        label: "Manajemen Pengguna",
+        href: "/admin/management/user",
+        requiredFeature: "User Management",
+      },
+      {
+        label: "Role & Permissions",
+        href: "/admin/management/roles",
+        requiredFeature: "Role Management",
+      },
     ],
   },
   {
@@ -66,5 +104,6 @@ export const SIDEBAR_ITEMS: MenuItem[] = [
     label: "Struktur Organisasi",
     icon: Building2,
     href: "/admin/organization",
+    requiredFeature: "Organization Management",
   },
 ];

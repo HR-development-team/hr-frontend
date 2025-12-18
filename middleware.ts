@@ -3,15 +3,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@features/auth/utils/verifyToken";
 
-const ADMIN_ROLES = ["ROL0000001", "ROL0000002"];
-const EMPLOYEE_ROLES = ["ROL0000003", "ROL0000004", "ROL0000005"];
+const EMPLOYEE_ROLES = ["Employee"];
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
-
   const { pathname } = request.nextUrl;
-  const publicPath: string = "/login";
-  const isPublicPath: boolean = publicPath.includes(pathname);
+
+  const loginPath = "/login";
+  const adminDashboard = "/admin/dashboard";
+  const employeeDashboard = "/karyawan/dashboard";
 
   let payload: any = null;
   if (token) {
@@ -22,47 +22,37 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const userRole = payload?.role_code;
+  const isAuthenticated = !!payload;
 
-  if (payload && isPublicPath) {
-    if (ADMIN_ROLES.includes(userRole)) {
-      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-    } else if (EMPLOYEE_ROLES.includes(userRole)) {
-      return NextResponse.redirect(new URL("/karyawan/Dashboard", request.url));
-    }
+  // 2. CHANGE: Extract role_name instead of role_code
+  // NOTE: Ensure your Backend JWT Token actually contains 'role_name' in the payload!
+  const userRole = payload?.role_name;
+
+  const isEmployee = EMPLOYEE_ROLES.includes(userRole);
+  const isPublicPath = pathname === loginPath;
+
+  // --- Scenario 1: Already Logged In (on Login Page) ---
+  if (isPublicPath && isAuthenticated) {
+    if (isEmployee)
+      return NextResponse.redirect(new URL(employeeDashboard, request.url));
+    return NextResponse.redirect(new URL(adminDashboard, request.url));
   }
 
-  if (!payload && !isPublicPath) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // --- Scenario 2: Not Logged In ---
+  if (!isAuthenticated && !isPublicPath) {
+    return NextResponse.redirect(new URL(loginPath, request.url));
   }
 
-  // otorization
-  if (payload && !isPublicPath) {
-    if (pathname.startsWith("/admin")) {
-      if (!ADMIN_ROLES.includes(userRole)) {
-        return NextResponse.redirect(
-          new URL("/karyawan/Dashboard", request.url)
-        );
-      }
+  // --- Scenario 3: Role Authorization ---
+  if (isAuthenticated && !isPublicPath) {
+    // Protect Admin Routes
+    if (pathname.startsWith("/admin") && isEmployee) {
+      return NextResponse.redirect(new URL(employeeDashboard, request.url));
     }
 
-    if (pathname.startsWith("/karyawan")) {
-      if (!EMPLOYEE_ROLES.includes(userRole)) {
-        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-      }
-    }
-
-    if (pathname.startsWith("/karyawan") || pathname.startsWith("/admin")) {
-      if (
-        !EMPLOYEE_ROLES.includes(userRole) &&
-        !ADMIN_ROLES.includes(userRole)
-      ) {
-        const response = NextResponse.redirect(
-          new URL("/admin/dashboard", request.url)
-        );
-        response.cookies.delete("token");
-        return response;
-      }
+    // Protect Employee Routes
+    if (pathname.startsWith("/karyawan") && !isEmployee) {
+      return NextResponse.redirect(new URL(adminDashboard, request.url));
     }
   }
 

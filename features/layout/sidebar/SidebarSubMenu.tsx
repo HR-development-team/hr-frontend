@@ -5,6 +5,7 @@ import { MenuItem } from "./sidebarConfig";
 import { SidebarItem } from "./SidebarItem";
 import { usePathname } from "next/navigation";
 import { classNames } from "primereact/utils";
+import { ChevronDown, Dot } from "lucide-react";
 
 interface SidebarSubmenuProps {
   item: MenuItem;
@@ -12,31 +13,35 @@ interface SidebarSubmenuProps {
 
 export const SidebarSubmenu = ({ item }: SidebarSubmenuProps) => {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
 
-  // Check if any child is currently active
-  const hasActiveChild = item.children?.some((child) =>
-    pathname.startsWith(child.href)
-  );
+  // 1. Strict check: active if current path starts with child href
+  const isChildActive =
+    item.children?.some(
+      (child) =>
+        child.href &&
+        (pathname === child.href || pathname.startsWith(`${child.href}/`))
+    ) ?? false;
 
-  // Auto-expand if a child is active
+  const [isOpen, setIsOpen] = useState(isChildActive);
+
   useEffect(() => {
-    if (hasActiveChild) {
+    if (isChildActive) {
       setIsOpen(true);
     }
-  }, [hasActiveChild]);
+  }, [isChildActive]);
 
   return (
-    <div className="">
-      {/* 1. Toggle Header */}
+    <div className="mb-1">
+      {/* --- Parent Toggle Button --- */}
       <div
         onClick={() => setIsOpen(!isOpen)}
         className={classNames(
-          "flex align-items-center justify-content-between px-3 py-3 border-round-md cursor-pointer select-none transition-colors duration-200",
+          // PrimeFlex classes
+          "flex align-items-center justify-content-between px-3 py-2 border-round cursor-pointer select-none transition-colors transition-duration-200 hover:surface-100",
           {
-            "bg-blue-50 text-blue-700": hasActiveChild && !isOpen,
-            "text-600 hover:surface-100 hover:text-900": !hasActiveChild,
-            "text-blue-800 font-medium": isOpen && hasActiveChild,
+            "text-blue-700 bg-blue-50 font-medium": !isOpen && isChildActive, // Highlight parent if closed but child active
+            "text-700": !isChildActive,
+            "text-900 font-medium": isOpen,
           }
         )}
       >
@@ -44,52 +49,46 @@ export const SidebarSubmenu = ({ item }: SidebarSubmenuProps) => {
           {item.icon && (
             <item.icon
               size={20}
-              className={classNames("transition-colors duration-200", {
-                "text-blue-700": hasActiveChild,
-                "text-500": !hasActiveChild,
+              className={classNames({
+                "text-blue-700": isChildActive,
+                "text-500": !isChildActive,
               })}
             />
           )}
-          <span className="text-sm font-medium">{item.label}</span>
+          <span className="text-sm">{item.label}</span>
         </div>
 
-        <i
+        <ChevronDown
+          size={16}
           className={classNames(
-            "pi pi-chevron-down text-xs transition-transform duration-300 ease-in-out",
+            "text-400 transition-all transition-duration-300",
             {
               "rotate-180": isOpen,
-              "text-blue-700": hasActiveChild,
-              "text-500": !hasActiveChild,
             }
           )}
         />
       </div>
 
-      {/* 2. The Animation Container */}
+      {/* --- Animation Container --- */}
       <div
+        className="transition-all transition-duration-300 transition-ease-in-out"
         style={{
-          // Force Grid layout
-          display: "grid",
-          // Toggle the rows from 0 fraction to 1 fraction
+          display: "grid", // Essential for the row animation
           gridTemplateRows: isOpen ? "1fr" : "0fr",
-          // Explicitly tell the browser to animate grid-template-rows
-          transition:
-            "grid-template-rows 300ms ease-out, opacity 300ms ease-out",
-          // Fade effect
-          opacity: isOpen ? 1 : 0,
+          opacity: isOpen ? 1 : 0.6,
         }}
       >
-        {/* CRITICAL: The inner div must be overflow-hidden.
-           This allows the grid row to slice the content as it shrinks.
-        */}
         <div className="overflow-hidden min-h-0">
-          <div className="flex flex-column gap-1 mt-1 ml-4 border-l-2 border-gray-100 pl-2">
+          <div className="flex flex-column mt-1">
             {item.children?.map((child) => (
               <SidebarItem
                 key={child.href}
                 label={child.label}
-                href={child.href}
+                href={child.href!}
                 isActive={pathname === child.href}
+                icon={Dot}
+                // PrimeFlex indentation
+                className="pl-5"
               />
             ))}
           </div>
