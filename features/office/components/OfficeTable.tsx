@@ -26,8 +26,6 @@ export default function OfficeTable({
 
   const handleViewClick = async (row: Office) => {
     setViewingId(row.id);
-
-    // Small delay/async handling to show loading state on the button
     setTimeout(async () => {
       await onView(row);
       setViewingId(null);
@@ -43,42 +41,50 @@ export default function OfficeTable({
       rowsPerPageOptions={[5, 10, 25, 50]}
       className="border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden"
       emptyMessage="Tidak ada data kantor"
+      // Added stripedRows for better readability with hierarchy
+      stripedRows
     >
-      {/* Column Config: Adjust 'field' names based on your actual API response */}
+      <Column field="office_code" header="Kode" style={{ width: "15%" }} />
+
+      {/* CHANGED: Logic moved here. We identify the office status in the Name column */}
       <Column
-        field="office_code"
-        header="Kode Kantor"
-        style={{ width: "20%" }}
+        field="name"
+        header="Nama Kantor"
+        style={{ width: "35%" }}
+        body={(row: Office) => (
+          <div className="flex align-items-center gap-2">
+            <span className="font-medium text-gray-900">{row.name}</span>
+            {/* If no parent, it is the Head Office/Root */}
+            {!row.parent_office_name && (
+              <Tag
+                value="Pusat"
+                severity="info"
+                className="text-xs px-2 py-0 border-round-md"
+              />
+            )}
+          </div>
+        )}
       />
-      <Column field="name" header="Nama Kantor" style={{ width: "25%" }} />
+
+      {/* CHANGED: This column now strictly shows the Parent Name or a dash */}
       <Column
         field="parent_office_name"
-        header="Nama Kantor Induk"
-        style={{ width: "25%" }}
+        header="Kantor Induk"
+        style={{ width: "30%" }}
         body={(row: Office) => {
           if (row.parent_office_name) {
             return (
-              <span className="text-gray-800 font-medium">
-                {row.parent_office_name}
-              </span>
+              <span className="text-gray-700">{row.parent_office_name}</span>
             );
           }
-
-          return (
-            <Tag
-              icon="pi pi-building"
-              value="Kantor Pusat"
-              severity="success"
-              className="px-2 text-xs gap-1"
-            />
-          );
+          // Use a subtle placeholder for null values
+          return <span className="text-gray-400">-</span>;
         }}
       />
 
-      {/* Actions Column */}
       <Column
         header="Aksi"
-        style={{ width: "15%" }}
+        style={{ width: "20%" }}
         body={(row: Office) => (
           <div className="flex gap-2">
             <Button
@@ -89,8 +95,6 @@ export default function OfficeTable({
               loading={viewingId === row.id}
               onClick={() => handleViewClick(row)}
             />
-
-            {/* Edit Button */}
             <Button
               icon="pi pi-pencil text-sm"
               size="small"
@@ -99,8 +103,6 @@ export default function OfficeTable({
               onClick={() => onEdit(row)}
               disabled={viewingId !== null}
             />
-
-            {/* Delete Button */}
             <Button
               icon="pi pi-trash text-sm"
               size="small"

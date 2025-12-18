@@ -9,6 +9,7 @@ export const useDialogDivision = () => {
   const [currentDivision, setCurrentDivision] = useState<
     Division | DivisionDetail | null
   >(null);
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
 
   // Open for adding a new division
   const openAdd = useCallback(() => {
@@ -35,6 +36,15 @@ export const useDialogDivision = () => {
     setIsVisible(false);
     // Delay clearing data slightly to prevent UI flicker while closing
     setTimeout(() => setCurrentDivision(null), 200);
+  }, []);
+
+  // Open for filtering division
+  const openFilter = useCallback(() => {
+    setIsFilterVisible(true);
+  }, []);
+
+  const closeFilter = useCallback(() => {
+    setIsFilterVisible(false);
   }, []);
 
   // Derived Values
@@ -71,5 +81,8 @@ export const useDialogDivision = () => {
     openEdit,
     openView,
     close,
+    isFilterVisible,
+    openFilter,
+    closeFilter,
   };
 };

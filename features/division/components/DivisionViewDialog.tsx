@@ -13,18 +13,7 @@ import { DivisionDetail } from "../schemas/divisionSchema";
 import DivisionViewDialogSkeleton from "./DivisionViewDialogSkeleton";
 import { Tag } from "primereact/tag";
 import { Divider } from "primereact/divider";
-
-// Helper for date formatting (if not imported from utils)
-const formatDateIDN = (dateString?: string) => {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+import { formatDateIDN } from "@/utils/dateFormat";
 
 interface DivisionViewDialogProps {
   isOpen: boolean;

@@ -3,14 +3,14 @@
 import { useMemo, useEffect } from "react";
 import { Briefcase } from "lucide-react";
 import { Card } from "primereact/card";
+import { Button } from "primereact/button";
 
 // Components
 import DivisionTable from "../components/DivisionTable";
 import DivisionDeleteDialog from "../components/DivisionDeleteDialog";
-import DivisionSaveDialog, {
-  OfficeOption,
-} from "../components/DivisionSaveDialog";
+import DivisionSaveDialog from "../components/DivisionSaveDialog";
 import DivisionViewDialog from "../components/DivisionViewDialog";
+import DivisionFilterDialog from "../components/DivisionFilterDialog";
 import TableToolbar from "@components/TableToolbar";
 import DateRangeFilter from "@components/DateRangeFilter";
 
@@ -53,9 +53,16 @@ export default function DivisionManagementPage() {
   const filteredDivisions = useMemo(() => {
     let result = divisions;
 
+    // 2. Updated Filter Logic
     if (filter.selectedOffice) {
       result = result.filter(
         (div) => div.office_code === filter.selectedOffice
+      );
+    }
+
+    if (filter.selectedDepartment) {
+      result = result.filter(
+        (div) => div.department_code === filter.selectedDepartment
       );
     }
 
@@ -68,7 +75,14 @@ export default function DivisionManagementPage() {
       );
     }
     return result;
-  }, [divisions, filter.selectedOffice, filter.search]);
+  }, [
+    divisions,
+    filter.selectedOffice,
+    filter.selectedDepartment,
+    filter.search,
+  ]);
+
+  const isFilterActive = !!filter.selectedOffice || !!filter.selectedDepartment;
 
   useEffect(() => {
     fetchDepartments();
@@ -108,7 +122,7 @@ export default function DivisionManagementPage() {
           <TableToolbar
             searchValue={filter.search}
             onSearchChange={(e) => filter.setSearch(e.target.value)}
-            searchPlaceholder="Cari berdasarkan Nama Divisi"
+            searchPlaceholder="Cari..."
             onAdd={dialog.openAdd}
             filterContent={
               <DateRangeFilter
@@ -125,27 +139,26 @@ export default function DivisionManagementPage() {
               />
             }
             actionContent={
-              <Dropdown
-                value={filter.selectedOffice}
-                options={officeOptions}
-                onChange={(e) => filter.setSelectedOffice(e.value)}
-                itemTemplate={(option: OfficeOption) => {
-                  if (!option) return null;
-                  return (
-                    <div className="flex align-items-center justify-content-between gap-2 w-full">
-                      <span>{option.label}</span>
-                      <span className="text-gray-500 text-xs font-mono bg-gray-100 px-2 py-1 border-round">
-                        {option.value}
-                      </span>
-                    </div>
-                  );
-                }}
-                placeholder="Filter Kantor"
-                className="w-full sm:w-15rem"
-                showClear
-                filter
+              <Button
+                label="Filter"
+                icon="pi pi-filter"
+                className="gap-1 w-full sm:w-auto"
+                onClick={() => dialog.openFilter()}
+                outlined={!isFilterActive}
               />
             }
+          />
+
+          {/* Filter Dialog */}
+          <DivisionFilterDialog
+            isOpen={dialog.isFilterVisible}
+            onClose={dialog.closeFilter}
+            selectedOffice={filter.selectedOffice}
+            onOfficeChange={filter.setSelectedOffice}
+            officeOptions={officeOptions}
+            selectedDepartment={filter.selectedDepartment}
+            onDepartmentChange={filter.setSelectedDepartment}
+            departmentOptions={departmentOptions}
           />
 
           {/* Data Table */}

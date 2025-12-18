@@ -3,21 +3,20 @@
 import { useMemo, useEffect } from "react";
 import { Building, Layers } from "lucide-react";
 import { Card } from "primereact/card";
+import { Button } from "primereact/button";
 
 // Components
 import DepartmentTable from "../components/DepartmentTable";
 import DepartmentDeleteDialog from "../components/DepartmentDeleteDialog";
-import DepartmentSaveDialog, {
-  OfficeOption,
-} from "../components/DepartmentSaveDialog";
+import DepartmentSaveDialog from "../components/DepartmentSaveDialog";
 import DepartmentViewDialog from "../components/DepartmentViewDialog";
+import DepartmentFilterDialog from "../components/DepartmentFilterDialog";
 import TableToolbar from "@components/TableToolbar";
 import DateRangeFilter from "@components/DateRangeFilter";
 
 // Facade Hook
 import { usePageDepartment } from "../hooks/usePageDepartment";
 import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
-import { Dropdown } from "primereact/dropdown";
 
 export default function DepartmentManagementPage() {
   const {
@@ -61,6 +60,8 @@ export default function DepartmentManagementPage() {
     return result;
   }, [departments, filter.selectedOffice, filter.search]);
 
+  const isFilterActive = !!filter.selectedOffice;
+
   useEffect(() => {
     fetchOffices();
   }, [fetchOffices]);
@@ -98,7 +99,7 @@ export default function DepartmentManagementPage() {
           <TableToolbar
             searchValue={filter.search}
             onSearchChange={(e) => filter.setSearch(e.target.value)}
-            searchPlaceholder="Cari berdasarkan Nama Departemen"
+            searchPlaceholder="Cari..."
             onAdd={dialog.openAdd}
             filterContent={
               <div className="w-full sm:w-auto">
@@ -117,27 +118,23 @@ export default function DepartmentManagementPage() {
               </div>
             }
             actionContent={
-              <Dropdown
-                value={filter.selectedOffice}
-                options={officeOptions}
-                onChange={(e) => filter.setSelectedOffice(e.value)}
-                itemTemplate={(option: OfficeOption) => {
-                  if (!option) return null;
-                  return (
-                    <div className="flex align-items-center justify-content-between gap-2 w-full">
-                      <span>{option.label}</span>
-                      <span className="text-gray-500 text-xs font-mono bg-gray-100 px-2 py-1 border-round">
-                        {option.value}
-                      </span>
-                    </div>
-                  );
-                }}
-                placeholder="Filter Kantor"
-                className="w-full sm:w-15rem"
-                showClear
-                filter
+              <Button
+                label="Filter"
+                icon="pi pi-filter"
+                className="gap-1 w-full sm:w-auto"
+                onClick={() => dialog.openFilter()}
+                outlined={!isFilterActive}
               />
             }
+          />
+
+          {/* Filter Dialog */}
+          <DepartmentFilterDialog
+            isOpen={dialog.isFilterVisible}
+            onClose={dialog.closeFilter}
+            selectedOffice={filter.selectedOffice}
+            onOfficeChange={filter.setSelectedOffice}
+            officeOptions={officeOptions}
           />
 
           {/* Data Table */}

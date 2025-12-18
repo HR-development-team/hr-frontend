@@ -5,17 +5,19 @@ export const positionSchema = z.object({
   position_code: z.string().optional(),
   name: z.string(),
   base_salary: z.union([z.string(), z.number()]),
-  division_code: z.string(),
-  parent_position_code: z.string().nullable().optional(),
   sort_order: z.number().optional(),
   description: z.string().nullable().optional(),
+  parent_position_code: z.string().nullable().optional(),
+  parent_position_name: z.string().nullable().optional(),
+  division_code: z.string(),
+  division_name: z.string(),
+  department_code: z.string(),
+  department_name: z.string(),
+  office_code: z.string(),
+  office_name: z.string(),
 });
 
 export const positionDetailSchema = positionSchema.extend({
-  division_name: z.string().nullable().optional(),
-  department_code: z.string().nullable().optional(),
-  department_name: z.string().nullable().optional(),
-  parent_position_name: z.string().nullable().optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
