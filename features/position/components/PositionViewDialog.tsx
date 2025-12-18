@@ -18,7 +18,12 @@ import { PositionDetail } from "../schemas/positionSchema";
 import { formatDateIDN } from "@/utils/dateFormat";
 import { formatRupiah } from "@/utils/currencyFormat";
 import PositionViewDialogSkeleton from "./PositionViewDialogSkeleton";
+<<<<<<< HEAD
 import { Tag } from "primereact/tag";
+=======
+import { formatDateIDN } from "@/utils/dateFormat";
+import { formatRupiah } from "@/utils/currencyFormat";
+>>>>>>> 8012968 (feat: implement dynamic sidebar based on feature that user have)
 
 interface PositionViewDialogProps {
   isOpen: boolean;
