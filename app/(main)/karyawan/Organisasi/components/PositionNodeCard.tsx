@@ -1,4 +1,4 @@
-import { PositionNodeData } from "@features/office-organization/schemas/officeOrganizationSchema";
+import { PositionNodeData } from "@features/organization/schemas/organizationSchema";
 import { Briefcase } from "lucide-react";
 
 interface PositionNodeCardProps {

@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
   EDITOFFICE: (id: string) => `${API_URL}/master-offices/${id}`, // Update Office By Id
   DELETEOFFICE: (id: string) => `${API_URL}/master-offices/${id}`, // Delete Office By Id
   GETOFFICEBYID: (id: string) => `${API_URL}/master-offices/${id}`, // Get Office By Id
+  GETOFFICEORGANIZATION: `${API_URL}/master-offices/organization`,
 
   // --- Master Departments ---
   ADDDEPARTMENT: `${API_URL}/master-departments`, // Create New Department
@@ -26,6 +27,8 @@ export const API_ENDPOINTS = {
   EDITPOSITION: (id: string) => `${API_URL}/master-positions/${id}`, // Update Position By Id
   DELETEPOSITION: (id: string) => `${API_URL}/master-positions/${id}`, // Delete Position By Id
   GETPOSITIONBYID: (id: string) => `${API_URL}/master-positions/${id}`, // Get Position By Id
+  GETPOSITIONORGANIZATION: (office_code: string) =>
+    `${API_URL}/master-positions/organization/${office_code}`,
 
   // --- INI TAMBAHAN: 'Master Divisions' yang sebelumnya hilang ---
   ADDDIVISION: `${API_URL}/master-divisions`, // Create New Divisions
@@ -130,7 +133,4 @@ export const API_ENDPOINTS = {
 
   // --- INI TAMBAHAN: roles ---
   GETALLROLES: `${API_URL}/roles`,
-
-  // --- INI TAMBAHAN: organization ---
-  GETOFFICEORGANIZATION: `${API_URL}/master-offices/organization`,
 };

@@ -1,17 +1,22 @@
 "use client";
 
 import { Network } from "lucide-react";
-
-// Facade Hook
-import { usePageOfficeOrganization } from "../hooks/usePageOfficeOrganization";
+import { usePageOrganization } from "../hooks/usePageOrganization";
 import OrganizationNode from "../components/OrganizationNode";
 
-export default function OfficeOrganizationManagementPage() {
-  const { isLoading, offices, positions } = usePageOfficeOrganization();
+export default function OrganizationManagementPage() {
+  const {
+    // Data
+    offices,
+    positionHierarchy,
+    selectedOffice,
+    isLoading,
 
-  // ---------------------------------------------------------------------
-  //   Render
-  // ---------------------------------------------------------------------
+    // Handlers
+    handleOfficeClick,
+    handleBackToOffice,
+  } = usePageOrganization();
+
   return (
     <div>
       {/* Title Section */}
@@ -30,9 +35,12 @@ export default function OfficeOrganizationManagementPage() {
       </div>
 
       <OrganizationNode
-        initialOfficeData={offices}
-        initialPositionData={positions}
-        isOfficeLoading={isLoading}
+        offices={offices}
+        positionHierarchy={positionHierarchy}
+        selectedOffice={selectedOffice}
+        isLoading={isLoading}
+        onOfficeClick={handleOfficeClick}
+        onBack={handleBackToOffice}
       />
     </div>
   );

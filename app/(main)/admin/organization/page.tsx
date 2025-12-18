@@ -1,4 +1,4 @@
-import OfficeOrganizationManagementPage from "@features/office-organization/pages/OfficeOrganizationManagementPage";
+import OfficeOrganizationManagementPage from "@features/organization/pages/OrganizationManagementPage";
 
 export default function Page() {
   return <OfficeOrganizationManagementPage />;
