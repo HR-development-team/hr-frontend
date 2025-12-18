@@ -8,7 +8,7 @@ import OrganizationNode from "./components/OrganizationNode";
 import {
   PositionStructure,
   OfficeStructure,
-} from "@features/office-organization/schemas/officeOrganizationSchema";
+} from "@features/organization/schemas/organizationSchema";
 
 export default function Organization() {
   const toastRef = useRef<Toast>(null);

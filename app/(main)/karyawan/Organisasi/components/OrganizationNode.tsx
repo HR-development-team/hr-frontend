@@ -1,13 +1,13 @@
 "use client";
 
-import { mapDataToTreeNode } from "@features/office-organization/utils/buildOrgChartTree";
+import { mapDataToTreeNode } from "@features/organization/utils/buildOrgChartTree";
 import {
   OfficeNodeData,
   OfficeStructure,
   PositionNodeData,
   PositionStructure,
   SafeTreeNode,
-} from "@features/office-organization/schemas/officeOrganizationSchema";
+} from "@features/organization/schemas/organizationSchema";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { OrganizationChart } from "primereact/organizationchart";
