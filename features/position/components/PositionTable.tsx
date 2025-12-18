@@ -74,6 +74,20 @@ export default function PositionTable({
       />
 
       <Column
+        field="department_name"
+        header="Nama Departemen"
+        sortable
+        style={{ width: "20%" }}
+      />
+
+      <Column
+        field="office_name"
+        header="Nama Kantor"
+        sortable
+        style={{ width: "20%" }}
+      />
+
+      <Column
         field="base_salary"
         header="Gaji Pokok"
         body={salaryBodyTemplate}

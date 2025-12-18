@@ -64,18 +64,18 @@ export default function PositionManagementPage() {
     let result = positions;
 
     // Level 1: Office
-    // if (filter.selectedOffice) {
-    //   result = result.filter(
-    //     (pos) => pos.office_code === filter.selectedOffice
-    //   );
-    // }
+    if (filter.selectedOffice) {
+      result = result.filter(
+        (pos) => pos.office_code === filter.selectedOffice
+      );
+    }
 
-    // // Level 2: Department
-    // if (filter.selectedDepartment) {
-    //   result = result.filter(
-    //     (pos) => pos.department_code === filter.selectedDepartment
-    //   );
-    // }
+    // Level 2: Department
+    if (filter.selectedDepartment) {
+      result = result.filter(
+        (pos) => pos.department_code === filter.selectedDepartment
+      );
+    }
 
     // Level 3: Division
     if (filter.selectedDivision) {
