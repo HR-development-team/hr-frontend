@@ -12,23 +12,20 @@ import {
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import dynamic from "next/dynamic";
+// 1. Import useState and useEffect
+import { useState, useEffect } from "react";
 
-// Ensure this type matches your schema
 import { OfficeDetail } from "../schemas/officeSchema";
 import OfficeViewDialogSkeleton from "./OfficeViewDialogSkeleton";
 
-// Dynamic import for the Map (Read-only mode)
-const InternalMapInput = dynamic(
-  () => import("./mapComponents/InternalMapInput"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-20rem bg-gray-100 border-round flex align-items-center justify-content-center">
-        Memuat Peta...
-      </div>
-    ),
-  }
-);
+const InternalMapInput = dynamic(() => import("./mapComponents/MapInput"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-20rem w-full bg-gray-100 border-round flex align-items-center justify-content-center text-gray-500">
+      Memuat Peta...
+    </div>
+  ),
+});
 
 interface OfficeViewDialogProps {
   isOpen: boolean;
@@ -43,10 +40,31 @@ export default function OfficeViewDialog({
   office,
   isLoading,
 }: OfficeViewDialogProps) {
+  // 2. Add state to control when the map should render
+  const [isMapReady, setIsMapReady] = useState(false);
+
   const mapPosition = {
     lat: parseFloat(office?.latitude?.toString() ?? "0") || -6.2,
     lng: parseFloat(office?.longitude?.toString() ?? "0") || 106.816666,
   };
+
+  // 3. Effect: Only render map after Dialog animation completes
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (isOpen) {
+      // PrimeReact/Tailwind modals usually take 150-300ms to transition.
+      // We wait 300ms to ensure the DIV has full width/height before Leaflet mounts.
+      timer = setTimeout(() => {
+        setIsMapReady(true);
+      }, 300);
+    } else {
+      // Reset when closed so it re-mounts fresh next time
+      setIsMapReady(false);
+    }
+
+    return () => clearTimeout(timer);
+  }, [isOpen]);
 
   const handleCoordinateChange = () => {};
 
@@ -73,8 +91,9 @@ export default function OfficeViewDialog({
         <OfficeViewDialogSkeleton />
       ) : office ? (
         <div className="flex flex-column gap-4 mt-2">
-          {/* --- 1. Header / Identity Section --- */}
+          {/* ... [Header Section Unchanged] ... */}
           <div className="bg-blue-50 p-3 border-round-xl border-1 border-blue-100">
+            {/* ... header content ... */}
             <div className="flex gap-2 align-items-start">
               <div className="p-2 bg-white flex align-items-center border-round-xl">
                 <Building className="text-blue-500" size={32} />
@@ -96,10 +115,10 @@ export default function OfficeViewDialog({
             </div>
           </div>
 
-          {/* --- 2. Main Content Grid --- */}
           <div className="grid">
-            {/* Left Column: Details */}
+            {/* Left Column: Details (Unchanged) */}
             <div className="col-12 lg:col-4">
+              {/* ... all your detail fields ... */}
               <div className="flex flex-column gap-4">
                 {/* Parent Office */}
                 <div className="w-full text-base font-medium">
@@ -163,18 +182,31 @@ export default function OfficeViewDialog({
             </div>
 
             {/* Right Column: Map */}
-
             <div className="col-12 lg:col-8">
               <div className="flex gap-2 align-items-center mb-2 text-400">
                 <MapPinned size={14} />
                 <span className="font-medium text-xs">LOKASI PETA</span>
               </div>
-              <InternalMapInput
-                initialPosition={mapPosition}
-                onCoordinateChange={handleCoordinateChange}
-              />
 
+              <div
+                className="w-full border-round overflow-hidden shadow-1 bg-gray-50 border-1 border-gray-200 relative"
+                style={{ height: "400px", minHeight: "400px" }}
+              >
+                {/* 4. Conditional Rendering based on timeout */}
+                {isMapReady ? (
+                  <InternalMapInput
+                    initialPosition={mapPosition}
+                    onCoordinateChange={handleCoordinateChange}
+                  />
+                ) : (
+                  // Optional: A placeholder while waiting for the 300ms
+                  <div className="h-20rem bg-gray-50 border-round flex align-items-center justify-content-center text-gray-400 text-sm">
+                    Memuat Peta...
+                  </div>
+                )}
+              </div>
               <a
+                // 5. Fixed broken URL (removed the '0' typo before mapPosition.lat)
                 href={`https://www.google.com/maps/search/?api=1&query=${mapPosition.lat},${mapPosition.lng}`}
                 target="_blank"
                 rel="noopener noreferrer"
