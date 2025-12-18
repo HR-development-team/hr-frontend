@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
-import { Dropdown } from "primereact/dropdown";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Calendar } from "primereact/calendar";
 import { TabView, TabPanel } from "primereact/tabview";
@@ -18,25 +17,14 @@ import {
   employeeFormSchema,
 } from "../schemas/employeeSchema";
 import { toFormikValidation } from "@utils/formikHelpers";
+import FormDropdown from "@components/FormDropdown";
+import FormCalendar from "@components/FormCalendar";
+import { Office, Department, Division, Position } from "../schemas/optionTypes";
 
 // Option Interfaces
 export interface SelectOption {
   label: string;
   value: string;
-}
-
-interface EmployeeSaveDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  employeeData: any;
-  onSubmit: (values: EmployeeFormData) => Promise<void>;
-  isSubmitting: boolean;
-
-  // Dropdown Options
-  officeOptions: SelectOption[];
-  positionOptions: SelectOption[];
-  userOptions: SelectOption[];
 }
 
 const employeeDefaultValues: EmployeeFormData = {
@@ -65,6 +53,22 @@ const employeeDefaultValues: EmployeeFormData = {
   bank_account: null,
 };
 
+interface EmployeeSaveDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  employeeData: any;
+  onSubmit: (values: EmployeeFormData) => Promise<void>;
+  isSubmitting: boolean;
+
+  // CHANGED: We need full arrays for cascading logic
+  offices: Office[];
+  departments: Department[];
+  divisions: Division[];
+  positions: Position[];
+  userOptions: SelectOption[]; // This stays simple
+}
+
 export default function EmployeeSaveDialog({
   employeeData,
   onSubmit,
@@ -72,21 +76,22 @@ export default function EmployeeSaveDialog({
   isOpen,
   onClose,
   title,
-  officeOptions = [],
-  positionOptions = [],
+  offices = [],
+  departments = [],
+  divisions = [],
+  positions = [],
   userOptions = [],
 }: EmployeeSaveDialogProps) {
-  // 1. Memoize Initial Values
+  const [activeIndex, setActiveIndex] = useState(0);
+
   const initialValues = useMemo(() => {
     if (employeeData) {
-      // Data transformation is already handled in useDialogEmployee hook
-      // We just pass it through, ensuring defaults if something slipped
       return { ...employeeDefaultValues, ...employeeData };
     }
     return employeeDefaultValues;
   }, [employeeData]);
 
-  // 2. Setup Formik
+  // 3. Setup Formik
   const formik = useFormik<EmployeeFormData>({
     initialValues: initialValues,
     enableReinitialize: true,
@@ -103,6 +108,124 @@ export default function EmployeeSaveDialog({
     },
   });
 
+  const [selectedDept, setSelectedDept] = useState<string>("");
+  const [selectedDiv, setSelectedDiv] = useState<string>("");
+  const filteredDepartments = useMemo(() => {
+    // Filter departments based on selected formik.values.office_code
+    return departments
+      .filter((d) => d.office_code === formik.values.office_code)
+      .map((d) => ({
+        label: d.name,
+        value: d.department_code,
+        code: d.department_code,
+      }));
+  }, [departments, formik.values.office_code]);
+
+  const filteredDivisions = useMemo(() => {
+    return divisions
+      .filter((d) => d.department_code === selectedDept)
+      .map((d) => ({
+        label: d.name,
+        value: d.division_code,
+        code: d.division_code,
+      }));
+  }, [divisions, selectedDept]);
+
+  const filteredPositions = useMemo(() => {
+    return positions
+      .filter((p) => p.division_code === selectedDiv)
+      .map((p) => ({
+        label: p.name,
+        value: p.position_code,
+        code: p.position_code,
+      }));
+  }, [positions, selectedDiv]);
+
+  // 3. Office Options with Code Display logic
+  const officeOptionsFormatted = useMemo(() => {
+    return offices.map((o) => ({
+      label: o.name,
+      value: o.office_code,
+      code: o.office_code, // Pass code for the template
+    }));
+  }, [offices]);
+
+  // Reset wizard on open/close
+  useEffect(() => {
+    if (isOpen && employeeData?.position_code) {
+      // Reverse lookup: Position -> Division -> Department
+      const pos = positions.find(
+        (p) => p.position_code === employeeData.position_code
+      );
+      if (pos) {
+        setSelectedDiv(pos.division_code);
+        const div = divisions.find(
+          (d) => d.division_code === pos.division_code
+        );
+        if (div) {
+          setSelectedDept(div.department_code);
+        }
+      }
+    } else if (isOpen && !employeeData) {
+      // Reset on new entry
+      setSelectedDept("");
+      setSelectedDiv("");
+    }
+  }, [isOpen, employeeData, positions, divisions]);
+
+  const handleHide = () => {
+    formik.resetForm();
+    setActiveIndex(0);
+    onClose();
+  };
+
+  // --- WIZARD NAVIGATION LOGIC ---
+
+  // Define which fields belong to which tab for validation
+  const fieldsByTab = [
+    // Tab 0: Job
+    [
+      "full_name",
+      "office_code",
+      "position_code",
+      "join_date",
+      "employment_status",
+    ],
+    // Tab 1: Personal
+    [
+      "birth_place",
+      "birth_date",
+      "gender",
+      "maritial_status",
+      "contact_phone",
+      "address",
+    ],
+    // Tab 2: Docs (Optional mostly, so empty array is fine or specific required ones)
+    ["ktp_number"],
+  ];
+
+  const handleNext = async () => {
+    // 1. Mark fields in current tab as touched to trigger validation UI
+    const currentFields = fieldsByTab[activeIndex];
+    const touched: { [key: string]: boolean } = {};
+    currentFields.forEach((field) => (touched[field] = true));
+    await formik.setTouched({ ...formik.touched, ...touched });
+
+    // 2. Check for errors in current tab
+    const errors = await formik.validateForm();
+    const hasErrorInTab = currentFields.some(
+      (field) => errors[field as keyof EmployeeFormData]
+    );
+
+    if (!hasErrorInTab) {
+      setActiveIndex((prev) => prev + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setActiveIndex((prev) => prev - 1);
+  };
+
   // Helpers
   const isFieldInvalid = (name: keyof EmployeeFormData) =>
     Boolean(formik.touched[name] && formik.errors[name]);
@@ -110,26 +233,40 @@ export default function EmployeeSaveDialog({
   const getFieldError = (name: keyof EmployeeFormData) =>
     isFieldInvalid(name) ? String(formik.errors[name]) : undefined;
 
-  const handleHide = () => {
-    formik.resetForm();
-    onClose();
-  };
-
   // Static Options
   const genderOptions = [
     { label: "Laki-laki", value: "laki-laki" },
     { label: "Perempuan", value: "perempuan" },
   ];
-
   const statusOptions = [
     { label: "Aktif", value: "aktif" },
     { label: "Inaktif", value: "inaktif" },
   ];
-
   const maritalOptions = [
     { label: "Menikah", value: "Married" },
     { label: "Belum Menikah", value: "Single" },
   ];
+
+  const getProps = <K extends keyof EmployeeFormData>(name: K) => ({
+    id: name,
+    name: name,
+    value: formik.values[name], // The type is now specific to the key 'K'
+    onChange: formik.handleChange,
+    touched: Boolean(formik.touched[name]),
+    error: formik.errors[name] as string,
+  });
+
+  const dropdownItemTemplate = (option: any) => {
+    if (!option) return null;
+    return (
+      <div className="flex align-items-center justify-content-between w-full gap-4">
+        <span>{option.label}</span>
+        <span className="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 border-round">
+          {option.code}
+        </span>
+      </div>
+    );
+  };
 
   return (
     <Dialog
@@ -138,34 +275,72 @@ export default function EmployeeSaveDialog({
       onHide={handleHide}
       modal
       className="w-full md:w-8 lg:w-6"
-      contentClassName="p-0" // Remove padding to let TabView fit nicely
-      footer={
-        <div className="flex justify-content-end gap-2 p-3 border-top-1 border-gray-100">
-          <Button
-            label="Batal"
-            icon="pi pi-times"
-            className="flex gap-1"
-            text
-            onClick={handleHide}
-            disabled={isSubmitting}
-          />
-          <Button
-            label="Simpan"
-            icon="pi pi-save"
-            className="flex gap-1"
-            severity="success"
-            onClick={() => formik.submitForm()}
-            loading={isSubmitting}
-            disabled={isSubmitting}
-          />
+      contentClassName="p-0"
+      footer={() => (
+        <div className="flex justify-content-between align-items-center w-full p-3 border-top-1 border-gray-100">
+          {/* Left Side: Cancel or Back */}
+          <div>
+            {activeIndex === 0 ? (
+              <Button
+                label="Batal"
+                icon="pi pi-times"
+                text
+                onClick={handleHide}
+                className="text-gray-600 gap-1"
+              />
+            ) : (
+              <Button
+                label="Kembali"
+                icon="pi pi-arrow-left"
+                className="gap-1"
+                outlined
+                onClick={handleBack}
+              />
+            )}
+          </div>
+
+          {/* Right Side: Next or Save */}
+          <div className="flex gap-2">
+            {/* Step Indicators (Optional visual cue) */}
+            <div className="flex align-items-center gap-1 mr-4 text-gray-400 text-sm">
+              <span>Langkah {activeIndex + 1} / 3</span>
+            </div>
+
+            {activeIndex < 2 ? (
+              <Button
+                label="Lanjut"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                className="gap-1"
+                onClick={handleNext}
+              />
+            ) : (
+              <Button
+                label="Simpan Data"
+                icon="pi pi-check"
+                severity="success"
+                className="gap-1"
+                onClick={() => formik.submitForm()}
+                loading={isSubmitting}
+              />
+            )}
+          </div>
         </div>
-      }
+      )} // Use dynamic footer
     >
       <form onSubmit={formik.handleSubmit}>
-        <TabView className="p-0">
+        <TabView
+          activeIndex={activeIndex}
+          onTabChange={() => {}}
+          className="p-0"
+          renderActiveOnly={false}
+          pt={{
+            nav: { className: "pointer-events-none" },
+          }}
+        >
           {/* --- TAB 1: PEKERJAAN (Job) --- */}
-          <TabPanel header="Pekerjaan" leftIcon="pi pi-briefcase mr-2">
-            <div className="grid mt-2">
+          <TabPanel header="1. Pekerjaan" leftIcon="pi pi-briefcase mr-2">
+            <div className="grid mt-2 px-3 pb-3">
               {/* Full Name */}
               <div className="col-12">
                 <FormInputText
@@ -177,104 +352,123 @@ export default function EmployeeSaveDialog({
                 />
               </div>
 
-              {/* Office */}
-              <div className="col-12 md:col-6 flex flex-column gap-2">
-                <label htmlFor="office_code" className="font-medium">
-                  Kantor <span className="text-red-500">*</span>
-                </label>
-                <Dropdown
-                  id="office_code"
-                  value={formik.values.office_code}
-                  options={officeOptions}
-                  onChange={(e) => formik.setFieldValue("office_code", e.value)}
+              {/* LEVEL 1: OFFICE */}
+              <div className="col-12 md:col-6">
+                <FormDropdown
+                  {...getProps("office_code")}
+                  label="Kantor"
+                  options={officeOptionsFormatted}
+                  itemTemplate={dropdownItemTemplate} // Custom Template
+                  onChange={(e) => {
+                    formik.setFieldValue("office_code", e.value);
+                    // Reset downstream
+                    setSelectedDept("");
+                    setSelectedDiv("");
+                    formik.setFieldValue("position_code", "");
+                  }}
                   placeholder="Pilih Kantor"
-                  className={classNames({
-                    "p-invalid": isFieldInvalid("office_code"),
-                  })}
                   filter
-                  showClear
+                  isRequired
                 />
-                {isFieldInvalid("office_code") && (
-                  <small className="p-error">
-                    {getFieldError("office_code")}
-                  </small>
-                )}
               </div>
 
-              {/* Position */}
-              <div className="col-12 md:col-6 flex flex-column gap-2">
-                <label htmlFor="position_code" className="font-medium">
-                  Jabatan <span className="text-red-500">*</span>
-                </label>
-                <Dropdown
-                  id="position_code"
-                  value={formik.values.position_code}
-                  options={positionOptions}
+              {/* LEVEL 2: DEPARTMENT (Intermediate - Not saved to Formik directly, just state) */}
+              <div className="col-12 md:col-6">
+                <FormDropdown
+                  id="department_temp"
+                  label="Departemen"
+                  value={selectedDept}
+                  options={filteredDepartments}
+                  itemTemplate={dropdownItemTemplate}
+                  onChange={(e) => {
+                    setSelectedDept(e.value);
+                    // Reset downstream
+                    setSelectedDiv("");
+                    formik.setFieldValue("position_code", "");
+                  }}
+                  placeholder={
+                    formik.values.office_code
+                      ? "Pilih Departemen"
+                      : "Pilih Kantor dahulu"
+                  }
+                  disabled={!formik.values.office_code}
+                  filter
+                  isRequired
+                />
+              </div>
+
+              {/* LEVEL 3: DIVISION (Intermediate) */}
+              <div className="col-12 md:col-6">
+                <FormDropdown
+                  id="division_temp"
+                  label="Divisi"
+                  value={selectedDiv}
+                  itemTemplate={dropdownItemTemplate}
+                  options={filteredDivisions}
+                  onChange={(e) => {
+                    setSelectedDiv(e.value);
+                    // Reset downstream
+                    formik.setFieldValue("position_code", "");
+                  }}
+                  placeholder={
+                    selectedDept ? "Pilih Divisi" : "Pilih Departemen dahulu"
+                  }
+                  disabled={!selectedDept}
+                  filter
+                  isRequired
+                />
+              </div>
+
+              {/* LEVEL 4: POSITION (Saved to Formik) */}
+              <div className="col-12 md:col-6">
+                <FormDropdown
+                  {...getProps("position_code")}
+                  label="Jabatan"
+                  itemTemplate={dropdownItemTemplate}
+                  options={filteredPositions}
                   onChange={(e) =>
                     formik.setFieldValue("position_code", e.value)
                   }
-                  placeholder="Pilih Jabatan"
-                  className={classNames({
-                    "p-invalid": isFieldInvalid("position_code"),
-                  })}
+                  placeholder={
+                    selectedDiv ? "Pilih Jabatan" : "Pilih Divisi dahulu"
+                  }
+                  disabled={!selectedDiv}
                   filter
-                  showClear
+                  isRequired
                 />
-                {isFieldInvalid("position_code") && (
-                  <small className="p-error">
-                    {getFieldError("position_code")}
-                  </small>
-                )}
               </div>
 
               {/* Join Date */}
-              <div className="col-12 md:col-6 flex flex-column gap-2">
-                <label htmlFor="join_date" className="font-medium">
-                  Tanggal Bergabung <span className="text-red-500">*</span>
-                </label>
-                <Calendar
-                  id="join_date"
-                  value={formik.values.join_date}
+              <div className="col-12 md:col-6">
+                <FormCalendar
+                  {...getProps("join_date")}
+                  label="Tanggal Bergabung"
                   onChange={(e) => formik.setFieldValue("join_date", e.value)}
-                  showIcon
-                  dateFormat="dd/mm/yy"
-                  className={classNames({
-                    "p-invalid": isFieldInvalid("join_date"),
-                  })}
+                  isRequired
                 />
-                {isFieldInvalid("join_date") && (
-                  <small className="p-error">
-                    {getFieldError("join_date")}
-                  </small>
-                )}
               </div>
 
               {/* Status */}
-              <div className="col-12 md:col-6 flex flex-column gap-2">
-                <label htmlFor="employment_status" className="font-medium">
-                  Status Karyawan <span className="text-red-500">*</span>
-                </label>
-                <Dropdown
-                  id="employment_status"
-                  value={formik.values.employment_status}
+              <div className="col-12 md:col-6">
+                <FormDropdown
+                  {...getProps("employment_status")}
+                  label="Status Karyawan"
                   options={statusOptions}
                   onChange={(e) =>
                     formik.setFieldValue("employment_status", e.value)
                   }
+                  isRequired
                 />
               </div>
 
               {/* User Account */}
-              <div className="col-12 flex flex-column gap-2">
-                <label htmlFor="user_code" className="font-medium">
-                  Akun User (Opsional)
-                </label>
-                <Dropdown
-                  id="user_code"
-                  value={formik.values.user_code}
+              <div className="col-12">
+                <FormDropdown
+                  {...getProps("user_code")}
+                  label="Akun Pengguna (User)"
                   options={userOptions}
                   onChange={(e) => formik.setFieldValue("user_code", e.value)}
-                  placeholder="Hubungkan dengan akun user..."
+                  placeholder="Pilih Akun Pengguna"
                   filter
                   showClear
                 />
@@ -286,8 +480,8 @@ export default function EmployeeSaveDialog({
           </TabPanel>
 
           {/* --- TAB 2: PRIBADI (Personal) --- */}
-          <TabPanel header="Data Pribadi" leftIcon="pi pi-user mr-2">
-            <div className="grid mt-2">
+          <TabPanel header="2. Data Pribadi" leftIcon="pi pi-user mr-2">
+            <div className="grid mt-2 px-3 pb-3">
               {/* Birth Place & Date */}
               <div className="col-12 md:col-6">
                 <FormInputText
@@ -299,47 +493,37 @@ export default function EmployeeSaveDialog({
                 />
               </div>
               <div className="col-12 md:col-6 flex flex-column gap-2">
-                <label htmlFor="birth_date" className="font-medium">
-                  Tanggal Lahir
-                </label>
-                <Calendar
-                  id="birth_date"
-                  value={formik.values.birth_date}
+                <FormCalendar
+                  {...getProps("birth_date")}
+                  label="Tanggal Lahir"
                   onChange={(e) => formik.setFieldValue("birth_date", e.value)}
-                  showIcon
-                  dateFormat="dd/mm/yy"
-                  yearNavigator
-                  yearRange="1950:2010"
+                  isRequired
                 />
               </div>
 
               {/* Gender & Marital */}
               <div className="col-12 md:col-6 flex flex-column gap-2">
-                <label htmlFor="gender" className="font-medium">
-                  Jenis Kelamin
-                </label>
-                <Dropdown
-                  id="gender"
-                  value={formik.values.gender}
+                <FormDropdown
+                  {...getProps("gender")}
+                  label="Jenis Kelamin"
                   options={genderOptions}
                   onChange={(e) => formik.setFieldValue("gender", e.value)}
-                  placeholder="Pilih"
-                  showClear
+                  placeholder="Pilih Jenis Kelamin"
+                  filter
+                  isRequired
                 />
               </div>
               <div className="col-12 md:col-6 flex flex-column gap-2">
-                <label htmlFor="maritial_status" className="font-medium">
-                  Status Pernikahan
-                </label>
-                <Dropdown
-                  id="maritial_status"
-                  value={formik.values.maritial_status}
+                <FormDropdown
+                  {...getProps("maritial_status")}
+                  label="Status Pernikahan"
                   options={maritalOptions}
                   onChange={(e) =>
-                    formik.setFieldValue("maritial_status", e.value)
+                    formik.setFieldValue("marital_status", e.value)
                   }
-                  placeholder="Pilih"
-                  showClear
+                  placeholder="Pilih Status Pernikahan"
+                  filter
+                  isRequired
                 />
               </div>
 
@@ -392,8 +576,8 @@ export default function EmployeeSaveDialog({
           </TabPanel>
 
           {/* --- TAB 3: DOKUMEN & LAINNYA (Docs) --- */}
-          <TabPanel header="Dokumen & Lainnya" leftIcon="pi pi-file mr-2">
-            <div className="grid mt-2">
+          <TabPanel header="3. Dokumen" leftIcon="pi pi-file mr-2">
+            <div className="grid mt-2 px-3 pb-3">
               {/* KTP */}
               <div className="col-12">
                 <FormInputText

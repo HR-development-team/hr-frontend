@@ -9,6 +9,7 @@ export const useDialogEmployee = () => {
   const [currentEmployee, setCurrentEmployee] = useState<
     Employee | EmployeeDetail | null
   >(null);
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
 
   // Open for adding a new employee
   const openAdd = useCallback(() => {
@@ -35,6 +36,15 @@ export const useDialogEmployee = () => {
     setIsVisible(false);
     // Delay clearing data slightly to prevent UI flicker while closing
     setTimeout(() => setCurrentEmployee(null), 200);
+  }, []);
+
+  // Open for filtering division
+  const openFilter = useCallback(() => {
+    setIsFilterVisible(true);
+  }, []);
+
+  const closeFilter = useCallback(() => {
+    setIsFilterVisible(false);
   }, []);
 
   // Derived Values
@@ -101,5 +111,8 @@ export const useDialogEmployee = () => {
     openEdit,
     openView,
     close,
+    isFilterVisible,
+    openFilter,
+    closeFilter,
   };
 };

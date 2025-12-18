@@ -1,34 +1,48 @@
-"use client";
-
-import { useEffect, useCallback } from "react";
-
+import { useCallback, useEffect, useMemo } from "react";
 import { useDialogEmployee } from "./useDialogEmployee";
 import { useFilterEmployee } from "./useFilterEmployee";
-import { useFetchEmployee } from "./useFetchEmployee";
-import { useSaveEmployee } from "./useSaveEmployee";
-import { useDeleteEmployee } from "./useDeleteEmployee";
-import { EmployeeFormData, Employee } from "../schemas/employeeSchema";
-
-// Import dependency fetches
+import { useFetchEmployee } from "../hooks/useFetchEmployee";
+import { useSaveEmployee } from "../hooks/useSaveEmployee";
+import { useDeleteEmployee } from "../hooks/useDeleteEmployee";
+import { Employee, EmployeeFormData } from "../schemas/employeeSchema";
 import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
 import { useFetchPosition } from "@features/position/hooks/useFetchPosition";
 import { useFetchUser } from "@features/user/hooks/useFetchUser";
+import { useFetchDepartment } from "@features/department/hooks/useFetchDepartment";
+import { useFetchDivision } from "@features/division/hooks/useFetchDivision";
 
 export function usePageEmployee() {
   const dialog = useDialogEmployee();
   const filter = useFilterEmployee();
 
+  // 1. Data Hooks
   const { employees, employee, fetchEmployees, fetchEmployeeById, isLoading } =
     useFetchEmployee();
   const { offices, fetchOffices } = useFetchOffice();
   const { positions, fetchPositions } = useFetchPosition();
   const { users, fetchUsers } = useFetchUser();
 
+  // 2. NEW: Fetch Departments & Divisions for Cascading Dropdowns
+  const { departments, fetchDepartments } = useFetchDepartment();
+  const { divisions, fetchDivisions } = useFetchDivision();
+
+  // 3. Fetch Dependencies
   const fetchDependencies = useCallback(async () => {
-    fetchOffices();
-    fetchPositions();
-    fetchUsers();
-  }, [fetchOffices, fetchPositions, fetchUsers]);
+    // Run in parallel for speed
+    await Promise.all([
+      fetchOffices(),
+      fetchDepartments(), // Add this
+      fetchDivisions(), // Add this
+      fetchPositions(),
+      fetchUsers(false),
+    ]);
+  }, [
+    fetchOffices,
+    fetchDepartments,
+    fetchDivisions,
+    fetchPositions,
+    fetchUsers,
+  ]);
 
   const refreshData = useCallback(
     (showToast: boolean = false) => {
@@ -37,6 +51,15 @@ export function usePageEmployee() {
     [fetchEmployees]
   );
 
+  // 4. Transform Users into SelectOptions
+  const userOptions = useMemo(() => {
+    return users.map((user) => ({
+      label: user.email,
+      value: user.user_code || "",
+    }));
+  }, [users]);
+
+  // Actions
   const { saveEmployee, isSaving } = useSaveEmployee(() => {
     dialog.close();
     refreshData(false);
@@ -61,16 +84,20 @@ export function usePageEmployee() {
   }, [refreshData, fetchDependencies]);
 
   return {
-    // Data
+    // Main Data
     employees,
     employee,
     isLoading,
     isSaving,
 
-    // Dependencies
+    // Raw Dependencies (Pass these raw to Dialog for cascading)
     offices,
+    departments,
+    divisions,
     positions,
-    users,
+
+    // Formatted Options
+    userOptions,
 
     // Sub-Hooks
     dialog,

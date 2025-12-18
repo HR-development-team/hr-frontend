@@ -39,3 +39,24 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   updateAuthUser: (newUserData: Partial<User>) => void;
 }
+
+export interface PermissionItem {
+  role_code: string;
+  feature_code: string;
+  feature_name: string;
+  can_create: number;
+  can_read: number;
+  can_update: number;
+  can_delete: number;
+  can_print: number;
+}
+
+export interface RolePermission {
+  user_code: string;
+  role_name: string;
+  permissions: PermissionItem[];
+}
+
+export interface RolePermissionResponse {
+  role_permissions: RolePermission;
+}

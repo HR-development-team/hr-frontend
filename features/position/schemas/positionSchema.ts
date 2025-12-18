@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const positionSchema = z.object({
   id: z.number(),
-  position_code: z.string().optional(),
+  position_code: z.string(),
   name: z.string(),
   base_salary: z.union([z.string(), z.number()]),
   sort_order: z.number().optional(),

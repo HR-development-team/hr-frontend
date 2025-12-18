@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const divisionSchema = z.object({
   id: z.number(),
-  division_code: z.string().optional(),
+  division_code: z.string(),
   department_code: z.string(),
   office_code: z.string(),
   name: z.string(),

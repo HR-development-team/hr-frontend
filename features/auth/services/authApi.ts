@@ -1,6 +1,6 @@
 // features/auth/services/authApi.ts
 import { LoginFormData } from "../schemas/loginFormSchema";
-import { LoginResponse, User } from "../types";
+import { LoginResponse, RolePermissionResponse, User } from "../types";
 
 const BASE_URL = "/api/auth";
 
@@ -52,6 +52,20 @@ export async function fetchCurrentUser(): Promise<User | null> {
     };
   } catch (error) {
     console.error("Error fetching user data", error);
+    return null;
+  }
+}
+
+/**
+ * Fetches /permissions for the current user
+ */
+export async function fetchCurrentUserPermissions(): Promise<RolePermissionResponse | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/permission`, { cache: "no-store" });
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching user permissions", error);
     return null;
   }
 }
