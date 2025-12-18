@@ -28,31 +28,34 @@ export default function TableToolbar({
       <style jsx global>{`
         .custom-toolbar-breakpoint {
           display: flex;
-          flex-direction: column;
+          flex-direction: column; /* Default: Stack vertically (Mobile) */
           gap: 1rem;
           margin-bottom: 1.5rem;
         }
 
-        /* CHANGED: Lowered from 1400px to 1200px (Standard Large Screen) */
-        /* This ensures it stacks sooner on smaller laptops, preventing overflow */
+        /* Large Screen (Desktop): Switch to horizontal row */
         @media screen and (min-width: 1200px) {
           .custom-toolbar-breakpoint {
             flex-direction: row;
             justify-content: space-between;
-            align-items: flex-end; /* Align bottom to match inputs */
+            align-items: flex-end;
           }
         }
       `}</style>
 
       <div className="custom-toolbar-breakpoint">
-        {/* Left Side (Date Filter) */}
+        {/* --- Left Side (Date Filter) --- */}
+        {/* On mobile: w-full. On Desktop: auto width */}
         <div className="w-full xl:w-auto">{filterContent}</div>
 
-        {/* Right Side (Actions) */}
-        {/* ADDED: flex-wrap to allow items to flow to next line if space is tight */}
-        <div className="flex flex-wrap align-items-center gap-2 w-full xl:w-auto justify-content-end">
+        {/* --- Right Side (Search + Actions) --- */}
+        {/* Mobile: flex-column (Stack vertically) & w-full 
+           Desktop: flex-row (Side by side) & w-auto
+        */}
+        <div className="flex flex-column xl:flex-row align-items-stretch xl:align-items-center gap-2 w-full xl:w-auto justify-content-end">
+          {/* Search Input */}
           {onSearchChange && (
-            <div className="w-full md:w-20rem">
+            <div className="w-full xl:w-10rem">
               <InputTextComponent
                 icon="pi pi-search"
                 placeholder={searchPlaceholder}
@@ -63,20 +66,29 @@ export default function TableToolbar({
             </div>
           )}
 
-          {onAdd && (
-            <Button
-              icon="pi pi-plus"
-              label={addLabel}
-              severity="info"
-              className="flex-shrink-0 w-full md:w-auto"
-              pt={{ icon: { className: "mr-2" } }}
-              onClick={onAdd}
-            />
-          )}
+          {/* Action Buttons Container (Add + Filter) */}
+          {/* Mobile: Stack them or Grid them. Desktop: Flex row */}
+          <div className="flex flex-column sm:flex-row gap-2 w-full xl:w-auto">
+            {onAdd && (
+              <Button
+                icon="pi pi-plus"
+                label={addLabel}
+                severity="info"
+                // Mobile: Full width. Desktop: Auto
+                className="w-full sm:w-auto flex-shrink-0"
+                pt={{ icon: { className: "mr-2" } }}
+                onClick={onAdd}
+              />
+            )}
 
-          {actionContent && (
-            <div className="w-full md:w-auto">{actionContent}</div>
-          )}
+            {actionContent && (
+              // Wrapper to ensure the button takes full width on mobile if needed
+              <div className="w-full sm:w-auto">
+                {/* You might need to add className="w-full" to the Button passed in actionContent inside the parent component if it doesn't stretch automatically */}
+                {actionContent}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

@@ -70,7 +70,7 @@ export default function PositionTable({
         field="division_name"
         header="Nama Divisi"
         sortable
-        style={{ width: "15%" }}
+        style={{ width: "20%" }}
       />
 
       <Column

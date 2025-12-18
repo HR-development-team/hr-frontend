@@ -9,6 +9,7 @@ export const useDialogPosition = () => {
   const [currentPosition, setCurrentPosition] = useState<
     Position | PositionDetail | null
   >(null);
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
 
   // Open for adding a new position
   const openAdd = useCallback(() => {
@@ -35,6 +36,15 @@ export const useDialogPosition = () => {
     setIsVisible(false);
     // Delay clearing data slightly to prevent UI flicker while closing
     setTimeout(() => setCurrentPosition(null), 200);
+  }, []);
+
+  // Open for filtering division
+  const openFilter = useCallback(() => {
+    setIsFilterVisible(true);
+  }, []);
+
+  const closeFilter = useCallback(() => {
+    setIsFilterVisible(false);
   }, []);
 
   // Derived Values
@@ -75,5 +85,8 @@ export const useDialogPosition = () => {
     openEdit,
     openView,
     close,
+    isFilterVisible,
+    openFilter,
+    closeFilter,
   };
 };

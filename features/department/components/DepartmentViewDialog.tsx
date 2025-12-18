@@ -31,17 +31,6 @@ export default function DepartmentViewDialog({
       className="w-full md:w-6 lg:w-5"
       headerClassName="bg-surface-0 border-bottom-1 surface-border"
       contentClassName="pt-4"
-      footer={
-        <div className="flex justify-content-end gap-2">
-          <Button
-            label="Tutup"
-            icon="pi pi-times"
-            outlined
-            severity="secondary"
-            onClick={onClose}
-          />
-        </div>
-      }
     >
       {isLoading ? (
         <DepartmentViewDialogSkeleton />

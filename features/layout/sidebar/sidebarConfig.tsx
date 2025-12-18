@@ -39,8 +39,8 @@ export const SIDEBAR_ITEMS: MenuItem[] = [
       { label: "Master Divisi", href: "/admin/master/division" },
       { label: "Master Jabatan", href: "/admin/master/position" },
       { label: "Master Karyawan", href: "/admin/master/employees" },
-      { label: "Master Tipe Cuti", href: "/admin/master/leave-type" },
-      { label: "Master Shift", href: "/admin/master/shift" },
+      // { label: "Master Tipe Cuti", href: "/admin/master/leave-type" },
+      // { label: "Master Shift", href: "/admin/master/shift" },
     ],
   },
   {

@@ -15,6 +15,11 @@ export const useFilterPosition = () => {
     end: null,
   });
 
+  const [selectedOffice, setSelectedOffice] = useState<string | null>(null);
+  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(
+    null
+  );
+  const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
   const [debouncedSearch] = useDebounce(search, 500);
   const [appliedDates, setAppliedDates] = useState<DateRangeState>({
     start: null,
@@ -46,6 +51,15 @@ export const useFilterPosition = () => {
     setDates,
     applyDateFilter,
     clearDateFilter,
+
+    // Exposed Filters
+    selectedOffice,
+    setSelectedOffice,
+    selectedDepartment,
+    setSelectedDepartment,
+    selectedDivision,
+    setSelectedDivision,
+
     queryParams,
   };
 };

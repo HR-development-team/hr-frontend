@@ -67,7 +67,7 @@ export default function OfficeManagementPage() {
           <TableToolbar
             searchValue={filter.search}
             onSearchChange={(e) => filter.setSearch(e.target.value)}
-            searchPlaceholder="Cari berdasarkan Nama Kantor"
+            searchPlaceholder="Cari..."
             onAdd={dialog.openAdd}
             filterContent={
               <DateRangeFilter

@@ -9,6 +9,7 @@ export const useDialogDepartment = () => {
   const [currentDepartment, setCurrentDepartment] = useState<
     Department | DepartmentDetail | null
   >(null);
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
 
   // Open for adding a new department
   const openAdd = useCallback(() => {
@@ -35,6 +36,15 @@ export const useDialogDepartment = () => {
     setIsVisible(false);
     // Delay clearing data slightly to prevent UI flicker while closing
     setTimeout(() => setCurrentDepartment(null), 200);
+  }, []);
+
+  // Open for filtering
+  const openFilter = useCallback(() => {
+    setIsFilterVisible(true);
+  }, []);
+
+  const closeFilter = useCallback(() => {
+    setIsFilterVisible(false);
   }, []);
 
   // Derived Values
@@ -71,5 +81,8 @@ export const useDialogDepartment = () => {
     openEdit,
     openView,
     close,
+    isFilterVisible,
+    openFilter,
+    closeFilter,
   };
 };
