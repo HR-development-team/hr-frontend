@@ -14,11 +14,6 @@ export function useSaveEmployee(onSuccess?: () => void) {
     try {
       setIsSaving(true);
 
-      // Note: Date formatting logic (ISO vs YYYY-MM-DD) is often better handled
-      // in the API service wrapper or here if the backend is very strict.
-      // We are passing the object as is, assuming JSON.stringify in the service
-      // handles the Date -> ISO String conversion.
-
       if (id) {
         await updateEmployee(id, values);
         showToast("success", "Berhasil", "Data karyawan berhasil diperbarui");
@@ -31,12 +26,28 @@ export function useSaveEmployee(onSuccess?: () => void) {
         onSuccess();
       }
     } catch (err: any) {
-      console.error("saveEmployee error:", err);
-      showToast(
-        "error",
-        "Gagal",
-        err.message || "Terjadi kesalahan saat menyimpan data karyawan"
-      );
+      console.log(err);
+      let title = "Gagal";
+      let detail = "Terjadi kesalahan saat menyimpan data.";
+
+      // 1. Check for your specific 'errors' array structure
+      if (err?.errors && Array.isArray(err.errors)) {
+        title = err.message || "Validasi Gagal";
+
+        // Map through the array: [{field: "...", message: "..."}]
+        detail = err.errors.map((e: any) => e.message).join(", ");
+        console.log("Detail error: ", detail);
+      }
+      // 2. Fallback to top-level message (e.g. from the API generic 500)
+      else if (err?.message) {
+        detail = err.message;
+      }
+      // 3. Fallback to standard JS error (Network errors, etc.)
+      else if (err.message) {
+        detail = err.message;
+      }
+
+      showToast("error", title, detail);
     } finally {
       setIsSaving(false);
     }

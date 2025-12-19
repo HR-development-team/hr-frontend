@@ -10,6 +10,7 @@ import { useFetchPosition } from "@features/position/hooks/useFetchPosition";
 import { useFetchUser } from "@features/user/hooks/useFetchUser";
 import { useFetchDepartment } from "@features/department/hooks/useFetchDepartment";
 import { useFetchDivision } from "@features/division/hooks/useFetchDivision";
+import { useFetchEmployment } from "@features/employment/hooks/useFetchEmployment";
 
 export function usePageEmployee() {
   const dialog = useDialogEmployee();
@@ -21,6 +22,11 @@ export function usePageEmployee() {
   const { offices, fetchOffices } = useFetchOffice();
   const { positions, fetchPositions } = useFetchPosition();
   const { users, fetchUsers } = useFetchUser();
+  const {
+    employmentStatus,
+    fetchEmploymentStatus,
+    isLoading: isLoadingEmployment,
+  } = useFetchEmployment();
 
   // 2. NEW: Fetch Departments & Divisions for Cascading Dropdowns
   const { departments, fetchDepartments } = useFetchDepartment();
@@ -34,6 +40,7 @@ export function usePageEmployee() {
       fetchDepartments(), // Add this
       fetchDivisions(), // Add this
       fetchPositions(),
+      fetchEmploymentStatus(),
       fetchUsers(false),
     ]);
   }, [
@@ -41,6 +48,7 @@ export function usePageEmployee() {
     fetchDepartments,
     fetchDivisions,
     fetchPositions,
+    fetchEmploymentStatus,
     fetchUsers,
   ]);
 
@@ -87,7 +95,9 @@ export function usePageEmployee() {
     // Main Data
     employees,
     employee,
+    employmentStatus,
     isLoading,
+    isLoadingEmployment,
     isSaving,
 
     // Raw Dependencies (Pass these raw to Dialog for cascading)

@@ -17,3 +17,8 @@ export interface Position {
   name: string;
   division_code: string; // Needed for filtering
 }
+
+export interface EmploymentStatus {
+  name: string;
+  status_code: string;
+}

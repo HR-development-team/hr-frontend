@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const formatDateIDN = (
   dateInput: string | Date | null | undefined
 ): string => {
@@ -49,4 +50,19 @@ export const formatDateToYYYYMMDD = (
   const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+};
+
+// Helper to safely parse dates and handle "Invalid Date" objects
+export const safeParseDate = (dateInput: any): Date | null => {
+  if (!dateInput) return null;
+
+  const parsed = new Date(dateInput);
+
+  // Check if the date is valid (isNaN check on timestamp)
+  if (isNaN(parsed.getTime())) {
+    console.warn("Invalid Date detected for input:", dateInput);
+    return null;
+  }
+
+  return parsed;
 };

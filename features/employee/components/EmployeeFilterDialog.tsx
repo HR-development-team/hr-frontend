@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { Dialog } from "primereact/dialog";
-import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 
 // Define option types with relation keys
@@ -98,24 +97,6 @@ export default function EmployeeFilterDialog({
     );
   }, [selectedDivision, positionOptions]);
 
-  const renderFooter = (
-    <div>
-      <Button
-        label="Tutup"
-        icon="pi pi-times"
-        onClick={onClose}
-        className="p-button-text gap-1"
-      />
-      <Button
-        label="Selesai"
-        icon="pi pi-check"
-        onClick={onClose}
-        className="gap-1"
-        autoFocus
-      />
-    </div>
-  );
-
   return (
     <Dialog
       header="Filter Karyawan"
@@ -123,7 +104,6 @@ export default function EmployeeFilterDialog({
       style={{ width: "450px" }}
       modal
       onHide={onClose}
-      footer={renderFooter}
     >
       <div className="flex flex-column gap-4">
         <p className="m-0 text-gray-500 text-sm">

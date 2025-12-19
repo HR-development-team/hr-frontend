@@ -22,6 +22,7 @@ export default function EmployeeManagementPage() {
     // Data & Status
     employees,
     employee,
+    employmentStatus,
     isLoading,
     isSaving,
 
@@ -234,6 +235,7 @@ export default function EmployeeManagementPage() {
           departments={departments}
           divisions={divisions}
           positions={positions}
+          employmentStatus={employmentStatus}
           userOptions={userOptions}
         />
       )}

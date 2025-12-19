@@ -22,7 +22,8 @@ export const employeeSchema = z.object({
   department_name: z.string(),
   office_code: z.string(),
   office_name: z.string(),
-  employment_status: z.enum(["aktif", "inaktif"]),
+  employment_status_code: z.string(),
+  employment_status: z.string(),
   join_date: z.string(),
   profile_picture: z.string().nullable().optional(),
 });
@@ -63,7 +64,7 @@ export const employeeFormSchema = z.object({
   position_code: z.string().nonempty("Posisi wajib dipilih"),
   office_code: z.string().nonempty("Kantor wajib dipilih"),
   user_code: z.string().optional().nullable(),
-  employment_status: z.enum(["aktif", "inaktif"]).default("aktif"),
+  employment_status_code: z.string().default("tetap"),
   contact_phone: z.preprocess(
     emptyStringOrNumberToNull,
     z

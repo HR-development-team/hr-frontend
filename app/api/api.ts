@@ -44,6 +44,16 @@ export const API_ENDPOINTS = {
   DELETEEMPLOYEE: (id: string) => `${API_URL}/master-employees/${id}`, // Delete Employee By Id
   GETEMPLOYEEBYID: (id: string) => `${API_URL}/master-employees/${id}`, // Get Employee By Id
 
+  // --- Master Employment Status ---
+  ADDEMPLOYEMENTSTATUS: `${API_URL}/employment-statuses`, // Create Employement Status
+  GETALLEMPLOYEMENTSTATUS: `${API_URL}/employment-statuses`, // Get All Employment Status
+  EDITEMPLOYEMENTSTATUS: (id: string) => `${API_URL}/employment-statuses/${id}`, // Update Employement By Id
+  DELETEEMPLOYEMENTSTATUS: (id: string) =>
+    `${API_URL}/employment-statuses/${id}`, // Delete Employement By Id
+  GETEMPLOYEMENTBYID: (id: string) => `${API_URL}/employment-statuses/${id}`, // Get Employement By Id
+  GETEMPLOYEMENTBYCODE: (code: string) =>
+    `${API_URL}/employment-statuses/code/${code}`, // Get Employement By Code
+
   // --- User ---
   ADDUSER: `${API_URL}/users`, // Create User
   GETALLUSER: `${API_URL}/users`, // Get All User

@@ -19,7 +19,14 @@ import {
 import { toFormikValidation } from "@utils/formikHelpers";
 import FormDropdown from "@components/FormDropdown";
 import FormCalendar from "@components/FormCalendar";
-import { Office, Department, Division, Position } from "../schemas/optionTypes";
+import {
+  Office,
+  Department,
+  Division,
+  Position,
+  EmploymentStatus,
+} from "../schemas/optionTypes";
+import { formatDateToYYYYMMDD, safeParseDate } from "@/utils/dateFormat";
 
 // Option Interfaces
 export interface SelectOption {
@@ -33,7 +40,7 @@ const employeeDefaultValues: EmployeeFormData = {
   position_code: "",
   office_code: "",
   user_code: null,
-  employment_status: "aktif",
+  employment_status_code: "",
 
   contact_phone: null,
   address: null,
@@ -66,6 +73,7 @@ interface EmployeeSaveDialogProps {
   departments: Department[];
   divisions: Division[];
   positions: Position[];
+  employmentStatus: EmploymentStatus[];
   userOptions: SelectOption[]; // This stays simple
 }
 
@@ -80,6 +88,7 @@ export default function EmployeeSaveDialog({
   departments = [],
   divisions = [],
   positions = [],
+  employmentStatus = [],
   userOptions = [],
 }: EmployeeSaveDialogProps) {
   const [activeIndex, setActiveIndex] = useState(0); // For Wizard
@@ -88,7 +97,13 @@ export default function EmployeeSaveDialog({
 
   const initialValues = useMemo(() => {
     if (employeeData) {
-      return { ...employeeDefaultValues, ...employeeData };
+      return {
+        ...employeeDefaultValues,
+        ...employeeData,
+        join_date: safeParseDate(employeeData.join_date) || new Date(),
+        birth_date: safeParseDate(employeeData.birth_date),
+        resign_date: safeParseDate(employeeData.resign_date),
+      };
     }
     return employeeDefaultValues;
   }, [employeeData]);
@@ -101,7 +116,18 @@ export default function EmployeeSaveDialog({
     validate: toFormikValidation(employeeFormSchema),
     onSubmit: async (values, { setStatus }) => {
       try {
-        await onSubmit(values);
+        const payload = {
+          ...values,
+          join_date: formatDateToYYYYMMDD(values.join_date),
+          birth_date: values.birth_date
+            ? formatDateToYYYYMMDD(values.birth_date)
+            : null,
+          resign_date: values.resign_date
+            ? formatDateToYYYYMMDD(values.resign_date)
+            : null,
+        };
+
+        await onSubmit(payload as any);
       } catch (error: any) {
         setStatus(
           error?.message || "Terjadi kesalahan saat menyimpan data karyawan"
@@ -149,6 +175,14 @@ export default function EmployeeSaveDialog({
       code: o.office_code, // Pass code for the template
     }));
   }, [offices]);
+
+  // 4. Employment Status list
+  const employmentStatusFormatted = useMemo(() => {
+    return employmentStatus.map((emp) => ({
+      label: emp.name,
+      value: emp.status_code,
+    }));
+  }, [employmentStatus]);
 
   // Reset wizard on open/close
   useEffect(() => {
@@ -204,7 +238,7 @@ export default function EmployeeSaveDialog({
       "office_code",
       "position_code",
       "join_date",
-      "employment_status",
+      "employment_status_code",
     ],
     // Tab 1: Personal
     [
@@ -252,10 +286,6 @@ export default function EmployeeSaveDialog({
   const genderOptions = [
     { label: "Laki-laki", value: "laki-laki" },
     { label: "Perempuan", value: "perempuan" },
-  ];
-  const statusOptions = [
-    { label: "Aktif", value: "aktif" },
-    { label: "Inaktif", value: "inaktif" },
   ];
   const maritalOptions = [
     { label: "Menikah", value: "Married" },
@@ -466,11 +496,11 @@ export default function EmployeeSaveDialog({
               {/* Status */}
               <div className="col-12 md:col-6">
                 <FormDropdown
-                  {...getProps("employment_status")}
+                  {...getProps("employment_status_code")}
                   label="Status Karyawan"
-                  options={statusOptions}
+                  options={employmentStatusFormatted}
                   onChange={(e) =>
-                    formik.setFieldValue("employment_status", e.value)
+                    formik.setFieldValue("employment_status_code", e.value)
                   }
                   isRequired
                 />
@@ -486,6 +516,7 @@ export default function EmployeeSaveDialog({
                   placeholder="Pilih Akun Pengguna"
                   filter
                   showClear
+                  isRequired
                 />
                 <small className="text-gray-500">
                   Pilih jika karyawan ini memiliki akses login sistem.
@@ -534,7 +565,7 @@ export default function EmployeeSaveDialog({
                   label="Status Pernikahan"
                   options={maritalOptions}
                   onChange={(e) =>
-                    formik.setFieldValue("marital_status", e.value)
+                    formik.setFieldValue("maritial_status", e.value)
                   }
                   placeholder="Pilih Status Pernikahan"
                   filter

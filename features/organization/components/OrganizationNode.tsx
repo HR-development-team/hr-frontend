@@ -154,7 +154,7 @@ export default function OrganizationNode({
             <Button
               label="Kembali"
               icon="pi pi-arrow-left"
-              className="mt-3"
+              className="mt-3 gap-1"
               outlined
               onClick={onBack}
             />
