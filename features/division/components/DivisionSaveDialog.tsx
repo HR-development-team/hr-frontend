@@ -95,6 +95,7 @@ export default function DivisionSaveDialog({
 
   const handleHide = () => {
     formik.resetForm();
+    setSelectedOffice(null); // Explicitly reset local state on close
     onClose();
   };
 
@@ -121,6 +122,29 @@ export default function DivisionSaveDialog({
       setSelectedOffice(null);
     }
   }, [isOpen, divisionData, departmentOptions]);
+
+  // Reset form when the form is resetted
+  useEffect(() => {
+    if (isOpen) {
+      // 1. Always reset Formik to clear touched/dirty states
+      formik.resetForm();
+
+      // 2. Handle Office State
+      if (divisionData?.department_code) {
+        // EDIT MODE: Find the office belonging to this department
+        const relatedDept = departmentOptions.find(
+          (d) => d.value === divisionData.department_code
+        );
+        if (relatedDept) {
+          setSelectedOffice(relatedDept.office_code);
+        }
+      } else {
+        // ADD MODE: Explicitly reset local state
+        setSelectedOffice(null);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, divisionData]);
 
   return (
     <Dialog

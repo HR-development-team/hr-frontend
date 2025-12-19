@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -110,7 +110,7 @@ export default function OfficeSaveDialog({
         formik.setFieldValue("longitude", lng);
       }
     },
-    [formik.values.latitude, formik.values.longitude, formik.setFieldValue]
+    [formik]
   );
 
   const mapInitialPosition = useMemo(() => {
@@ -130,6 +130,14 @@ export default function OfficeSaveDialog({
     formik.resetForm();
     onClose();
   };
+
+  // Reset form when the form is resetted
+  useEffect(() => {
+    if (isOpen) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   return (
     <Dialog

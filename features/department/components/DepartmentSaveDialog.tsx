@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
@@ -89,6 +89,14 @@ export default function DepartmentSaveDialog({
     formik.resetForm();
     onClose();
   };
+
+  // Reset form when the form is resetted
+  useEffect(() => {
+    if (isOpen) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   return (
     <Dialog
