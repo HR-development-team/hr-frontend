@@ -10,12 +10,13 @@ export const DELETE = async () => {
 
   if (!tokenCookie) {
     return NextResponse.json(
-      { message: "Akses ditolak: Tidak terauntetikasi" },
-      { status: 401 }
+      { message: "Sudah keluar (Tidak ada sesi aktif)" },
+      { status: 200 }
     );
   }
 
   const token = tokenCookie.value;
+  let apiMessage = "Berhasil logout";
 
   try {
     const response = await Axios.delete(API_ENDPOINTS.LOGOUT, {
@@ -24,14 +25,12 @@ export const DELETE = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
-
-    const responseData = response.data;
-    cookies().delete("token");
-
-    const responseToBrowser = NextResponse.json({ message: responseData });
-
-    return responseToBrowser;
+    apiMessage = response.data?.message || "Berhasil logout";
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    console.error("Backend logout failed:", error.message);
+  } finally {
+    cookies().delete("token");
   }
+
+  return NextResponse.json({ message: apiMessage });
 };
