@@ -223,6 +223,8 @@ export default function PositionManagementPage() {
           isSubmitting={isSaving}
           onClose={dialog.close}
           divisionOptions={divisionOptions}
+          departmentOptions={departmentOptions}
+          officeOptions={officeOptions}
         />
       )}
 

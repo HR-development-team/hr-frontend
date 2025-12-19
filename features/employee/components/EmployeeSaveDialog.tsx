@@ -82,7 +82,9 @@ export default function EmployeeSaveDialog({
   positions = [],
   userOptions = [],
 }: EmployeeSaveDialogProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0); // For Wizard
+  const [selectedDept, setSelectedDept] = useState<string | null>(null);
+  const [selectedDiv, setSelectedDiv] = useState<string | null>(null);
 
   const initialValues = useMemo(() => {
     if (employeeData) {
@@ -108,8 +110,6 @@ export default function EmployeeSaveDialog({
     },
   });
 
-  const [selectedDept, setSelectedDept] = useState<string>("");
-  const [selectedDiv, setSelectedDiv] = useState<string>("");
   const filteredDepartments = useMemo(() => {
     // Filter departments based on selected formik.values.office_code
     return departments
@@ -152,26 +152,41 @@ export default function EmployeeSaveDialog({
 
   // Reset wizard on open/close
   useEffect(() => {
-    if (isOpen && employeeData?.position_code) {
-      // Reverse lookup: Position -> Division -> Department
-      const pos = positions.find(
-        (p) => p.position_code === employeeData.position_code
-      );
-      if (pos) {
-        setSelectedDiv(pos.division_code);
-        const div = divisions.find(
-          (d) => d.division_code === pos.division_code
+    if (isOpen) {
+      // A. Reset Wizard & Form
+      setActiveIndex(0);
+      formik.resetForm();
+
+      // B. Handle Edit Mode (Reverse Lookup)
+      if (employeeData?.position_code) {
+        // 1. Find Position -> Get Division
+        const pos = positions.find(
+          (p) => p.position_code === employeeData.position_code
         );
-        if (div) {
-          setSelectedDept(div.department_code);
+
+        if (pos) {
+          // 2. Set Division (Local State)
+          setSelectedDiv(pos.division_code);
+
+          // 3. Find Division -> Get Department
+          const div = divisions.find(
+            (d) => d.division_code === pos.division_code
+          );
+
+          if (div) {
+            // 4. Set Department (Local State)
+            setSelectedDept(div.department_code);
+            // Note: Office is already set via formik.initialValues.office_code
+          }
         }
+      } else {
+        // C. Handle Add Mode (Reset Local States)
+        setSelectedDept(null);
+        setSelectedDiv(null);
       }
-    } else if (isOpen && !employeeData) {
-      // Reset on new entry
-      setSelectedDept("");
-      setSelectedDiv("");
     }
-  }, [isOpen, employeeData, positions, divisions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, employeeData]);
 
   const handleHide = () => {
     formik.resetForm();
