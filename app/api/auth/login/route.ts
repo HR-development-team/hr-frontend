@@ -13,36 +13,7 @@ export const POST = async (request: NextRequest) => {
     const token = loginData?.auth?.token;
     const userRole = loginData?.auth?.user.role_code;
 
-    const roleMapping: Record<string, string> = {};
-
-    if (token) {
-      try {
-        const roleResponse = await Axios.get(API_ENDPOINTS.GETALLROLES, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const rolesArray = roleResponse.data?.roles || [];
-
-        rolesArray.forEach((r: any) => {
-          if (r.role_code && r.name) {
-            roleMapping[r.role_code] = r.name;
-          }
-        });
-      } catch (error: any) {
-        console.error("Gagal mengambil master data role:", error);
-      }
-    }
-
-    const finalResponse = {
-      ...loginData,
-      meta: {
-        role_mapping: roleMapping,
-      },
-    };
-
-    const responseToBrowser = NextResponse.json(finalResponse);
+    const responseToBrowser = NextResponse.json(loginData);
 
     if (userRole) {
       responseToBrowser.cookies.set("token", token, {

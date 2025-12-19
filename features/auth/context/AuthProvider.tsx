@@ -41,21 +41,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await loginUser(values);
 
-      // Handle Role Mapping (Logic preserved from your code)
-      if (response.meta?.role_mapping) {
-        localStorage.setItem(
-          "ROLE_MAP",
-          JSON.stringify(response.meta.role_mapping)
-        );
-      }
-
-      // Re-fetch full user profile after successful login
       await refreshUser();
 
-      return response; // Pass response back to the form for redirection/toast
+      return response;
     } catch (error) {
-      setIsLoading(false); // Stop loading if error
-      throw error; // Let the form handle the error message
+      setIsLoading(false);
+      throw error;
     }
   };
 
@@ -64,13 +55,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       await logoutUser();
-      localStorage.removeItem("ROLE_MAP");
       setUser(null);
     } catch (error) {
       console.error("Logout error", error);
     } finally {
       setIsLoading(false);
-      // Optional: Force redirect to login here or let the protected route handle it
     }
   };
 
