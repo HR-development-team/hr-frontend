@@ -32,11 +32,32 @@ export default function EmployeeTable({
     }, 0);
   };
 
+  const getStatusSeverity = (statusName: string | undefined) => {
+    switch (statusName?.toLowerCase()) {
+      case "tetap":
+        return "success"; // Green
+      case "kontrak":
+        return "info"; // Blue
+      case "training":
+      case "magang":
+        return "warning"; // Orange/Yellow
+      case "keluar":
+        return "danger"; // Red
+      default:
+        return "secondary"; // Grey for unknown
+    }
+  };
+
   const statusBodyTemplate = (rowData: Employee) => {
+    const status = rowData.employment_status;
+    if (!status) {
+      return <Tag value="-" severity="secondary" className="text-xs" />;
+    }
+
     return (
       <Tag
-        value={rowData.employment_status.toUpperCase()}
-        severity={rowData.employment_status === "aktif" ? "success" : "danger"}
+        value={status} // Display the name (e.g., "Tetap")
+        severity={getStatusSeverity(status)} // Calculate color
         className="text-xs"
       />
     );
@@ -87,6 +108,27 @@ export default function EmployeeTable({
       <Column
         field="position_name"
         header="Nama Posisi"
+        sortable
+        style={{ minWidth: "150px" }}
+      />
+
+      <Column
+        field="division_name"
+        header="Nama Divisi"
+        sortable
+        style={{ minWidth: "150px" }}
+      />
+
+      <Column
+        field="department_name"
+        header="Nama Department"
+        sortable
+        style={{ minWidth: "150px" }}
+      />
+
+      <Column
+        field="office_name"
+        header="Nama Kantor"
         sortable
         style={{ minWidth: "150px" }}
       />

@@ -73,7 +73,7 @@ export const useDialogEmployee = () => {
       position_code: emp?.position_code ?? "",
       office_code: emp?.office_code ?? "",
       user_code: emp?.user_code ?? null,
-      employment_status: emp?.employment_status ?? "aktif",
+      employment_status_code: emp?.employment_status_code ?? "aktif",
 
       // Optional Fields
       contact_phone: emp?.contact_phone ?? null,
@@ -93,7 +93,6 @@ export const useDialogEmployee = () => {
 
       education: emp?.education ?? null,
       blood_type: emp?.blood_type ?? null,
-      profile_picture: emp?.profile_picture ?? null,
       bpjs_ketenagakerjaan: emp?.bpjs_ketenagakerjaan ?? null,
       bpjs_kesehatan: emp?.bpjs_kesehatan ?? null,
       npwp: emp?.npwp ?? null,

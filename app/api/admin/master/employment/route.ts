@@ -25,7 +25,7 @@ export const GET = async () => {
   }
 
   try {
-    const response = await Axios.get(API_ENDPOINTS.GETALLEMPLOYEE, {
+    const response = await Axios.get(API_ENDPOINTS.GETALLEMPLOYEMENTSTATUS, {
       headers: {
         "Content-Type": "application.json",
         Authorization: `Bearer ${token}`,
@@ -42,7 +42,7 @@ export const GET = async () => {
     }
 
     return NextResponse.json(
-      { message: "Gagal mendapatkan data master karyawan" },
+      { message: "Gagal mendapatkan data master status karyawan" },
       { status: 500 }
     );
   }
@@ -59,25 +59,26 @@ export const POST = async (request: NextRequest) => {
   try {
     const body = await request.json();
 
-    const response = await Axios.post(API_ENDPOINTS.ADDEMPLOYEE, body, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await Axios.post(
+      API_ENDPOINTS.ADDEMPLOYEMENTSTATUS,
+      body,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     return NextResponse.json(response.data);
   } catch (error: any) {
     if (error.response) {
-      // --- FIX IS HERE ---
-      // Use 'error.response.data' to get the actual JSON body
-      // (contains "message", "errors", "status", etc.)
-      return NextResponse.json(error.response.data, {
+      return NextResponse.json(error.response.data.message, {
         status: error.response.status,
       });
     } else {
       return NextResponse.json(
-        { message: "Gagal menambahkan data master karyawan" },
+        { message: "Gagal menambahkan data master status karyawan" },
         { status: 500 }
       );
     }

@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { Employee, EmployeeDetail } from "../schemas/employeeSchema";
 import { getAllEmployees, getEmployeeById } from "../services/employeeApi";
 import { useToastContext } from "@components/ToastProvider";
+import { formatDateIDN } from "@/utils/dateFormat";
 
 export function useFetchEmployee() {
   const { showToast } = useToastContext();
@@ -17,7 +18,13 @@ export function useFetchEmployee() {
       try {
         setIsLoading(true);
         const data = await getAllEmployees();
-        setEmployees(data);
+        const values = data.map((employee) => {
+          return {
+            ...employee,
+            join_date: formatDateIDN(employee.join_date),
+          };
+        });
+        setEmployees(values);
 
         if (showToastMessage) {
           showToast("success", "Berhasil", "Data karyawan berhasil dimuat");

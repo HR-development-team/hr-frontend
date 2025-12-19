@@ -58,6 +58,7 @@ export async function getEmployeeById(
  * Create a new employee
  */
 export async function createEmployee(payload: EmployeeFormData) {
+  // console.log(payload);
   const res = await fetch(BASE_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -65,8 +66,13 @@ export async function createEmployee(payload: EmployeeFormData) {
   });
 
   if (!res.ok) {
+    // 1. Parse the rich error data from the backend
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to create employee");
+
+    // 2. THROW THE DATA, NOT A NEW ERROR
+    // This passes the object { message: "...", errors: [...] }
+    // straight to your hook's catch block.
+    throw errorData;
   }
 
   return res.json();
