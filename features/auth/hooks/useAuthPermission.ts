@@ -12,13 +12,10 @@ export function useAuthPermissions() {
     const fetchPermissions = async () => {
       try {
         setIsLoading(true);
-        // 1. Fetch the raw response (which is the wrapper object)
+        // Fetch the raw response (which is the wrapper object)
         const data: RolePermissionResponse | null =
           await fetchCurrentUserPermissions();
 
-        console.log("Raw Permissions Response:", data); // Debugging
-
-        // 2. CRITICAL FIX: Extract the array from the nested path
         // Check if data exists, then role_permissions, then permissions
         const permissionArray = data?.role_permissions?.permissions || [];
 

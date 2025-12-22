@@ -1,4 +1,3 @@
-// features/auth/services/authApi.ts
 import { LoginFormData } from "../schemas/loginFormSchema";
 import { LoginResponse, RolePermissionResponse, User } from "../types";
 
@@ -29,7 +28,6 @@ export async function logoutUser() {
 
 /**
  * Fetches both /me and /profile and merges them
- * This replaces your 'fetchMultiple' logic
  */
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
@@ -67,5 +65,20 @@ export async function fetchCurrentUserPermissions(): Promise<RolePermissionRespo
   } catch (error) {
     console.error("Error fetching user permissions", error);
     return null;
+  }
+}
+
+export async function keepSessionAlive(): Promise<void> {
+  try {
+    const res = await fetch(`${BASE_URL}/keep-alive`, {
+      method: "POST",
+    });
+
+    if (!res.ok) {
+      console.warn("Failed to extend session:", res.statusText);
+    }
+  } catch (error) {
+    // Fails silently so it doesn't disrupt the user UI
+    console.error("Error extending session", error);
   }
 }
