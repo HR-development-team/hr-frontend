@@ -5,6 +5,7 @@ export const API_ENDPOINTS = {
   LOGIN: `${API_URL}/auth/login`,
   LOGOUT: `${API_URL}/auth/logout`,
   GETUSER: `${API_URL}/auth/me`, // Get Current User
+  KEEPALIVE: `${API_URL}/auth/keep-alive`, // Extend session token
 
   // --- Master Office ---
   ADDOFFICE: `${API_URL}/master-offices`, // Create New Office
