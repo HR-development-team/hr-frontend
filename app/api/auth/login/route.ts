@@ -27,10 +27,12 @@ export const POST = async (request: NextRequest) => {
     return responseToBrowser;
   } catch (error: any) {
     if (error.response) {
-      return NextResponse.json(
-        { message: "Email atau Password salah" },
-        { status: error.response.status }
-      );
+      // [FIX] Don't hardcode the message.
+      // Read the actual error message sent by the Express backend.
+      const backendMessage = error.response.data?.message || "Login gagal";
+      const status = error.response.status;
+
+      return NextResponse.json({ message: backendMessage }, { status: status });
     }
 
     return NextResponse.json(
