@@ -9,6 +9,7 @@ export const useDialogOffice = () => {
   const [currentOffice, setCurrentOffice] = useState<
     Office | OfficeDetail | null
   >(null);
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
 
   // Open for adding a new office
   const openAdd = useCallback(() => {
@@ -35,6 +36,15 @@ export const useDialogOffice = () => {
     setIsVisible(false);
     // Delay clearing data slightly to prevent UI flicker while closing
     setTimeout(() => setCurrentOffice(null), 200);
+  }, []);
+
+  // Open for filtering
+  const openFilter = useCallback(() => {
+    setIsFilterVisible(true);
+  }, []);
+
+  const closeFilter = useCallback(() => {
+    setIsFilterVisible(false);
   }, []);
 
   // Derived Values
@@ -75,5 +85,8 @@ export const useDialogOffice = () => {
     openEdit,
     openView,
     close,
+    isFilterVisible,
+    openFilter,
+    closeFilter,
   };
 };
