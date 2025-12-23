@@ -24,7 +24,6 @@ export const useIdleTimer = (shouldRun: boolean, onTimeout: () => void) => {
       lastHeartbeatTime.current = now;
 
       try {
-        console.log("💓 Sending Heartbeat...");
         await keepSessionAlive();
       } catch (error) {
         console.error("Heartbeat failed", error);

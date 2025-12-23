@@ -6,12 +6,11 @@ import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const ADMIN_ROLES = ["ROL0000001", "ROL0000002"];
-const EMPLOYEE_ROLES = ["ROL0000003", "ROL0000004", "ROL0000005"];
+const EMPLOYEE_ROLES = ["Employee"];
 
 export const useLoginForm = () => {
   const router = useRouter();
-  const { login } = useAuth(); // <--- Equivalent to useSave
+  const { login } = useAuth();
   const { showToast } = useToastContext();
 
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -22,7 +21,6 @@ export const useLoginForm = () => {
       password: "",
     },
     validate: (values) => {
-      // Zod validation logic
       const result = loginFormSchema.safeParse(values);
       if (result.success) return {};
 
@@ -34,18 +32,16 @@ export const useLoginForm = () => {
     },
     onSubmit: async (values, { setStatus, setSubmitting }) => {
       try {
-        const response = await login(values); // Call AuthContext
+        const response = await login(values);
 
         showToast("success", "Login Berhasil", "Selamat Datang");
 
-        // Redirect Logic
-        const roleCode = response.auth.user.role_code;
-        if (ADMIN_ROLES.includes(roleCode)) {
-          router.push("/admin/dashboard");
-        } else if (EMPLOYEE_ROLES.includes(roleCode)) {
-          router.push("/karyawan/Dashboard");
+        const userRoleName = response.auth.user.role_name;
+
+        if (EMPLOYEE_ROLES.includes(userRoleName)) {
+          router.push("/karyawan/dashboard");
         } else {
-          router.push("/");
+          router.push("/admin/dashboard");
         }
       } catch (error: any) {
         setStatus(error.message);

@@ -60,6 +60,14 @@ export default function PositionManagementPage() {
     }));
   }, [divisions]);
 
+  const positionOptions = useMemo(() => {
+    return positions.map((pos) => ({
+      label: pos.name,
+      value: pos.position_code, // Use position_code as the value (foreign key)
+      division_code: pos.division_code, // Needed for the filtering logic in the Dialog
+    }));
+  }, [positions]);
+
   const filteredPositions = useMemo(() => {
     let result = positions;
 
@@ -225,6 +233,7 @@ export default function PositionManagementPage() {
           divisionOptions={divisionOptions}
           departmentOptions={departmentOptions}
           officeOptions={officeOptions}
+          positionOptions={positionOptions}
         />
       )}
 
