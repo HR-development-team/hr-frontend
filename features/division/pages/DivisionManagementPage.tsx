@@ -125,20 +125,6 @@ export default function DivisionManagementPage() {
             searchPlaceholder="Cari..."
             onAdd={dialog.openAdd}
             filterContent={
-              <DateRangeFilter
-                startDate={filter.dates.start}
-                endDate={filter.dates.end}
-                onStartDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, start: e.value })
-                }
-                onEndDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, end: e.value })
-                }
-                onApply={filter.applyDateFilter}
-                onClear={filter.clearDateFilter}
-              />
-            }
-            actionContent={
               <Button
                 label="Filter"
                 icon="pi pi-filter"

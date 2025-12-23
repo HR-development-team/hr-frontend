@@ -154,22 +154,6 @@ export default function EmployeeManagementPage() {
             searchPlaceholder="Cari..."
             onAdd={dialog.openAdd}
             filterContent={
-              <div className="flex gap-2 align-items-center">
-                <DateRangeFilter
-                  startDate={filter.dates.start}
-                  endDate={filter.dates.end}
-                  onStartDateChange={(e) =>
-                    filter.setDates({ ...filter.dates, start: e.value })
-                  }
-                  onEndDateChange={(e) =>
-                    filter.setDates({ ...filter.dates, end: e.value })
-                  }
-                  onApply={filter.applyDateFilter}
-                  onClear={filter.clearDateFilter}
-                />
-              </div>
-            }
-            actionContent={
               <Button
                 label="Filter"
                 icon="pi pi-filter"

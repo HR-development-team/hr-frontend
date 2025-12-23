@@ -102,22 +102,6 @@ export default function DepartmentManagementPage() {
             searchPlaceholder="Cari..."
             onAdd={dialog.openAdd}
             filterContent={
-              <div className="w-full sm:w-auto">
-                <DateRangeFilter
-                  startDate={filter.dates.start}
-                  endDate={filter.dates.end}
-                  onStartDateChange={(e) =>
-                    filter.setDates({ ...filter.dates, start: e.value })
-                  }
-                  onEndDateChange={(e) =>
-                    filter.setDates({ ...filter.dates, end: e.value })
-                  }
-                  onApply={filter.applyDateFilter}
-                  onClear={filter.clearDateFilter}
-                />
-              </div>
-            }
-            actionContent={
               <Button
                 label="Filter"
                 icon="pi pi-filter"

@@ -8,11 +8,12 @@ import OfficeDeleteDialog from "../components/OfficeDeleteDialog";
 import OfficeSaveDialog from "../components/OfficeSaveDialog";
 import OfficeViewDialog from "../components/OfficeViewDialog";
 import TableToolbar from "@components/TableToolbar";
-import DateRangeFilter from "@components/DateRangeFilter";
 
 // Facade Hook
 import { usePageOffice } from "../hooks/usePageOffice";
 import { useMemo } from "react";
+import { Button } from "primereact/button";
+import OfficeFilterDialog from "../components/OfficeFilterDialog";
 
 export default function OfficeManagementPage() {
   const {
@@ -33,6 +34,28 @@ export default function OfficeManagementPage() {
       value: office.office_code,
     }));
   }, [offices]);
+
+  const filteredOffice = useMemo(() => {
+    let result = offices;
+
+    if (filter.selectedOffice) {
+      result = result.filter(
+        (dept) => dept.parent_office_code === filter.selectedOffice
+      );
+    }
+
+    if (filter.search) {
+      const lowerSearch = filter.search.toLowerCase();
+      result = result.filter(
+        (dept) =>
+          dept.name.toLowerCase().includes(lowerSearch) ||
+          dept.office_code?.toLowerCase().includes(lowerSearch)
+      );
+    }
+    return result;
+  }, [offices, filter.selectedOffice, filter.search]);
+
+  const isFilterActive = !!filter.selectedOffice;
 
   // ---------------------------------------------------------------------
   //   Render
@@ -70,24 +93,19 @@ export default function OfficeManagementPage() {
             searchPlaceholder="Cari..."
             onAdd={dialog.openAdd}
             filterContent={
-              <DateRangeFilter
-                startDate={filter.dates.start}
-                endDate={filter.dates.end}
-                onStartDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, start: e.value })
-                }
-                onEndDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, end: e.value })
-                }
-                onApply={filter.applyDateFilter}
-                onClear={filter.clearDateFilter}
+              <Button
+                label="Filter"
+                icon="pi pi-filter"
+                className="gap-1 w-full sm:w-auto"
+                onClick={() => dialog.openFilter()}
+                outlined={!isFilterActive}
               />
             }
           />
 
           {/* Data Table */}
           <OfficeTable
-            data={offices}
+            data={filteredOffice}
             isLoading={isLoading}
             onView={handleView}
             onEdit={dialog.openEdit}
@@ -97,6 +115,15 @@ export default function OfficeManagementPage() {
       </Card>
 
       {/* --- Dialogs --- */}
+      {/* Filter Dialog */}
+
+      <OfficeFilterDialog
+        isOpen={dialog.isFilterVisible}
+        onClose={dialog.closeFilter}
+        selectedOffice={filter.selectedOffice}
+        onOfficeChange={filter.setSelectedOffice}
+        officeOptions={parentOfficeOptions}
+      />
 
       {/* Delete Confirmation */}
       <OfficeDeleteDialog
