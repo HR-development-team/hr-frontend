@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 
 import { useDialogDivision } from "./useDialogDivision";
 import { useFilterDivision } from "./useFilterDivision";
@@ -12,24 +12,28 @@ import { DivisionFormData, Division } from "../schemas/divisionSchema";
 export function usePageDivision() {
   const dialog = useDialogDivision();
   const filter = useFilterDivision();
+  const isFirstLoad = useRef(true);
 
-  const { divisions, division, fetchDivisions, fetchDivisionById, isLoading } =
-    useFetchDivision();
+  const {
+    divisions,
+    division,
+    totalRecords,
+    fetchDivisions,
+    fetchDivisionById,
+    isLoading,
+  } = useFetchDivision();
 
-  const refreshData = useCallback(
-    (showToast: boolean = false) => {
-      fetchDivisions(showToast, filter.queryParams);
-    },
-    [fetchDivisions, filter.queryParams]
-  );
+  const refreshData = useCallback(() => {
+    fetchDivisions(filter.apiParams, false);
+  }, [fetchDivisions, filter.apiParams]);
 
   const { saveDivision, isSaving } = useSaveDivision(() => {
     dialog.close();
-    refreshData(false);
+    refreshData();
   });
 
   const deleteAction = useDeleteDivision(() => {
-    refreshData(false);
+    refreshData();
   });
 
   const handleSave = async (values: DivisionFormData) => {
@@ -41,23 +45,26 @@ export function usePageDivision() {
     await fetchDivisionById(row.id);
   };
 
-  // Initial Data Load
   useEffect(() => {
-    refreshData(true);
-  }, [refreshData]);
+    const showToast = isFirstLoad.current;
+    fetchDivisions(filter.apiParams, showToast);
+    isFirstLoad.current = false;
+  }, [filter.apiParams, fetchDivisions]);
 
   return {
-    // Data & Status
     divisions,
     division,
+    totalRecords,
     isLoading,
     isSaving,
 
-    dialog,
+    // Pagination & Filter
+    lazyParams: filter.lazyParams,
+    onPageChange: filter.onPageChange,
     filter,
-    deleteAction,
 
-    // Handlers
+    dialog,
+    deleteAction,
     handleSave,
     handleView,
   };

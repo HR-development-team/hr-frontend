@@ -8,33 +8,29 @@ import { useToastContext } from "@components/ToastProvider";
 
 export function useFetchDivision() {
   const { showToast } = useToastContext();
+
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [division, setDivision] = useState<DivisionDetail | null>(null);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  /**
-   * Fetch all divisions
-   */
   const fetchDivisions = useCallback(
-    async (
-      showToastMessage: boolean = false,
-      params?: {
-        search?: string;
-      }
-    ) => {
+    async (params: any = {}, showToastMessage: boolean = false) => {
       try {
         setIsLoading(true);
-        const data = await getAllDivisions();
-        setDivisions(data);
+        const response = await getAllDivisions(params);
+
+        // Handle response structure (meta + data)
+        setDivisions(response.master_divisions || []);
+        setTotalRecords(response.meta?.total || 0);
 
         if (showToastMessage) {
           showToast("success", "Berhasil", "Data divisi berhasil dimuat");
         }
       } catch (err: any) {
-        if (showToastMessage) {
-          showToast("error", "Gagal", err.message);
-        }
+        showToast("error", "Gagal", err.message);
         setDivisions([]);
+        setTotalRecords(0);
       } finally {
         setIsLoading(false);
       }
@@ -42,10 +38,7 @@ export function useFetchDivision() {
     [showToast]
   );
 
-  /**
-   * Fetch a single division detail by ID
-   */
-  const fetchDivisionByIdHandler = useCallback(async (id: number) => {
+  const fetchDivisionById = useCallback(async (id: number) => {
     try {
       setIsLoading(true);
       const data = await getDivisionById(id);
@@ -57,17 +50,15 @@ export function useFetchDivision() {
     }
   }, []);
 
-  /**
-   * Reset selected division
-   */
   const clearDivision = useCallback(() => setDivision(null), []);
 
   return {
     divisions,
     division,
+    totalRecords,
     isLoading,
     fetchDivisions,
-    fetchDivisionById: fetchDivisionByIdHandler,
+    fetchDivisionById,
     clearDivision,
   };
 }

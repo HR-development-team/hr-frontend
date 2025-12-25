@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -9,6 +10,9 @@ import { Division } from "../schemas/divisionSchema";
 export interface DivisionTableProps {
   data: Division[];
   isLoading: boolean;
+  totalRecords: number;
+  lazyParams: any;
+  onPageChange: (e: any) => void;
   onView: (row: Division) => void;
   onEdit: (row: Division) => void;
   onDelete: (row: Division) => void;
@@ -17,6 +21,9 @@ export interface DivisionTableProps {
 export default function DivisionTable({
   data,
   isLoading,
+  totalRecords,
+  lazyParams,
+  onPageChange,
   onView,
   onEdit,
   onDelete,
@@ -26,7 +33,6 @@ export default function DivisionTable({
   const handleViewClick = async (row: Division) => {
     setViewingId(row.id);
 
-    // Small delay/async handling to show loading state on the button
     setTimeout(async () => {
       await onView(row);
       setViewingId(null);
@@ -37,13 +43,16 @@ export default function DivisionTable({
     <DataTable
       value={data}
       loading={isLoading}
+      lazy={true}
       paginator
-      rows={5}
+      first={lazyParams.first}
+      rows={lazyParams.rows}
+      totalRecords={totalRecords}
+      onPage={onPageChange}
       rowsPerPageOptions={[5, 10, 25, 50]}
       className="border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden"
       emptyMessage="Tidak ada data divisi"
     >
-      {/* Column Config */}
       <Column
         field="division_code"
         header="Kode Divisi"
@@ -72,13 +81,11 @@ export default function DivisionTable({
         style={{ width: "20%" }}
       />
 
-      {/* Actions Column */}
       <Column
         header="Aksi"
         style={{ width: "20%" }}
         body={(row: Division) => (
           <div className="flex gap-2">
-            {/* View Detail Button */}
             <Button
               icon="pi pi-eye text-sm"
               size="small"
@@ -88,7 +95,6 @@ export default function DivisionTable({
               onClick={() => handleViewClick(row)}
             />
 
-            {/* Edit Button */}
             <Button
               icon="pi pi-pencil text-sm"
               size="small"
@@ -98,7 +104,6 @@ export default function DivisionTable({
               disabled={viewingId !== null}
             />
 
-            {/* Delete Button */}
             <Button
               icon="pi pi-trash text-sm"
               size="small"

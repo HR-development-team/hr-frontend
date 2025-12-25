@@ -16,7 +16,7 @@ const tokenAvailable = (token: string | null) => {
   return null;
 };
 
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
   const token = getAuthToken();
 
   const unauthorizedResponse = tokenAvailable(token);
@@ -26,7 +26,18 @@ export const GET = async () => {
   }
 
   try {
+    const searchParams = request.nextUrl.searchParams;
+
+    const params = {
+      page: searchParams.get("page"),
+      limit: searchParams.get("limit"),
+      search: searchParams.get("search"),
+      office_code: searchParams.get("office_code"),
+      department_code: searchParams.get("department_code"),
+    };
+
     const response = await Axios.get(API_ENDPOINTS.GETALLDIVISION, {
+      params: params,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -71,12 +82,13 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json(response.data);
   } catch (error: any) {
     if (error.response) {
-      return NextResponse.json(error.response.data.message, {
-        status: error.response.status,
-      });
+      return NextResponse.json(
+        { message: error.response.data.message },
+        { status: error.response.status }
+      );
     } else {
       return NextResponse.json(
-        { message: "Gagal mengedit data master divisi" },
+        { message: "Gagal menambahkan data master divisi" },
         { status: 500 }
       );
     }
