@@ -1,26 +1,44 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { GenericApiResponse } from "@/utils/apiResponse";
 import { Office, OfficeDetail, OfficeFormData } from "../schemas/officeSchema";
+type OfficeResponse = GenericApiResponse<Office>;
 
 const BASE_URL = "/api/admin/master/office";
 
 /**
- * Fetch all offices
+ * Fetch all offices with optional query parameters
  */
-export async function getAllOffices(): Promise<Office[]> {
+export async function getAllOffices(
+  params?: Record<string, any>
+): Promise<OfficeResponse> {
   try {
-    const res = await fetch(BASE_URL, {
+    const queryString = params
+      ? `?${new URLSearchParams(params as any).toString()}`
+      : "";
+
+    console.log(`${BASE_URL}${queryString}`);
+
+    const res = await fetch(`${BASE_URL}${queryString}`, {
       method: "GET",
       cache: "no-store",
     });
 
     if (!res.ok) {
-      throw new Error("Failed to fetch offices");
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to fetch offices");
     }
 
-    const data = await res.json();
-    return data.master_offices || [];
+    return await res.json();
   } catch (error) {
-    console.error("getAllOffices error:", error);
-    return [];
+    console.error("getAllPositions error:", error);
+    // Return a safe fallback structure if it fails
+    return {
+      status: "99",
+      message: "Failed to fetch offices",
+      datetime: new Date().toISOString(),
+      master_positions: [],
+      meta: { page: 0, total: 0, limit: 0, total_page: 0 },
+    };
   }
 }
 

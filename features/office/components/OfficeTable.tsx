@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -10,6 +11,9 @@ import { Tag } from "primereact/tag";
 export interface OfficeTableProps {
   data: Office[];
   isLoading: boolean;
+  totalRecords: number;
+  lazyParams: any;
+  onPageChange: (e: any) => void;
   onView: (row: Office) => void;
   onEdit: (row: Office) => void;
   onDelete: (row: Office) => void;
@@ -18,6 +22,9 @@ export interface OfficeTableProps {
 export default function OfficeTable({
   data,
   isLoading,
+  totalRecords,
+  lazyParams,
+  onPageChange,
   onView,
   onEdit,
   onDelete,
@@ -36,25 +43,32 @@ export default function OfficeTable({
     <DataTable
       value={data}
       loading={isLoading}
+      lazy={true}
       paginator
-      rows={5}
+      first={lazyParams.first}
+      rows={lazyParams.rows}
+      totalRecords={totalRecords}
+      onPage={onPageChange}
       rowsPerPageOptions={[5, 10, 25, 50]}
       className="border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden"
       emptyMessage="Tidak ada data kantor"
-      // Added stripedRows for better readability with hierarchy
       stripedRows
     >
-      <Column field="office_code" header="Kode" style={{ width: "15%" }} />
+      <Column
+        field="office_code"
+        header="Kode"
+        sortable
+        style={{ width: "15%" }}
+      />
 
-      {/* CHANGED: Logic moved here. We identify the office status in the Name column */}
       <Column
         field="name"
         header="Nama Kantor"
+        sortable
         style={{ width: "35%" }}
         body={(row: Office) => (
           <div className="flex align-items-center gap-2">
             <span className="font-medium text-gray-900">{row.name}</span>
-            {/* If no parent, it is the Head Office/Root */}
             {!row.parent_office_name && (
               <Tag
                 value="Pusat"
@@ -66,10 +80,10 @@ export default function OfficeTable({
         )}
       />
 
-      {/* CHANGED: This column now strictly shows the Parent Name or a dash */}
       <Column
         field="parent_office_name"
         header="Kantor Induk"
+        sortable
         style={{ width: "30%" }}
         body={(row: Office) => {
           if (row.parent_office_name) {
@@ -77,7 +91,6 @@ export default function OfficeTable({
               <span className="text-gray-700">{row.parent_office_name}</span>
             );
           }
-          // Use a subtle placeholder for null values
           return <span className="text-gray-400">-</span>;
         }}
       />

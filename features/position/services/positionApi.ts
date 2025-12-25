@@ -39,8 +39,6 @@ export async function getAllPositions(params?: GetPositionsParams) {
 
     const data = await res.json();
 
-    console.log(`${BASE_URL}${queryString}`);
-
     // 2. Return the FULL data object (containing master_positions AND meta)
     // The hook will handle extracting the specific arrays.
     return data;
