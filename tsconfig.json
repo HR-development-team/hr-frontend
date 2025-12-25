@@ -24,6 +24,7 @@
       "@features/*": ["./features/*"],
       "@components/*": ["./components/*"],
       "@utils/*": ["./app/utils/*"],
+      "@hooks/*": ["./app/hooks/*"],
       "@/api/*": ["./app/api/*"]
     }
   },

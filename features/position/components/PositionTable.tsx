@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -6,17 +7,23 @@ import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Position } from "../schemas/positionSchema";
 
-export interface PositionTableProps {
-  data: Position[];
+interface PositionTableProps {
+  data: any[];
   isLoading: boolean;
-  onView: (row: Position) => void;
-  onEdit: (row: Position) => void;
-  onDelete: (row: Position) => void;
+  totalRecords: number; // <--- New Prop
+  lazyParams: any; // <--- New Prop (contains first, rows)
+  onPageChange: (e: any) => void; // <--- New Prop
+  onView: (data: any) => void;
+  onEdit: (data: any) => void;
+  onDelete: (data: any) => void;
 }
 
 export default function PositionTable({
   data,
   isLoading,
+  totalRecords,
+  lazyParams,
+  onPageChange,
   onView,
   onEdit,
   onDelete,
@@ -45,8 +52,15 @@ export default function PositionTable({
     <DataTable
       value={data}
       loading={isLoading}
+      // --- Lazy Pagination Config ---
+      lazy={true} // Tells PrimeReact data is sliced by server
       paginator
-      rows={5}
+      first={lazyParams.first} // Controls the cursor position
+      rows={lazyParams.rows} // Controls the limit
+      totalRecords={totalRecords} // Tells PrimeReact how many pages to render
+      onPage={onPageChange} // Updates state when user clicks next/prev
+      // -----------------------------
+
       rowsPerPageOptions={[5, 10, 25, 50]}
       className="border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden"
       emptyMessage="Tidak ada data jabatan"

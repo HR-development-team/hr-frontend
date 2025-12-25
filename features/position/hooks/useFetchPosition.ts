@@ -10,31 +10,22 @@ export function useFetchPosition() {
   const { showToast } = useToastContext();
   const [positions, setPositions] = useState<Position[]>([]);
   const [position, setPosition] = useState<PositionDetail | null>(null);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  /**
-   * Fetch all positions
-   */
   const fetchPositions = useCallback(
-    async (
-      showToastMessage: boolean = false,
-      params?: {
-        search?: string;
-      }
-    ) => {
+    async (params: any = {}, showToastMessage: boolean = false) => {
       try {
         setIsLoading(true);
-        const data = await getAllPositions();
-        setPositions(data);
+        const response = await getAllPositions(params);
+        setPositions(response.master_positions);
+        setTotalRecords(response.meta.total);
 
         if (showToastMessage) {
-          showToast("success", "Berhasil", "Data jabatan berhasil dimuat");
+          showToast("success", "Berhasil", "Data Jabatan berhasil dimuat");
         }
       } catch (err: any) {
-        if (showToastMessage) {
-          showToast("error", "Gagal", err.message);
-        }
-        setPositions([]);
+        showToast("error", "Gagal", err.message);
       } finally {
         setIsLoading(false);
       }
@@ -42,9 +33,6 @@ export function useFetchPosition() {
     [showToast]
   );
 
-  /**
-   * Fetch a single position detail by ID
-   */
   const fetchPositionByIdHandler = useCallback(async (id: number) => {
     try {
       setIsLoading(true);
@@ -57,14 +45,12 @@ export function useFetchPosition() {
     }
   }, []);
 
-  /**
-   * Reset selected position
-   */
   const clearPosition = useCallback(() => setPosition(null), []);
 
   return {
     positions,
     position,
+    totalRecords,
     isLoading,
     fetchPositions,
     fetchPositionById: fetchPositionByIdHandler,

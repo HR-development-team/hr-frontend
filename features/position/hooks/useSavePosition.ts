@@ -15,19 +15,14 @@ export function useSavePosition(onSuccess?: () => void) {
       setIsSaving(true);
 
       if (id) {
-        // --- EDIT MODE ---
         await updatePosition(id, values);
         showToast("success", "Berhasil", "Data jabatan berhasil diperbarui");
       } else {
-        // --- ADD MODE ---
         await createPosition(values);
         showToast("success", "Berhasil", "Jabatan baru berhasil ditambahkan");
       }
 
-      // Trigger the UI callback (close dialog, refresh table)
-      if (onSuccess) {
-        onSuccess();
-      }
+      onSuccess?.();
     } catch (err: any) {
       console.error("savePosition error:", err);
       showToast(

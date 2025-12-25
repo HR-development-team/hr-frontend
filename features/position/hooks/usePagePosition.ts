@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
-
+import { useEffect, useCallback, useRef } from "react";
 import { useDialogPosition } from "./useDialogPosition";
 import { useFilterPosition } from "./useFilterPosition";
 import { useFetchPosition } from "./useFetchPosition";
@@ -12,24 +11,28 @@ import { PositionFormData, Position } from "../schemas/positionSchema";
 export function usePagePosition() {
   const dialog = useDialogPosition();
   const filter = useFilterPosition();
+  const isFirstLoad = useRef(true);
 
-  const { positions, position, fetchPositions, fetchPositionById, isLoading } =
-    useFetchPosition();
+  const {
+    positions,
+    totalRecords,
+    position,
+    fetchPositions,
+    fetchPositionById,
+    isLoading,
+  } = useFetchPosition();
 
-  const refreshData = useCallback(
-    (showToast: boolean = false) => {
-      fetchPositions(showToast, filter.queryParams);
-    },
-    [fetchPositions, filter.queryParams]
-  );
+  const refreshData = useCallback(() => {
+    fetchPositions(filter.apiParams, false);
+  }, [fetchPositions, filter.apiParams]);
 
   const { savePosition, isSaving } = useSavePosition(() => {
     dialog.close();
-    refreshData(false);
+    refreshData();
   });
 
   const deleteAction = useDeletePosition(() => {
-    refreshData(false);
+    refreshData();
   });
 
   const handleSave = async (values: PositionFormData) => {
@@ -41,23 +44,23 @@ export function usePagePosition() {
     await fetchPositionById(row.id);
   };
 
-  // Initial Data Load
   useEffect(() => {
-    refreshData(true);
-  }, [refreshData]);
+    const showToast = isFirstLoad.current;
+    fetchPositions(filter.apiParams, showToast);
+    isFirstLoad.current = false;
+  }, [filter.apiParams, fetchPositions]);
 
   return {
-    // Data & Status
     positions,
-    position,
+    totalRecords,
     isLoading,
+    position,
     isSaving,
-
-    dialog,
+    lazyParams: filter.lazyParams,
+    onPageChange: filter.onPageChange,
     filter,
+    dialog,
     deleteAction,
-
-    // Handlers
     handleSave,
     handleView,
   };
