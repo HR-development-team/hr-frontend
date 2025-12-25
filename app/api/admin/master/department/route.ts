@@ -5,15 +5,32 @@ import { getAuthToken } from "@features/auth/utils/authUtils";
 import { Axios } from "@/utils/axios";
 import { API_ENDPOINTS } from "@/api/api";
 
-export const GET = async () => {
-  const token = getAuthToken();
-
+const tokenAvailable = (token: string | null) => {
   if (!token) {
     return NextResponse.json(
       { message: "Akses ditolak: Tidak terauntetikasi" },
       { status: 401 }
     );
   }
+  return null;
+};
+
+export const GET = async (request: NextRequest) => {
+  const token = getAuthToken();
+
+  const unauthorizedResponse = tokenAvailable(token);
+  if (unauthorizedResponse) {
+    return unauthorizedResponse;
+  }
+
+  const searchParams = request.nextUrl.searchParams;
+
+  const backendParams = {
+    page: searchParams.get("page") || 1,
+    limit: searchParams.get("limit") || 5,
+    search: searchParams.get("search") || "",
+    office_code: searchParams.get("office_code") || "",
+  };
 
   try {
     const response = await Axios.get(API_ENDPOINTS.GETALLDEPARTMENT, {
@@ -21,6 +38,7 @@ export const GET = async () => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
+      params: backendParams,
     });
 
     return NextResponse.json(response.data);
@@ -28,7 +46,7 @@ export const GET = async () => {
     if (error.response) {
       return NextResponse.json(
         { message: error.response.data.message },
-        { status: 404 }
+        { status: error.response.status || 404 }
       );
     }
 
@@ -42,17 +60,16 @@ export const GET = async () => {
 export const POST = async (request: NextRequest) => {
   const token = getAuthToken();
 
-  if (!token) {
-    return NextResponse.json(
-      { message: "Akses ditolak: Tidak terauntetikasi" },
-      { status: 401 }
-    );
+  const unauthorizedResponse = tokenAvailable(token);
+  if (unauthorizedResponse) {
+    return unauthorizedResponse;
   }
 
   try {
     const body = await request.json();
     const response = await Axios.post(API_ENDPOINTS.ADDDEPARTMENT, body, {
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
@@ -60,14 +77,14 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json(response.data);
   } catch (error: any) {
     if (error.response) {
-      return NextResponse.json(error.response.data.message, {
+      return NextResponse.json(error.response.data, {
         status: error.response.status,
       });
-    } else {
-      return NextResponse.json(
-        { message: "Gagal menambahkan data master departemen" },
-        { status: 500 }
-      );
     }
+
+    return NextResponse.json(
+      { message: "Gagal menambahkan data master departemen" },
+      { status: 500 }
+    );
   }
 };
