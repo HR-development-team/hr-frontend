@@ -34,7 +34,7 @@ export default function DepartmentManagementPage() {
   const { offices, fetchOffices } = useFetchOffice();
 
   const officeOptions = useMemo(() => {
-    return offices.map((office) => ({
+    return (offices || []).map((office) => ({
       label: office.name,
       value: office.office_code || "",
     }));

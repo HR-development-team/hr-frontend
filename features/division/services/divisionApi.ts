@@ -1,17 +1,37 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Division,
   DivisionDetail,
   DivisionFormData,
 } from "../schemas/divisionSchema";
 
+type DivisionResponse = GenericApiResponse<Division>;
+
 const BASE_URL = "/api/admin/master/division";
 
+// Define filter parameters
+export interface GetDivisionsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  office_code?: string;
+  department_code?: string;
+  [key: string]: any;
+}
+
 /**
- * Fetch all divisions
+ * Fetch all divisions with optional pagination and filtering
  */
-export async function getAllDivisions(): Promise<Division[]> {
+export async function getAllDivisions(
+  params?: GetDivisionsParams
+): Promise<DivisionResponse> {
   try {
-    const res = await fetch(BASE_URL, {
+    const queryString = params
+      ? `?${new URLSearchParams(params as any).toString()}`
+      : "";
+
+    const res = await fetch(`${BASE_URL}${queryString}`, {
       method: "GET",
       cache: "no-store",
     });
@@ -21,10 +41,17 @@ export async function getAllDivisions(): Promise<Division[]> {
     }
 
     const data = await res.json();
-    return data.master_divisions || [];
+    return data;
   } catch (error) {
     console.error("getAllDivisions error:", error);
-    return [];
+    // Return safe fallback
+    return {
+      status: "99",
+      message: "Failed to fetch divisions",
+      datetime: new Date().toISOString(),
+      master_divisions: [],
+      meta: { page: 0, total: 0, limit: 0, total_page: 0 },
+    } as any;
   }
 }
 

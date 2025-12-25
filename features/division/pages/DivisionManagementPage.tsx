@@ -13,7 +13,7 @@ import DivisionViewDialog from "../components/DivisionViewDialog";
 import DivisionFilterDialog from "../components/DivisionFilterDialog";
 import TableToolbar from "@components/TableToolbar";
 
-// Facade Hook for Division
+// Facade Hook
 import { usePageDivision } from "../hooks/usePageDivision";
 import { useFetchDepartment } from "@features/department/hooks/useFetchDepartment";
 import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
@@ -21,6 +21,9 @@ import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
 export default function DivisionManagementPage() {
   const {
     divisions,
+    totalRecords,
+    onPageChange,
+    lazyParams,
     division,
     isLoading,
     isSaving,
@@ -34,52 +37,21 @@ export default function DivisionManagementPage() {
   const { departments, fetchDepartments } = useFetchDepartment();
   const { offices, fetchOffices } = useFetchOffice();
 
+  // Dropdown Options
   const officeOptions = useMemo(() => {
-    return offices.map((office) => ({
+    return (offices || []).map((office) => ({
       label: office.name,
       value: office.office_code || "",
     }));
   }, [offices]);
 
   const departmentOptions = useMemo(() => {
-    return departments.map((dept) => ({
+    return (departments || []).map((dept) => ({
       label: dept.name,
       value: dept.department_code || "",
       office_code: dept.office_code || "",
     }));
   }, [departments]);
-
-  const filteredDivisions = useMemo(() => {
-    let result = divisions;
-
-    // 2. Updated Filter Logic
-    if (filter.selectedOffice) {
-      result = result.filter(
-        (div) => div.office_code === filter.selectedOffice
-      );
-    }
-
-    if (filter.selectedDepartment) {
-      result = result.filter(
-        (div) => div.department_code === filter.selectedDepartment
-      );
-    }
-
-    if (filter.search) {
-      const lowerSearch = filter.search.toLowerCase();
-      result = result.filter(
-        (div) =>
-          div.name.toLowerCase().includes(lowerSearch) ||
-          div.division_code?.toLowerCase().includes(lowerSearch)
-      );
-    }
-    return result;
-  }, [
-    divisions,
-    filter.selectedOffice,
-    filter.selectedDepartment,
-    filter.search,
-  ]);
 
   const isFilterActive = !!filter.selectedOffice || !!filter.selectedDepartment;
 
@@ -87,15 +59,12 @@ export default function DivisionManagementPage() {
     fetchDepartments();
     fetchOffices();
   }, [fetchDepartments, fetchOffices]);
-  // ---------------------------------------------------------------------
-  //   Render
-  // ---------------------------------------------------------------------
+
   return (
     <div>
       {/* Title Section */}
       <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
-          {/* Using Briefcase icon for Divisions */}
           <Briefcase className="w-2rem h-2rem" />
         </div>
         <div>
@@ -111,7 +80,6 @@ export default function DivisionManagementPage() {
       {/* Main Card */}
       <Card>
         <div className="flex flex-column gap-4">
-          {/* Section Header */}
           <div className="flex gap-2 align-items-center">
             <Briefcase className="h-2" />
             <h2 className="text-base text-800">Daftar Divisi</h2>
@@ -134,7 +102,6 @@ export default function DivisionManagementPage() {
             }
           />
 
-          {/* Filter Dialog */}
           <DivisionFilterDialog
             isOpen={dialog.isFilterVisible}
             onClose={dialog.closeFilter}
@@ -148,18 +115,19 @@ export default function DivisionManagementPage() {
 
           {/* Data Table */}
           <DivisionTable
-            data={filteredDivisions}
+            data={divisions}
             isLoading={isLoading}
             onView={handleView}
             onEdit={dialog.openEdit}
             onDelete={deleteAction.requestDelete}
+            totalRecords={totalRecords}
+            lazyParams={lazyParams}
+            onPageChange={onPageChange}
           />
         </div>
       </Card>
 
       {/* --- Dialogs --- */}
-
-      {/* Delete Confirmation */}
       <DivisionDeleteDialog
         isOpen={!!deleteAction.divisionToDelete}
         division={deleteAction.divisionToDelete}
@@ -168,7 +136,6 @@ export default function DivisionManagementPage() {
         onConfirm={deleteAction.confirmDelete}
       />
 
-      {/* Add/Edit Form */}
       {(dialog.mode === "add" || dialog.mode === "edit") && (
         <DivisionSaveDialog
           isOpen={dialog.isVisible}
@@ -182,7 +149,6 @@ export default function DivisionManagementPage() {
         />
       )}
 
-      {/* View Details */}
       <DivisionViewDialog
         isOpen={dialog.isVisible && dialog.mode === "view"}
         onClose={dialog.close}
