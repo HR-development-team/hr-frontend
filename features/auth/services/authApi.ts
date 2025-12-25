@@ -58,14 +58,21 @@ export async function fetchCurrentUser(): Promise<User | null> {
  * Fetches /permissions for the current user
  */
 export async function fetchCurrentUserPermissions(): Promise<RolePermissionResponse | null> {
-  try {
-    const res = await fetch(`${BASE_URL}/permission`, { cache: "no-store" });
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    console.error("Error fetching user permissions", error);
-    return null;
+  const res = await fetch(`${BASE_URL}/permission`, { cache: "no-store" });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    console.log("error data: ", errorData);
+
+    const error = new Error(errorData.message || "Failed to fetch permissions");
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (error as any).status = res.status;
+
+    throw error;
   }
+
+  return res.json();
 }
 
 export async function keepSessionAlive(): Promise<void> {
