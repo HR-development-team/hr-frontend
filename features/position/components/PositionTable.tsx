@@ -10,9 +10,9 @@ import { Position } from "../schemas/positionSchema";
 interface PositionTableProps {
   data: any[];
   isLoading: boolean;
-  totalRecords: number; // <--- New Prop
-  lazyParams: any; // <--- New Prop (contains first, rows)
-  onPageChange: (e: any) => void; // <--- New Prop
+  totalRecords: number;
+  lazyParams: any;
+  onPageChange: (e: any) => void;
   onView: (data: any) => void;
   onEdit: (data: any) => void;
   onDelete: (data: any) => void;
@@ -32,8 +32,6 @@ export default function PositionTable({
 
   const handleViewClick = async (row: Position) => {
     setViewingId(row.id);
-
-    // Small delay/async handling to show loading state on the button
     setTimeout(async () => {
       await onView(row);
       setViewingId(null);
@@ -52,20 +50,16 @@ export default function PositionTable({
     <DataTable
       value={data}
       loading={isLoading}
-      // --- Lazy Pagination Config ---
-      lazy={true} // Tells PrimeReact data is sliced by server
+      lazy={true}
       paginator
-      first={lazyParams.first} // Controls the cursor position
-      rows={lazyParams.rows} // Controls the limit
-      totalRecords={totalRecords} // Tells PrimeReact how many pages to render
-      onPage={onPageChange} // Updates state when user clicks next/prev
-      // -----------------------------
-
+      first={lazyParams.first}
+      rows={lazyParams.rows}
+      totalRecords={totalRecords}
+      onPage={onPageChange}
       rowsPerPageOptions={[5, 10, 25, 50]}
       className="border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden"
       emptyMessage="Tidak ada data jabatan"
     >
-      {/* Column Config */}
       <Column
         field="position_code"
         header="Kode Jabatan"
@@ -109,13 +103,11 @@ export default function PositionTable({
         style={{ width: "20%" }}
       />
 
-      {/* Actions Column */}
       <Column
         header="Aksi"
         style={{ width: "25%" }}
         body={(row: Position) => (
           <div className="flex gap-2">
-            {/* View Detail Button */}
             <Button
               icon="pi pi-eye text-sm"
               size="small"
@@ -125,7 +117,6 @@ export default function PositionTable({
               onClick={() => handleViewClick(row)}
             />
 
-            {/* Edit Button */}
             <Button
               icon="pi pi-pencil text-sm"
               size="small"
@@ -135,7 +126,6 @@ export default function PositionTable({
               disabled={viewingId !== null}
             />
 
-            {/* Delete Button */}
             <Button
               icon="pi pi-trash text-sm"
               size="small"

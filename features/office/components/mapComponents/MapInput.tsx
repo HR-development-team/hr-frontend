@@ -14,7 +14,7 @@ import { StaticImageData } from "next/image";
 
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import GeocoderController from "./GeocoderController";
 import MapRecenter from "./MapRecenter";
 
@@ -30,15 +30,17 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
+// Updated Interface: accept onPositionChange instead of setPosition
 interface LocationMarkerProps {
   position: LatLng | null;
-  setPosition: React.Dispatch<React.SetStateAction<LatLng>>;
+  onPositionChange: (lat: number, lng: number) => void;
 }
 
-function LocationMarker({ position, setPosition }: LocationMarkerProps) {
+function LocationMarker({ position, onPositionChange }: LocationMarkerProps) {
   const map = useMapEvents({
     click(e: LeafletMouseEvent) {
-      setPosition(e.latlng);
+      // DIRECTLY notify parent. Do not set local state.
+      onPositionChange(e.latlng.lat, e.latlng.lng);
       map.flyTo(e.latlng, map.getZoom());
     },
   });
@@ -48,11 +50,11 @@ function LocationMarker({ position, setPosition }: LocationMarkerProps) {
       dragend(e: L.LeafletEvent) {
         const marker = e.target as L.Marker;
         const newPosition = marker.getLatLng();
-        setPosition({ lat: newPosition.lat, lng: newPosition.lng });
+        // DIRECTLY notify parent.
+        onPositionChange(newPosition.lat, newPosition.lng);
       },
     }),
-
-    [setPosition]
+    [onPositionChange]
   );
 
   if (position === null) {
@@ -68,41 +70,26 @@ function LocationMarker({ position, setPosition }: LocationMarkerProps) {
 
 export default function MapInput({
   onCoordinateChange,
-  initialPosition,
+  initialPosition, // This is now our Single Source of Truth
   zoom = 13,
 }: MapInputProps) {
-  const [position, setPosition] = useState<LatLng>(initialPosition);
+  // 1. REMOVED internal useState entirely.
+  // We rely purely on 'initialPosition' coming from the parent.
 
-  useEffect(() => {
-    onCoordinateChange(position);
-  }, [position, onCoordinateChange]);
+  // 2. REMOVED both useEffects.
+  // We don't need to sync state, and we definitely don't want to echo back to parent.
 
-  useEffect(() => {
-    setPosition((prevPosition) => {
-      const isDifferent =
-        prevPosition.lat !== initialPosition.lat ||
-        prevPosition.lng !== initialPosition.lng;
+  const center: LatLng = initialPosition;
 
-      if (isDifferent) {
-        return initialPosition;
-      }
-
-      return prevPosition;
-    });
-  }, [initialPosition.lat, initialPosition.lng, setPosition]);
-
-  // const center: LatLngTuple = [position.lat, position.lng];
-  const center: LatLng = position;
-
-  // const initialCenter: LatLngTuple = [initialPosition.lat, initialPosition.lng];
   const initialCenterSafe: LatLngTuple = [
     initialPosition.lat,
     initialPosition.lng,
   ];
 
-  const handleLocationFound = useCallback((lat: number, lng: number) => {
-    setPosition({ lat, lng });
-  }, []);
+  // Wrapper to match the expected signature
+  const handleMapInteraction = (lat: number, lng: number) => {
+    onCoordinateChange({ lat, lng });
+  };
 
   return (
     <MapContainer
@@ -116,11 +103,15 @@ export default function MapInput({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
+      {/* MapRecenter will handle moving the view when you type numbers manually */}
       <MapRecenter center={center} zoom={zoom} />
 
-      <GeocoderController onLocationFound={handleLocationFound} />
+      <GeocoderController onLocationFound={handleMapInteraction} />
 
-      <LocationMarker position={position} setPosition={setPosition} />
+      <LocationMarker
+        position={initialPosition}
+        onPositionChange={handleMapInteraction}
+      />
     </MapContainer>
   );
 }

@@ -1,23 +1,26 @@
 "use client";
 
+import { useMemo, useEffect } from "react";
 import { Building2 } from "lucide-react";
 import { Card } from "primereact/card";
+import { Button } from "primereact/button";
 
 import OfficeTable from "../components/OfficeTable";
 import OfficeDeleteDialog from "../components/OfficeDeleteDialog";
 import OfficeSaveDialog from "../components/OfficeSaveDialog";
 import OfficeViewDialog from "../components/OfficeViewDialog";
+import OfficeFilterDialog from "../components/OfficeFilterDialog";
 import TableToolbar from "@components/TableToolbar";
 
-// Facade Hook
 import { usePageOffice } from "../hooks/usePageOffice";
-import { useMemo } from "react";
-import { Button } from "primereact/button";
-import OfficeFilterDialog from "../components/OfficeFilterDialog";
+import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
 
 export default function OfficeManagementPage() {
   const {
     offices,
+    totalRecords,
+    onPageChange,
+    lazyParams,
     office,
     isLoading,
     isSaving,
@@ -28,38 +31,23 @@ export default function OfficeManagementPage() {
     handleView,
   } = usePageOffice();
 
-  const parentOfficeOptions = useMemo(() => {
-    return offices.map((office) => ({
-      label: office.name,
-      value: office.office_code,
-    }));
-  }, [offices]);
+  const { offices: parentOffices, fetchOffices } = useFetchOffice();
 
-  const filteredOffice = useMemo(() => {
-    let result = offices;
+  const parentOfficeOptions = useMemo(
+    () =>
+      parentOffices.map((office) => ({
+        label: office.name,
+        value: office.office_code || "",
+      })),
+    [parentOffices]
+  );
 
-    if (filter.selectedOffice) {
-      result = result.filter(
-        (dept) => dept.parent_office_code === filter.selectedOffice
-      );
-    }
+  const isFilterActive = !!filter.selectedParentOffice;
 
-    if (filter.search) {
-      const lowerSearch = filter.search.toLowerCase();
-      result = result.filter(
-        (dept) =>
-          dept.name.toLowerCase().includes(lowerSearch) ||
-          dept.office_code?.toLowerCase().includes(lowerSearch)
-      );
-    }
-    return result;
-  }, [offices, filter.selectedOffice, filter.search]);
+  useEffect(() => {
+    fetchOffices();
+  }, [fetchOffices]);
 
-  const isFilterActive = !!filter.selectedOffice;
-
-  // ---------------------------------------------------------------------
-  //   Render
-  // ---------------------------------------------------------------------
   return (
     <div>
       {/* Title Section */}
@@ -80,7 +68,6 @@ export default function OfficeManagementPage() {
       {/* Main Card */}
       <Card>
         <div className="flex flex-column gap-4">
-          {/* Section Header */}
           <div className="flex gap-2 align-items-center">
             <Building2 className="h-2" />
             <h2 className="text-base text-800">Manajemen Data Kantor</h2>
@@ -96,36 +83,36 @@ export default function OfficeManagementPage() {
               <Button
                 label="Filter"
                 icon="pi pi-filter"
-                className="gap-1 w-full sm:w-auto"
-                onClick={() => dialog.openFilter()}
+                className="gap-1 w-full lg:w-auto"
+                onClick={dialog.openFilter}
                 outlined={!isFilterActive}
               />
             }
           />
 
+          <OfficeFilterDialog
+            isOpen={dialog.isFilterVisible}
+            onClose={dialog.closeFilter}
+            selectedOffice={filter.selectedParentOffice}
+            onOfficeChange={filter.setSelectedParentOffice}
+            officeOptions={parentOfficeOptions}
+          />
+
           {/* Data Table */}
           <OfficeTable
-            data={filteredOffice}
+            data={offices}
             isLoading={isLoading}
             onView={handleView}
             onEdit={dialog.openEdit}
             onDelete={deleteAction.requestDelete}
+            totalRecords={totalRecords}
+            lazyParams={lazyParams}
+            onPageChange={onPageChange}
           />
         </div>
       </Card>
 
       {/* --- Dialogs --- */}
-      {/* Filter Dialog */}
-
-      <OfficeFilterDialog
-        isOpen={dialog.isFilterVisible}
-        onClose={dialog.closeFilter}
-        selectedOffice={filter.selectedOffice}
-        onOfficeChange={filter.setSelectedOffice}
-        officeOptions={parentOfficeOptions}
-      />
-
-      {/* Delete Confirmation */}
       <OfficeDeleteDialog
         isOpen={!!deleteAction.officeToDelete}
         office={deleteAction.officeToDelete}
@@ -134,7 +121,6 @@ export default function OfficeManagementPage() {
         onConfirm={deleteAction.confirmDelete}
       />
 
-      {/* Add/Edit Form */}
       {(dialog.mode === "add" || dialog.mode === "edit") && (
         <OfficeSaveDialog
           isOpen={dialog.isVisible}
@@ -147,7 +133,6 @@ export default function OfficeManagementPage() {
         />
       )}
 
-      {/* View Details */}
       <OfficeViewDialog
         isOpen={dialog.isVisible && dialog.mode === "view"}
         onClose={dialog.close}

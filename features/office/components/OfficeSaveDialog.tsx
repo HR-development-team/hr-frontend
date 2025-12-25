@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo, useCallback, useEffect } from "react";
+import { useMemo, useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -101,11 +101,42 @@ export default function OfficeSaveDialog({
     },
   });
 
-  // 2. Stable Handler
+  // --- MAP SYNC LOGIC START ---
+
+  // 2. Local state for "Debounced Map Position"
+  // We use this to prevent the map from "fighting" the user while they type
+  const [mapSyncPosition, setMapSyncPosition] = useState({
+    lat: Number(initialValues.latitude),
+    lng: Number(initialValues.longitude),
+  });
+
+  // 3. Debounce Effect: Sync Formik -> Map (One-way with delay)
+  // When user types in InputNumber, wait 1000ms before moving the map pin.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMapSyncPosition({
+        lat: Number(formik.values.latitude) || 0,
+        lng: Number(formik.values.longitude) || 0,
+      });
+    }, 1000); // 1 second delay
+
+    return () => clearTimeout(timer);
+  }, [formik.values.latitude, formik.values.longitude]);
+
+  // 4. Map Handler: Sync Map -> Formik (Immediate)
+  // When user Drags the pin, update the inputs immediately.
   const handleMapUpdate = useCallback(
     ({ lat, lng }: { lat: number; lng: number }) => {
-      // Only update if values actually changed to prevent micro-loops
-      if (lat !== formik.values.latitude || lng !== formik.values.longitude) {
+      // Small epsilon check to prevent floating point loops
+      const epsilon = 0.0000001;
+      const currentLat = Number(formik.values.latitude);
+      const currentLng = Number(formik.values.longitude);
+
+      const latDiff = Math.abs(lat - currentLat);
+      const lngDiff = Math.abs(lng - currentLng);
+
+      // Only update if the change is significant (real drag)
+      if (latDiff > epsilon || lngDiff > epsilon) {
         formik.setFieldValue("latitude", lat);
         formik.setFieldValue("longitude", lng);
       }
@@ -113,12 +144,7 @@ export default function OfficeSaveDialog({
     [formik]
   );
 
-  const mapInitialPosition = useMemo(() => {
-    return {
-      lat: Number(initialValues.latitude),
-      lng: Number(initialValues.longitude),
-    };
-  }, [initialValues]);
+  // --- MAP SYNC LOGIC END ---
 
   const isFieldInvalid = (name: keyof OfficeFormData) =>
     Boolean(formik.touched[name] && formik.errors[name]);
@@ -131,7 +157,6 @@ export default function OfficeSaveDialog({
     onClose();
   };
 
-  // Reset form when the form is resetted
   useEffect(() => {
     if (isOpen) {
       formik.resetForm();
@@ -228,30 +253,41 @@ export default function OfficeSaveDialog({
             className="w-full border-round overflow-hidden shadow-1"
             style={{ minHeight: "300px" }}
           >
+            {/* THE FIX: 
+                We pass 'mapSyncPosition' (the delayed one) instead of 'formik.values'.
+                This stops the map from resetting your input while typing.
+            */}
             <MapInput
               onCoordinateChange={handleMapUpdate}
-              initialPosition={mapInitialPosition}
-              zoom={8}
+              initialPosition={mapSyncPosition}
+              zoom={13}
             />
           </div>
           <small className="text-gray-500">
-            Geser pin pada peta untuk menentukan lokasi.
+            Geser pin pada peta atau masukkan koordinat secara manual di bawah.
           </small>
 
           <div className="grid mt-2">
             <div className="col-12 md:col-6">
               <div className="flex flex-column gap-2">
                 <label className="text-sm font-medium">Latitude</label>
+                {/* THE FIX: 
+                   InputNumber stays strictly tied to Formik (instant feedback).
+                */}
                 <InputNumber
                   value={formik.values.latitude}
+                  onValueChange={(e: InputNumberValueChangeEvent) =>
+                    formik.setFieldValue("latitude", e.value)
+                  }
                   mode="decimal"
+                  min={-90}
+                  max={90}
                   minFractionDigits={6}
                   maxFractionDigits={8}
-                  readOnly
+                  useGrouping={false} // Often helps with copy-paste issues
                   className={classNames("w-full p-inputtext-sm", {
                     "p-invalid": isFieldInvalid("latitude"),
                   })}
-                  inputClassName="bg-gray-100"
                 />
                 {isFieldInvalid("latitude") && (
                   <small className="p-error">{getFieldError("latitude")}</small>
@@ -263,14 +299,18 @@ export default function OfficeSaveDialog({
                 <label className="text-sm font-medium">Longitude</label>
                 <InputNumber
                   value={formik.values.longitude}
+                  onValueChange={(e: InputNumberValueChangeEvent) =>
+                    formik.setFieldValue("longitude", e.value)
+                  }
                   mode="decimal"
+                  min={-180}
+                  max={180}
                   minFractionDigits={6}
                   maxFractionDigits={8}
-                  readOnly
+                  useGrouping={false} // Often helps with copy-paste issues
                   className={classNames("w-full p-inputtext-sm", {
                     "p-invalid": isFieldInvalid("longitude"),
                   })}
-                  inputClassName="bg-gray-100"
                 />
                 {isFieldInvalid("longitude") && (
                   <small className="p-error">

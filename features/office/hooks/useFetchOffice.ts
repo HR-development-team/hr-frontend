@@ -10,31 +10,22 @@ export function useFetchOffice() {
   const { showToast } = useToastContext();
   const [offices, setOffices] = useState<Office[]>([]);
   const [office, setOffice] = useState<OfficeDetail | null>(null);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  /**
-   * Fetch all offices
-   */
   const fetchOffices = useCallback(
-    async (
-      showToastMessage: boolean = false,
-      params?: {
-        search?: string;
-      }
-    ) => {
+    async (params: any = {}, showToastMessage: boolean = false) => {
       try {
         setIsLoading(true);
-        const data = await getAllOffices();
-        setOffices(data);
+        const response = await getAllOffices(params);
+        setOffices(response.master_offices);
+        setTotalRecords(response.meta.total);
 
         if (showToastMessage) {
           showToast("success", "Berhasil", "Data kantor berhasil dimuat");
         }
       } catch (err: any) {
-        if (showToastMessage) {
-          showToast("error", "Gagal", err.message);
-        }
-        setOffices([]);
+        showToast("error", "Gagal", err.message);
       } finally {
         setIsLoading(false);
       }
@@ -42,9 +33,6 @@ export function useFetchOffice() {
     [showToast]
   );
 
-  /**
-   * Fetch a single office detail by ID
-   */
   const fetchOfficeByIdHandler = useCallback(async (id: number) => {
     try {
       setIsLoading(true);
@@ -57,14 +45,12 @@ export function useFetchOffice() {
     }
   }, []);
 
-  /**
-   * Reset selected office
-   */
   const clearOffice = useCallback(() => setOffice(null), []);
 
   return {
     offices,
     office,
+    totalRecords,
     isLoading,
     fetchOffices,
     fetchOfficeById: fetchOfficeByIdHandler,
