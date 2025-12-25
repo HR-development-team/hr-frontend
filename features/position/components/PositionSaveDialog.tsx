@@ -35,6 +35,12 @@ export interface OfficeOption {
   value: string;
 }
 
+export interface PositionOption {
+  label: string;
+  value: string;
+  division_code: string;
+}
+
 interface PositionSaveDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -46,6 +52,7 @@ interface PositionSaveDialogProps {
   officeOptions: OfficeOption[];
   departmentOptions: DepartmentOption[];
   divisionOptions: DivisionOption[];
+  positionOptions: PositionOption[];
 }
 
 const positionDefaultValues: PositionFormData = {
@@ -66,6 +73,7 @@ export default function PositionSaveDialog({
   officeOptions = [],
   departmentOptions = [],
   divisionOptions = [],
+  positionOptions = [],
 }: PositionSaveDialogProps) {
   // --- Local State for Cascading Dropdowns ---
   const [selectedOffice, setSelectedOffice] = useState<string | null>(null);
@@ -117,6 +125,24 @@ export default function PositionSaveDialog({
     },
   });
 
+  const filteredParentPositions = useMemo(() => {
+    // If no division is selected, show no parents
+    if (!formik?.values.division_code) return [];
+
+    return positionOptions.filter((p) => {
+      // Must match selected division
+      const isSameDivision = p.division_code === formik.values.division_code;
+
+      // Optional: Prevent selecting itself as its own parent (if editing)
+      // Assuming positionData has 'position_code'
+      const isNotSelf = positionData
+        ? p.value !== positionData.position_code
+        : true;
+
+      return isSameDivision && isNotSelf;
+    });
+  }, [formik?.values.division_code, positionOptions, positionData]);
+
   const handleHide = () => {
     formik.resetForm();
     setSelectedOffice(null);
@@ -126,33 +152,26 @@ export default function PositionSaveDialog({
 
   useEffect(() => {
     if (isOpen) {
-      // A. Always reset Formik to clear dirty/touched states
       formik.resetForm();
 
-      // B. Handle Dropdown State
       if (positionData?.division_code) {
         // --- EDIT MODE: Reverse Lookup ---
-        // 1. Find Division
         const division = divisionOptions.find(
           (d) => d.value === positionData.division_code
         );
 
         if (division?.department_code) {
-          // 2. Set Department
           setSelectedDepartment(division.department_code);
-
-          // 3. Find Department to get Office
           const department = departmentOptions.find(
             (d) => d.value === division.department_code
           );
 
           if (department?.office_code) {
-            // 4. Set Office
             setSelectedOffice(department.office_code);
           }
         }
       } else {
-        // --- ADD MODE: Clear Dropdowns ---
+        // --- ADD MODE ---
         setSelectedOffice(null);
         setSelectedDepartment(null);
       }
@@ -282,6 +301,38 @@ export default function PositionSaveDialog({
               {formik.errors.division_code as string}
             </small>
           )}
+        </div>
+
+        <div className="flex flex-column gap-2">
+          <label htmlFor="parent_position_code" className="font-medium">
+            Atasan Langsung (Parent)
+          </label>
+          <Dropdown
+            id="parent_position_code"
+            value={formik.values.parent_position_code}
+            options={filteredParentPositions}
+            onChange={(e) =>
+              formik.setFieldValue("parent_position_code", e.value)
+            }
+            placeholder={
+              !formik.values.division_code
+                ? "Pilih Divisi terlebih dahulu"
+                : "Pilih Atasan (Opsional)"
+            }
+            className="w-full"
+            filter
+            showClear
+            disabled={!formik.values.division_code} // Disable if no division selected
+            itemTemplate={(option: any) => (
+              <div className="flex align-items-center justify-content-between gap-2 w-full">
+                <span>{option.label}</span>
+                <span className="text-gray-500 text-sm font-mono bg-gray-100 px-2 py-1 border-round">
+                  {option.value}
+                </span>
+              </div>
+            )}
+            emptyMessage="Tidak ada jabatan lain di divisi ini"
+          />
         </div>
 
         {/* --- Standard Fields --- */}

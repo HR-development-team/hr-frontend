@@ -167,6 +167,7 @@ export default function PositionManagementPage() {
           divisionOptions={divisionOptions}
           departmentOptions={departmentOptions}
           officeOptions={officeOptions}
+          positionOptions={positionOptions}
         />
       )}
 
