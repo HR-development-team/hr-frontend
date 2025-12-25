@@ -5,7 +5,6 @@ import { Building, Layers } from "lucide-react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 
-// Components
 import DepartmentTable from "../components/DepartmentTable";
 import DepartmentDeleteDialog from "../components/DepartmentDeleteDialog";
 import DepartmentSaveDialog from "../components/DepartmentSaveDialog";
@@ -13,13 +12,15 @@ import DepartmentViewDialog from "../components/DepartmentViewDialog";
 import DepartmentFilterDialog from "../components/DepartmentFilterDialog";
 import TableToolbar from "@components/TableToolbar";
 
-// Facade Hook
 import { usePageDepartment } from "../hooks/usePageDepartment";
 import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
 
 export default function DepartmentManagementPage() {
   const {
     departments,
+    totalRecords,
+    onPageChange,
+    lazyParams,
     department,
     isLoading,
     isSaving,
@@ -35,44 +36,21 @@ export default function DepartmentManagementPage() {
   const officeOptions = useMemo(() => {
     return offices.map((office) => ({
       label: office.name,
-      value: office.office_code,
+      value: office.office_code || "",
     }));
   }, [offices]);
-
-  const filteredDepartments = useMemo(() => {
-    let result = departments;
-
-    if (filter.selectedOffice) {
-      result = result.filter(
-        (dept) => dept.office_code === filter.selectedOffice
-      );
-    }
-
-    if (filter.search) {
-      const lowerSearch = filter.search.toLowerCase();
-      result = result.filter(
-        (dept) =>
-          dept.name.toLowerCase().includes(lowerSearch) ||
-          dept.department_code?.toLowerCase().includes(lowerSearch)
-      );
-    }
-    return result;
-  }, [departments, filter.selectedOffice, filter.search]);
 
   const isFilterActive = !!filter.selectedOffice;
 
   useEffect(() => {
     fetchOffices();
   }, [fetchOffices]);
-  // ---------------------------------------------------------------------
-  //   Render
-  // ---------------------------------------------------------------------
+
   return (
     <div>
       {/* Title Section */}
       <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
-          {/* Using Layers icon for Departments to differentiate from Office */}
           <Layers className="w-2rem h-2rem" />
         </div>
         <div>
@@ -88,7 +66,6 @@ export default function DepartmentManagementPage() {
       {/* Main Card */}
       <Card>
         <div className="flex flex-column gap-4">
-          {/* Section Header */}
           <div className="flex gap-2 align-items-center">
             <Building className="h-2" />
             <h2 className="text-base text-800">Daftar Departemen</h2>
@@ -111,7 +88,6 @@ export default function DepartmentManagementPage() {
             }
           />
 
-          {/* Filter Dialog */}
           <DepartmentFilterDialog
             isOpen={dialog.isFilterVisible}
             onClose={dialog.closeFilter}
@@ -122,18 +98,19 @@ export default function DepartmentManagementPage() {
 
           {/* Data Table */}
           <DepartmentTable
-            data={filteredDepartments}
+            data={departments}
             isLoading={isLoading}
             onView={handleView}
             onEdit={dialog.openEdit}
             onDelete={deleteAction.requestDelete}
+            totalRecords={totalRecords}
+            lazyParams={lazyParams}
+            onPageChange={onPageChange}
           />
         </div>
       </Card>
 
       {/* --- Dialogs --- */}
-
-      {/* Delete Confirmation */}
       <DepartmentDeleteDialog
         isOpen={!!deleteAction.departmentToDelete}
         department={deleteAction.departmentToDelete}
@@ -142,7 +119,6 @@ export default function DepartmentManagementPage() {
         onConfirm={deleteAction.confirmDelete}
       />
 
-      {/* Add/Edit Form */}
       {(dialog.mode === "add" || dialog.mode === "edit") && (
         <DepartmentSaveDialog
           isOpen={dialog.isVisible}
@@ -155,7 +131,6 @@ export default function DepartmentManagementPage() {
         />
       )}
 
-      {/* View Details */}
       <DepartmentViewDialog
         isOpen={dialog.isVisible && dialog.mode === "view"}
         onClose={dialog.close}

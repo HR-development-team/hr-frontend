@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Position,
   PositionDetail,
   PositionFormData,
 } from "../schemas/positionSchema";
+type PositionResponse = GenericApiResponse<Position>;
 
 const BASE_URL = "/api/admin/master/position";
 
@@ -21,7 +23,9 @@ export interface GetPositionsParams {
 /**
  * Fetch all positions with optional pagination and filtering
  */
-export async function getAllPositions(params?: GetPositionsParams) {
+export async function getAllPositions(
+  params?: GetPositionsParams
+): Promise<PositionResponse> {
   try {
     // 1. Convert the params object into a Query String (e.g. "?page=1&limit=5")
     const queryString = params
@@ -45,7 +49,13 @@ export async function getAllPositions(params?: GetPositionsParams) {
   } catch (error) {
     console.error("getAllPositions error:", error);
     // Return a safe fallback structure if it fails
-    return { master_positions: [], meta: { total: 0 } };
+    return {
+      status: "99",
+      message: "Failed to fetch offices",
+      datetime: new Date().toISOString(),
+      master_positions: [],
+      meta: { page: 0, total: 0, limit: 0, total_page: 0 },
+    };
   }
 }
 

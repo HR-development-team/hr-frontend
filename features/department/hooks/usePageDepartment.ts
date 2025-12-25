@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useDialogDepartment } from "./useDialogDepartment";
 import { useFilterDepartment } from "./useFilterDepartment";
 import { useFetchDepartment } from "./useFetchDepartment";
@@ -11,29 +11,28 @@ import { DepartmentFormData, Department } from "../schemas/departmentSchema";
 export function usePageDepartment() {
   const dialog = useDialogDepartment();
   const filter = useFilterDepartment();
+  const isFirstLoad = useRef(true);
 
   const {
     departments,
     department,
+    totalRecords,
+    isLoading,
     fetchDepartments,
     fetchDepartmentById,
-    isLoading,
   } = useFetchDepartment();
 
-  const refreshData = useCallback(
-    (showToast: boolean = false) => {
-      fetchDepartments(showToast, filter.queryParams);
-    },
-    [fetchDepartments, filter.queryParams]
-  );
+  const refreshData = useCallback(() => {
+    fetchDepartments(filter.apiParams, false);
+  }, [fetchDepartments, filter.apiParams]);
 
   const { saveDepartment, isSaving } = useSaveDepartment(() => {
     dialog.close();
-    refreshData(false);
+    refreshData();
   });
 
   const deleteAction = useDeleteDepartment(() => {
-    refreshData(false);
+    refreshData();
   });
 
   const handleSave = async (values: DepartmentFormData) => {
@@ -45,23 +44,26 @@ export function usePageDepartment() {
     await fetchDepartmentById(row.id);
   };
 
-  // Initial Data Load
   useEffect(() => {
-    refreshData(true);
-  }, [refreshData]);
+    const showToast = isFirstLoad.current;
+    fetchDepartments(filter.apiParams, showToast);
+    isFirstLoad.current = false;
+  }, [filter.apiParams, fetchDepartments]);
 
   return {
-    // Data & Status
     departments,
     department,
+    totalRecords,
     isLoading,
     isSaving,
 
-    dialog,
+    // Pagination & Filter
+    lazyParams: filter.lazyParams,
+    onPageChange: filter.onPageChange,
     filter,
-    deleteAction,
 
-    // Handlers
+    dialog,
+    deleteAction,
     handleSave,
     handleView,
   };

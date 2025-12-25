@@ -1,17 +1,37 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Department,
   DepartmentDetail,
   DepartmentFormData,
 } from "../schemas/departmentSchema";
 
+type DepartmentResponse = GenericApiResponse<Department>;
+
 const BASE_URL = "/api/admin/master/department";
 
+// Define filter parameters
+export interface GetDepartmentsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  office_code?: string;
+  [key: string]: any; // Allow flexibility
+}
+
 /**
- * Fetch all departments
+ * Fetch all departments with optional pagination and filtering
  */
-export async function getAllDepartments(): Promise<Department[]> {
+export async function getAllDepartments(
+  params?: GetDepartmentsParams
+): Promise<DepartmentResponse> {
   try {
-    const res = await fetch(BASE_URL, {
+    // 1. Convert params to Query String
+    const queryString = params
+      ? `?${new URLSearchParams(params as any).toString()}`
+      : "";
+
+    const res = await fetch(`${BASE_URL}${queryString}`, {
       method: "GET",
       cache: "no-store",
     });
@@ -21,10 +41,19 @@ export async function getAllDepartments(): Promise<Department[]> {
     }
 
     const data = await res.json();
-    return data.master_departments || [];
+
+    // 2. Return FULL data (meta + master_departments)
+    return data;
   } catch (error) {
     console.error("getAllDepartments error:", error);
-    return [];
+    // Return safe fallback
+    return {
+      status: "99",
+      message: "Failed to fetch departments",
+      datetime: new Date().toISOString(),
+      master_departments: [],
+      meta: { page: 0, total: 0, limit: 0, total_page: 0 },
+    } as any; // Cast to any if structure slightly differs, or strictly match GenericApiResponse
   }
 }
 
@@ -46,7 +75,8 @@ export async function getDepartmentById(
 
     const data = await res.json();
 
-    return data.master_departments || null;
+    // Handle potential naming variations from backend (singular vs plural)
+    return data.master_departments || data.department || null;
   } catch (error) {
     console.error("getDepartmentById error:", error);
     return null;
