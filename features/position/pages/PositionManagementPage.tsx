@@ -66,6 +66,14 @@ export default function PositionManagementPage() {
     [divisions]
   );
 
+  const positionOptions = useMemo(() => {
+    return positions.map((pos) => ({
+      label: pos.name,
+      value: pos.position_code,
+      division_code: pos.division_code,
+    }));
+  }, [positions]);
+
   const isFilterActive =
     !!filter.selectedOffice ||
     !!filter.selectedDepartment ||
