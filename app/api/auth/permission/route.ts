@@ -34,7 +34,7 @@ export const GET = async () => {
             error.response.data?.message ||
             "Gagal mendapatkan data permission dari server.",
         },
-        { status: error.response.data.status || 500 }
+        { status: error.response.status || 500 }
       );
     }
 
