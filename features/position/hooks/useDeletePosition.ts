@@ -13,39 +13,26 @@ export function useDeletePosition(onSuccess?: () => void) {
   );
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
-  /**
-   * Set the position that needs to be deleted
-   */
   const requestDelete = (position: Position) => {
     setPositionToDelete(position);
   };
 
-  /**
-   * Cancel the delete operation
-   */
   const cancelDelete = () => {
     if (!isDeleting) {
       setPositionToDelete(null);
     }
   };
 
-  /**
-   * Confirm and execute the delete API call
-   */
   const confirmDelete = async () => {
     if (!positionToDelete) return;
 
     try {
       setIsDeleting(true);
-
       await deletePosition(positionToDelete.id);
       showToast("success", "Berhasil", "Jabatan berhasil dihapus");
 
       setPositionToDelete(null);
-
-      if (onSuccess) {
-        onSuccess();
-      }
+      onSuccess?.();
     } catch (err: any) {
       console.error("deletePosition error:", err);
       showToast("error", "Gagal", err.message);

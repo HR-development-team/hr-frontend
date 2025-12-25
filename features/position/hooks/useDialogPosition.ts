@@ -11,21 +11,18 @@ export const useDialogPosition = () => {
   >(null);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
 
-  // Open for adding a new position
   const openAdd = useCallback(() => {
     setMode("add");
     setCurrentPosition(null);
     setIsVisible(true);
   }, []);
 
-  // Open for editing an existing position
   const openEdit = useCallback((position: Position | PositionDetail) => {
     setMode("edit");
     setCurrentPosition(position);
     setIsVisible(true);
   }, []);
 
-  // Open for viewing position details (ReadOnly)
   const openView = useCallback((position: Position | PositionDetail) => {
     setMode("view");
     setCurrentPosition(position);
@@ -34,11 +31,9 @@ export const useDialogPosition = () => {
 
   const close = useCallback(() => {
     setIsVisible(false);
-    // Delay clearing data slightly to prevent UI flicker while closing
     setTimeout(() => setCurrentPosition(null), 200);
   }, []);
 
-  // Open for filtering division
   const openFilter = useCallback(() => {
     setIsFilterVisible(true);
   }, []);
@@ -47,7 +42,6 @@ export const useDialogPosition = () => {
     setIsFilterVisible(false);
   }, []);
 
-  // Derived Values
   const title = useMemo(() => {
     switch (mode) {
       case "add":
@@ -61,7 +55,6 @@ export const useDialogPosition = () => {
     }
   }, [mode]);
 
-  // Prepare data for the form
   const formData = useMemo(
     () => ({
       parent_position_code: currentPosition?.parent_position_code ?? null,

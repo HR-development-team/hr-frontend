@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Position,
   PositionDetail,
@@ -6,12 +7,28 @@ import {
 
 const BASE_URL = "/api/admin/master/position";
 
+// Define the interface for the parameters we expect
+export interface GetPositionsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  office_code?: string;
+  department_code?: string;
+  division_code?: string;
+  [key: string]: any; // Allow flexibility
+}
+
 /**
- * Fetch all positions
+ * Fetch all positions with optional pagination and filtering
  */
-export async function getAllPositions(): Promise<Position[]> {
+export async function getAllPositions(params?: GetPositionsParams) {
   try {
-    const res = await fetch(BASE_URL, {
+    // 1. Convert the params object into a Query String (e.g. "?page=1&limit=5")
+    const queryString = params
+      ? `?${new URLSearchParams(params as any).toString()}`
+      : "";
+
+    const res = await fetch(`${BASE_URL}${queryString}`, {
       method: "GET",
       cache: "no-store",
     });
@@ -21,10 +38,16 @@ export async function getAllPositions(): Promise<Position[]> {
     }
 
     const data = await res.json();
-    return data.master_positions || [];
+
+    console.log(`${BASE_URL}${queryString}`);
+
+    // 2. Return the FULL data object (containing master_positions AND meta)
+    // The hook will handle extracting the specific arrays.
+    return data;
   } catch (error) {
     console.error("getAllPositions error:", error);
-    return [];
+    // Return a safe fallback structure if it fails
+    return { master_positions: [], meta: { total: 0 } };
   }
 }
 
