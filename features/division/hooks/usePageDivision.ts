@@ -17,10 +17,16 @@ export function usePageDivision() {
   const {
     divisions,
     division,
+    officeOptions,
+    departmentOptions,
+    clearDepartmentOptions,
     totalRecords,
     fetchDivisions,
     fetchDivisionById,
+    fetchOfficeOptions,
+    fetchDepartmentOptions,
     isLoading,
+    isOptionsLoading,
   } = useFetchDivision();
 
   const refreshData = useCallback(() => {
@@ -48,14 +54,20 @@ export function usePageDivision() {
   useEffect(() => {
     const showToast = isFirstLoad.current;
     fetchDivisions(filter.apiParams, showToast);
+    fetchOfficeOptions();
     isFirstLoad.current = false;
-  }, [filter.apiParams, fetchDivisions]);
+  }, [filter.apiParams, fetchDivisions, fetchOfficeOptions]);
 
   return {
     divisions,
     division,
+    officeOptions,
+    departmentOptions,
+    fetchDepartmentOptions,
+    clearDepartmentOptions,
     totalRecords,
     isLoading,
+    isOptionsLoading,
     isSaving,
 
     // Pagination & Filter

@@ -2,6 +2,7 @@
 import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Department,
+  DepartmentOption,
   DepartmentDetail,
   DepartmentFormData,
 } from "../schemas/departmentSchema";
@@ -83,6 +84,29 @@ export async function getDepartmentById(
   }
 }
 
+/**
+ * Get a list for dropdown
+ */
+export async function getDepartmentList(
+  office_code?: string
+): Promise<DepartmentOption[] | null> {
+  try {
+    const url = office_code
+      ? `${BASE_URL}/list?office_code=${office_code}`
+      : `${BASE_URL}/list`;
+
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error("Failed to fetch department options");
+    }
+
+    const data = await res.json();
+    return data.master_departments;
+  } catch (error) {
+    console.error("getDepartmentOption error:", error);
+    return null;
+  }
+}
 /**
  * Create a new department
  */

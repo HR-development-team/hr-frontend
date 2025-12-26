@@ -67,6 +67,9 @@ export async function getOfficeById(id: number): Promise<OfficeDetail | null> {
   }
 }
 
+/**
+ * Get a list for dropdown
+ */
 export async function getOfficeList(): Promise<OfficeOption[] | null> {
   try {
     const res = await fetch(`${BASE_URL}/options`);
