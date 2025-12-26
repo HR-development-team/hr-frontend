@@ -7,6 +7,7 @@ import {
   getAllDepartments,
   getDepartmentById,
 } from "../services/departmentApi";
+import { getOfficeList } from "@features/office/services/officeApi";
 import { useToastContext } from "@components/ToastProvider";
 
 export function useFetchDepartment() {
@@ -14,6 +15,9 @@ export function useFetchDepartment() {
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [department, setDepartment] = useState<DepartmentDetail | null>(null);
+  const [officeOptions, setOfficeOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -53,15 +57,34 @@ export function useFetchDepartment() {
     }
   }, []);
 
+  const fetchOfficeOptions = useCallback(async () => {
+    try {
+      const data = await getOfficeList();
+
+      if (data) {
+        const formattedOptions = data.map((item: any) => ({
+          label: item.name,
+          value: item.office_code,
+        }));
+
+        setOfficeOptions(formattedOptions);
+      }
+    } catch (err) {
+      console.error("Failed to fetch office options", err);
+    }
+  }, []);
+
   const clearDepartment = useCallback(() => setDepartment(null), []);
 
   return {
     departments,
     department,
+    officeOptions,
     totalRecords,
     isLoading,
     fetchDepartments,
     fetchDepartmentById,
+    fetchOfficeOptions,
     clearDepartment,
   };
 }

@@ -16,10 +16,12 @@ export function usePageDepartment() {
   const {
     departments,
     department,
+    officeOptions,
     totalRecords,
     isLoading,
     fetchDepartments,
     fetchDepartmentById,
+    fetchOfficeOptions,
   } = useFetchDepartment();
 
   const refreshData = useCallback(() => {
@@ -47,12 +49,14 @@ export function usePageDepartment() {
   useEffect(() => {
     const showToast = isFirstLoad.current;
     fetchDepartments(filter.apiParams, showToast);
+    fetchOfficeOptions();
     isFirstLoad.current = false;
-  }, [filter.apiParams, fetchDepartments]);
+  }, [filter.apiParams, fetchDepartments, fetchOfficeOptions]);
 
   return {
     departments,
     department,
+    officeOptions,
     totalRecords,
     isLoading,
     isSaving,
