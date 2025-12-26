@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
 import { Building2 } from "lucide-react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
@@ -13,15 +12,15 @@ import OfficeFilterDialog from "../components/OfficeFilterDialog";
 import TableToolbar from "@components/TableToolbar";
 
 import { usePageOffice } from "../hooks/usePageOffice";
-import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
 
 export default function OfficeManagementPage() {
   const {
     offices,
+    office,
+    officeOptions,
     totalRecords,
     onPageChange,
     lazyParams,
-    office,
     isLoading,
     isSaving,
     dialog,
@@ -31,22 +30,7 @@ export default function OfficeManagementPage() {
     handleView,
   } = usePageOffice();
 
-  const { offices: parentOffices, fetchOffices } = useFetchOffice();
-
-  const parentOfficeOptions = useMemo(
-    () =>
-      parentOffices.map((office) => ({
-        label: office.name,
-        value: office.office_code || "",
-      })),
-    [parentOffices]
-  );
-
   const isFilterActive = !!filter.selectedParentOffice;
-
-  useEffect(() => {
-    fetchOffices();
-  }, [fetchOffices]);
 
   return (
     <div>
@@ -95,7 +79,7 @@ export default function OfficeManagementPage() {
             onClose={dialog.closeFilter}
             selectedOffice={filter.selectedParentOffice}
             onOfficeChange={filter.setSelectedParentOffice}
-            officeOptions={parentOfficeOptions}
+            officeOptions={officeOptions}
           />
 
           {/* Data Table */}
@@ -129,7 +113,7 @@ export default function OfficeManagementPage() {
           onSubmit={handleSave}
           isSubmitting={isSaving}
           onClose={dialog.close}
-          parentOfficeOptions={parentOfficeOptions}
+          parentOfficeOptions={officeOptions}
         />
       )}
 

@@ -15,10 +15,12 @@ export function usePageOffice() {
 
   const {
     offices,
-    totalRecords,
     office,
+    officeOptions,
+    totalRecords,
     fetchOffices,
     fetchOfficeById,
+    fetchOfficeOptions,
     isLoading,
   } = useFetchOffice();
 
@@ -47,14 +49,16 @@ export function usePageOffice() {
   useEffect(() => {
     const showToast = isFirstLoad.current;
     fetchOffices(filter.apiParams, showToast);
+    fetchOfficeOptions();
     isFirstLoad.current = false;
-  }, [filter.apiParams, fetchOffices]);
+  }, [filter.apiParams, fetchOffices, fetchOfficeOptions]);
 
   return {
     offices,
+    office,
+    officeOptions,
     totalRecords,
     isLoading,
-    office,
     isSaving,
     lazyParams: filter.lazyParams,
     onPageChange: filter.onPageChange,

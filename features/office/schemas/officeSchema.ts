@@ -14,6 +14,11 @@ export const officeSchema = z.object({
   description: z.string().nullable(),
 });
 
+export const officeOptionSchema = z.object({
+  office_code: z.string(),
+  name: z.string(),
+});
+
 export const officeDetailSchema = officeSchema.extend({
   parent_office_name: z.string().nullable(),
   created_at: z.string(),
@@ -42,5 +47,6 @@ export const officeFormSchema = z.object({
 });
 
 export type Office = z.infer<typeof officeSchema>;
+export type OfficeOption = z.infer<typeof officeOptionSchema>;
 export type OfficeDetail = z.infer<typeof officeDetailSchema>;
 export type OfficeFormData = z.infer<typeof officeFormSchema>;
