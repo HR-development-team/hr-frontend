@@ -11,6 +11,11 @@ export const divisionSchema = z.object({
   description: z.string().nullable().optional(),
 });
 
+export const divisionOptionSchema = z.object({
+  division_code: z.string(),
+  name: z.string(),
+});
+
 export const divisionDetailSchema = divisionSchema.extend({
   created_at: z.string(),
   updated_at: z.string(),
@@ -26,5 +31,6 @@ export const divisionFormSchema = z.object({
 });
 
 export type Division = z.infer<typeof divisionSchema>;
+export type DivisionOption = z.infer<typeof divisionOptionSchema>;
 export type DivisionDetail = z.infer<typeof divisionDetailSchema>;
 export type DivisionFormData = z.infer<typeof divisionFormSchema>;

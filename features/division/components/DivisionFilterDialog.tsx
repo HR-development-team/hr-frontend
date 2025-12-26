@@ -18,10 +18,12 @@ interface DivisionFilterDialogProps {
   selectedOffice: string | null | undefined;
   onOfficeChange: (value: string | null) => void;
   officeOptions: OfficeOption[];
+
   selectedDepartment: string | null | undefined;
   onDepartmentChange: (value: string | null) => void;
   departmentOptions: DepartmentOption[];
-  isLoadingDepartment?: boolean; // Add this optional prop
+
+  isLoadingDepartment?: boolean;
 }
 
 export default function DivisionFilterDialog({

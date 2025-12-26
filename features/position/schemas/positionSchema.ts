@@ -17,6 +17,11 @@ export const positionSchema = z.object({
   office_name: z.string(),
 });
 
+export const positionOptionSchema = z.object({
+  position_code: z.string(),
+  name: z.string(),
+});
+
 export const positionDetailSchema = positionSchema.extend({
   created_at: z.string(),
   updated_at: z.string(),
@@ -37,5 +42,6 @@ export const positionFormSchema = z.object({
 });
 
 export type Position = z.infer<typeof positionSchema>;
+export type PositionOption = z.infer<typeof positionOptionSchema>;
 export type PositionDetail = z.infer<typeof positionDetailSchema>;
 export type PositionFormData = z.infer<typeof positionFormSchema>;
