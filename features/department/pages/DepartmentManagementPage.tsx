@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
 import { Building, Layers } from "lucide-react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
@@ -13,15 +12,15 @@ import DepartmentFilterDialog from "../components/DepartmentFilterDialog";
 import TableToolbar from "@components/TableToolbar";
 
 import { usePageDepartment } from "../hooks/usePageDepartment";
-import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
 
 export default function DepartmentManagementPage() {
   const {
     departments,
+    department,
+    officeOptions,
     totalRecords,
     onPageChange,
     lazyParams,
-    department,
     isLoading,
     isSaving,
     dialog,
@@ -30,21 +29,6 @@ export default function DepartmentManagementPage() {
     handleSave,
     handleView,
   } = usePageDepartment();
-
-  const { offices, fetchOffices } = useFetchOffice();
-
-  const officeOptions = useMemo(() => {
-    return (offices || []).map((office) => ({
-      label: office.name,
-      value: office.office_code || "",
-    }));
-  }, [offices]);
-
-  const isFilterActive = !!filter.selectedOffice;
-
-  useEffect(() => {
-    fetchOffices();
-  }, [fetchOffices]);
 
   return (
     <div>
@@ -83,7 +67,7 @@ export default function DepartmentManagementPage() {
                 icon="pi pi-filter"
                 className="gap-1 w-full sm:w-auto"
                 onClick={() => dialog.openFilter()}
-                outlined={!isFilterActive}
+                outlined={!filter.selectedOffice}
               />
             }
           />

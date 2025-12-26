@@ -22,6 +22,7 @@ export const API_ENDPOINTS = {
   EDITDEPARTMENT: (id: string) => `${API_URL}/master-departments/${id}`, // Update Department By Id
   DELETEDEPARTMENT: (id: string) => `${API_URL}/master-departments/${id}`, // Delete Department By Id
   GETDEPARTMENTBYID: (id: string) => `${API_URL}/master-departments/${id}`, // Get Department By Id
+  GETDEPARTMENTOPTION: `${API_URL}/master-departments/options`,
 
   // --- INI SAYA PERBAIKI: Ini 'Master Positions' (sesuai path Anda) ---
   ADDPOSITION: `${API_URL}/master-positions`, // Create New Position
