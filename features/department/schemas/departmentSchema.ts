@@ -8,6 +8,11 @@ export const departmentSchema = z.object({
   description: z.string().nullable(),
 });
 
+export const departmentOptionSchema = z.object({
+  department_code: z.string(),
+  name: z.string(),
+});
+
 export const departmentDetailSchema = departmentSchema.extend({
   office_name: z.string().nullable().optional(),
   created_at: z.string(),
@@ -24,5 +29,6 @@ export const departmentFormSchema = z.object({
 });
 
 export type Department = z.infer<typeof departmentSchema>;
+export type DepartmentOption = z.infer<typeof departmentOptionSchema>;
 export type DepartmentDetail = z.infer<typeof departmentDetailSchema>;
 export type DepartmentFormData = z.infer<typeof departmentFormSchema>;

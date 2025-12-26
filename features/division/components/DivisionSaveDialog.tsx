@@ -16,12 +16,7 @@ import {
   divisionFormSchema,
 } from "../schemas/divisionSchema";
 import { toFormikValidation } from "@utils/formikHelpers";
-
-export interface DepartmentOption {
-  label: string;
-  value: string;
-  office_code: string;
-}
+import { useFetchDivision } from "../hooks/useFetchDivision";
 
 export interface OfficeOption {
   label: string;
@@ -32,11 +27,9 @@ interface DivisionSaveDialogProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  // Accept any to handle potential type mismatches from raw API data
   divisionData: any;
   onSubmit: (values: DivisionFormData) => Promise<void>;
   isSubmitting: boolean;
-  departmentOptions: DepartmentOption[];
   officeOptions: OfficeOption[];
 }
 
@@ -53,11 +46,19 @@ export default function DivisionSaveDialog({
   isOpen,
   onClose,
   title,
-  departmentOptions = [],
   officeOptions = [],
 }: DivisionSaveDialogProps) {
+  // 1. Internal Hook for Cascading Departments
+  const {
+    departmentOptions,
+    fetchDepartmentOptions,
+    clearDepartmentOptions,
+    isOptionsLoading,
+  } = useFetchDivision();
+
   const [selectedOffice, setSelectedOffice] = useState<string | null>(null);
 
+  // 2. Formik Setup
   const initialValues = useMemo(() => {
     if (divisionData) {
       return {
@@ -69,7 +70,6 @@ export default function DivisionSaveDialog({
     return divisionDefaultValues;
   }, [divisionData]);
 
-  // 2. Setup Formik
   const formik = useFormik<DivisionFormData>({
     initialValues: initialValues,
     enableReinitialize: true,
@@ -86,65 +86,59 @@ export default function DivisionSaveDialog({
     },
   });
 
-  // Helper functions for validation styling
-  const isFieldInvalid = (name: keyof DivisionFormData) =>
-    Boolean(formik.touched[name] && formik.errors[name]);
+  // 3. Handle Office Change (The Cascade)
+  const handleOfficeChange = (officeCode: string | null) => {
+    setSelectedOffice(officeCode);
 
-  const getFieldError = (name: keyof DivisionFormData) =>
-    isFieldInvalid(name) ? String(formik.errors[name]) : undefined;
+    // Reset department in Formik because the list changed
+    formik.setFieldValue("department_code", "");
 
-  const handleHide = () => {
-    formik.resetForm();
-    setSelectedOffice(null); // Explicitly reset local state on close
-    onClose();
+    if (officeCode) {
+      fetchDepartmentOptions(officeCode);
+    } else {
+      clearDepartmentOptions();
+    }
   };
 
-  // CHANGE 4: Filter Department Options based on selected Office
-  const filteredDepartments = useMemo(() => {
-    if (!selectedOffice) return [];
-    return departmentOptions.filter(
-      (dept) => dept.office_code === selectedOffice
-    );
-  }, [selectedOffice, departmentOptions]);
-
-  // CHANGE 3: Auto-select Office in "Edit Mode"
-  // When the dialog opens with data, find which office owns this department
-  useEffect(() => {
-    if (isOpen && divisionData?.department_code) {
-      const relatedDept = departmentOptions.find(
-        (d) => d.value === divisionData.department_code
-      );
-      if (relatedDept) {
-        setSelectedOffice(relatedDept.office_code);
-      }
-    } else if (isOpen && !divisionData) {
-      // Reset if opening in "Create" mode
-      setSelectedOffice(null);
-    }
-  }, [isOpen, divisionData, departmentOptions]);
-
-  // Reset form when the form is resetted
+  // 4. Handle Dialog Open (Add vs Edit Mode)
   useEffect(() => {
     if (isOpen) {
-      // 1. Always reset Formik to clear touched/dirty states
       formik.resetForm();
 
-      // 2. Handle Office State
-      if (divisionData?.department_code) {
-        // EDIT MODE: Find the office belonging to this department
-        const relatedDept = departmentOptions.find(
-          (d) => d.value === divisionData.department_code
-        );
-        if (relatedDept) {
-          setSelectedOffice(relatedDept.office_code);
+      if (divisionData) {
+        // --- EDIT MODE ---
+        // We assume divisionData contains 'office_code' (joined from backend).
+        // If your API doesn't return it, you'll need to update the backend/query.
+        const currentOffice = divisionData.office_code;
+
+        if (currentOffice) {
+          setSelectedOffice(currentOffice);
+          // Fetch the departments for this office so the dropdown is populated
+          fetchDepartmentOptions(currentOffice);
         }
       } else {
-        // ADD MODE: Explicitly reset local state
+        // --- ADD MODE ---
         setSelectedOffice(null);
+        clearDepartmentOptions();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, divisionData]);
+
+  const handleHide = () => {
+    formik.resetForm();
+    setSelectedOffice(null);
+    clearDepartmentOptions();
+    onClose();
+  };
+
+  // Helper styling
+  const isFieldInvalid = (name: keyof DivisionFormData) =>
+    Boolean(formik.touched[name] && formik.errors[name]);
+  const getFieldError = (name: keyof DivisionFormData) =>
+    isFieldInvalid(name) ? String(formik.errors[name]) : undefined;
+
+  const isDepartmentDisabled = !selectedOffice;
 
   return (
     <Dialog
@@ -157,16 +151,16 @@ export default function DivisionSaveDialog({
         <div className="flex justify-content-end gap-2">
           <Button
             label="Batal"
-            className="gap-1"
             icon="pi pi-times"
+            className="gap-1"
             text
             onClick={handleHide}
             disabled={isSubmitting}
           />
           <Button
             label="Simpan"
-            className="gap-1"
             icon="pi pi-save"
+            className="gap-1"
             severity="success"
             onClick={() => formik.submitForm()}
             loading={isSubmitting}
@@ -179,23 +173,17 @@ export default function DivisionSaveDialog({
         onSubmit={formik.handleSubmit}
         className="flex flex-column gap-3 mt-2"
       >
-        {/* --- NEW: Office Dropdown (The Filter) --- */}
+        {/* --- Office Dropdown --- */}
         <div className="flex flex-column gap-2">
-          {/* Label Row: Text on Left, Badge on Right */}
-          <div className="flex align-items-center justify-content-between">
-            <label htmlFor="office_select" className="font-medium">
-              Pilih Kantor <span className="text-red-500">*</span>
-            </label>
-          </div>
+          <label htmlFor="office_select" className="font-medium">
+            Pilih Kantor <span className="text-red-500">*</span>
+          </label>
 
           <Dropdown
             id="office_select"
             value={selectedOffice}
             options={officeOptions}
-            onChange={(e) => {
-              setSelectedOffice(e.value);
-              formik.setFieldValue("department_code", "");
-            }}
+            onChange={(e) => handleOfficeChange(e.value)}
             placeholder="Pilih Kantor"
             className="w-full"
             filter
@@ -211,7 +199,7 @@ export default function DivisionSaveDialog({
           />
         </div>
 
-        {/* --- EXISTING: Department Dropdown (Filtered) --- */}
+        {/* --- Department Dropdown (Cascaded) --- */}
         <div className="flex flex-column gap-2">
           <label htmlFor="department_code" className="font-medium">
             Departemen <span className="text-red-500">*</span>
@@ -219,19 +207,26 @@ export default function DivisionSaveDialog({
           <Dropdown
             id="department_code"
             value={formik.values.department_code}
-            options={filteredDepartments} // Use the FILTERED list
+            options={departmentOptions} // Data from internal hook
             onChange={(e) => formik.setFieldValue("department_code", e.value)}
+            // 1. Loading State
+            loading={isOptionsLoading}
+            // 2. Disabled Logic
+            disabled={isDepartmentDisabled || isOptionsLoading}
+            // 3. Dynamic Placeholder
             placeholder={
-              selectedOffice
-                ? "Pilih Departemen"
-                : "Pilih Kantor Terlebih Dahulu"
+              isDepartmentDisabled
+                ? "Pilih Kantor Terlebih Dahulu"
+                : isOptionsLoading
+                  ? "Memuat Departemen..."
+                  : "Pilih Departemen"
             }
             className={classNames("w-full", {
               "p-invalid": isFieldInvalid("department_code"),
             })}
-            disabled={!selectedOffice} // Disable if no office selected
-            filter
-            showClear
+            filter={!isDepartmentDisabled}
+            showClear={!isDepartmentDisabled}
+            emptyMessage="Tidak ada departemen untuk kantor ini"
             itemTemplate={(option: any) => (
               <div className="flex align-items-center justify-content-between gap-2 w-full">
                 <span>{option.label}</span>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
 import { Briefcase } from "lucide-react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
@@ -15,17 +14,21 @@ import TableToolbar from "@components/TableToolbar";
 
 // Facade Hook
 import { usePageDivision } from "../hooks/usePageDivision";
-import { useFetchDepartment } from "@features/department/hooks/useFetchDepartment";
-import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
+import { useEffect } from "react";
 
 export default function DivisionManagementPage() {
   const {
     divisions,
+    division,
+    officeOptions,
+    departmentOptions,
+    fetchDepartmentOptions,
+    clearDepartmentOptions,
     totalRecords,
     onPageChange,
     lazyParams,
-    division,
     isLoading,
+    isOptionsLoading: isDepartmentLoading,
     isSaving,
     dialog,
     filter,
@@ -34,31 +37,15 @@ export default function DivisionManagementPage() {
     handleView,
   } = usePageDivision();
 
-  const { departments, fetchDepartments } = useFetchDepartment();
-  const { offices, fetchOffices } = useFetchOffice();
-
-  // Dropdown Options
-  const officeOptions = useMemo(() => {
-    return (offices || []).map((office) => ({
-      label: office.name,
-      value: office.office_code || "",
-    }));
-  }, [offices]);
-
-  const departmentOptions = useMemo(() => {
-    return (departments || []).map((dept) => ({
-      label: dept.name,
-      value: dept.department_code || "",
-      office_code: dept.office_code || "",
-    }));
-  }, [departments]);
-
   const isFilterActive = !!filter.selectedOffice || !!filter.selectedDepartment;
 
   useEffect(() => {
-    fetchDepartments();
-    fetchOffices();
-  }, [fetchDepartments, fetchOffices]);
+    if (filter.selectedOffice) {
+      fetchDepartmentOptions(filter.selectedOffice);
+    } else {
+      clearDepartmentOptions();
+    }
+  }, [fetchDepartmentOptions, filter.selectedOffice, clearDepartmentOptions]);
 
   return (
     <div>
@@ -111,6 +98,7 @@ export default function DivisionManagementPage() {
             selectedDepartment={filter.selectedDepartment}
             onDepartmentChange={filter.setSelectedDepartment}
             departmentOptions={departmentOptions}
+            isLoadingDepartment={isDepartmentLoading}
           />
 
           {/* Data Table */}
@@ -144,7 +132,6 @@ export default function DivisionManagementPage() {
           onSubmit={handleSave}
           isSubmitting={isSaving}
           onClose={dialog.close}
-          departmentOptions={departmentOptions}
           officeOptions={officeOptions}
         />
       )}

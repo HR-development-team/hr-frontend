@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAuthToken } from "@features/auth/utils/authUtils";
 import { Axios } from "@/utils/axios";
 import { API_ENDPOINTS } from "@/api/api";
@@ -16,7 +16,7 @@ const tokenAvailable = (token: string | null) => {
 };
 
 // This endpoint is specific for DROPDOWNS
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
   const token = getAuthToken();
 
   const unauthorizedResponse = tokenAvailable(token);
@@ -25,10 +25,16 @@ export const GET = async () => {
   }
 
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const officeCode = searchParams.get("office_code");
+
     const response = await Axios.get(API_ENDPOINTS.GETDEPARTMENTOPTION, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+      },
+      params: {
+        office_code: officeCode,
       },
     });
 

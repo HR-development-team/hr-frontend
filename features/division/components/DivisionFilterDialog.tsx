@@ -1,7 +1,6 @@
-import { useMemo } from "react";
 import { Dialog } from "primereact/dialog";
-import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
+import { Button } from "primereact/button";
 
 interface OfficeOption {
   label: string;
@@ -11,22 +10,18 @@ interface OfficeOption {
 interface DepartmentOption {
   label: string;
   value: string;
-  office_code: string;
 }
 
 interface DivisionFilterDialogProps {
   isOpen: boolean;
   onClose: () => void;
-
-  // Office Filter Props
   selectedOffice: string | null | undefined;
-  onOfficeChange: (value: string) => void;
+  onOfficeChange: (value: string | null) => void;
   officeOptions: OfficeOption[];
-
-  // Department Filter Props
   selectedDepartment: string | null | undefined;
-  onDepartmentChange: (value: string) => void;
+  onDepartmentChange: (value: string | null) => void;
   departmentOptions: DepartmentOption[];
+  isLoadingDepartment?: boolean; // Add this optional prop
 }
 
 export default function DivisionFilterDialog({
@@ -38,16 +33,34 @@ export default function DivisionFilterDialog({
   selectedDepartment,
   onDepartmentChange,
   departmentOptions,
+  isLoadingDepartment = false,
 }: DivisionFilterDialogProps) {
-  // Logic: Only show departments that belong to the selected office
-  const filteredDepartmentOptions = useMemo(() => {
-    if (!selectedOffice) {
-      return departmentOptions;
-    }
-    return departmentOptions.filter(
-      (dept) => dept.office_code === selectedOffice
-    );
-  }, [selectedOffice, departmentOptions]);
+  // Logic: Disable department if no office is selected
+  const isDepartmentDisabled = !selectedOffice;
+
+  const handleReset = () => {
+    onOfficeChange(null);
+    onDepartmentChange(null);
+  };
+
+  const footerContent = (
+    <div className="flex justify-content-end gap-2">
+      <Button
+        label="Reset"
+        icon="pi pi-refresh"
+        text
+        onClick={handleReset}
+        className="p-button-secondary gap-1"
+      />
+      <Button
+        className="gap-1"
+        label="Terapkan"
+        icon="pi pi-check"
+        onClick={onClose}
+        autoFocus
+      />
+    </div>
+  );
 
   return (
     <Dialog
@@ -56,6 +69,7 @@ export default function DivisionFilterDialog({
       style={{ width: "400px" }}
       modal
       onHide={onClose}
+      footer={footerContent}
     >
       <div className="flex flex-column gap-4">
         {/* Filter 1: Office */}
@@ -69,8 +83,7 @@ export default function DivisionFilterDialog({
             options={officeOptions}
             onChange={(e) => {
               onOfficeChange(e.value);
-              // Optional: Reset department when office changes if you want strict consistency
-              // onDepartmentChange("");
+              onDepartmentChange(null);
             }}
             placeholder="Pilih Kantor"
             className="w-full"
@@ -87,25 +100,26 @@ export default function DivisionFilterDialog({
           <Dropdown
             id="dept-filter"
             value={selectedDepartment}
-            options={filteredDepartmentOptions}
+            options={departmentOptions}
             onChange={(e) => onDepartmentChange(e.value)}
+            disabled={isDepartmentDisabled}
+            loading={isLoadingDepartment}
             placeholder={
-              selectedOffice
-                ? "Pilih Departemen"
-                : "Pilih Departemen (Semua Kantor)"
+              isDepartmentDisabled
+                ? "Pilih Kantor Terlebih Dahulu"
+                : isLoadingDepartment
+                  ? "Memuat data..."
+                  : "Pilih Departemen"
             }
             className="w-full"
-            showClear
-            filter
-            // Disable department selection if there are no options available for the selected office
-            disabled={
-              !!selectedOffice && filteredDepartmentOptions.length === 0
-            }
+            showClear={!isDepartmentDisabled}
+            filter={!isDepartmentDisabled}
+            emptyMessage="Tidak ada departemen untuk kantor ini"
           />
           <small className="text-gray-500">
-            {selectedOffice
-              ? "Menampilkan departemen untuk kantor yang dipilih."
-              : "Pilih kantor terlebih dahulu untuk menyaring departemen."}
+            {isDepartmentDisabled
+              ? "Anda harus memilih kantor sebelum memilih departemen."
+              : "Menampilkan departemen sesuai kantor yang dipilih."}
           </small>
         </div>
       </div>
