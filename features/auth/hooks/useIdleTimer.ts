@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { keepSessionAlive } from "../services/authApi";
 
 // 15 Minutes
-const IDLE_TIMEOUT = 15 * 60 * 1000;
+const IDLE_TIMEOUT = 15 * 30 * 1000;
 // Heartbeat every 2 mins
 const HEARTBEAT_INTERVAL = 2 * 60 * 1000;
 
