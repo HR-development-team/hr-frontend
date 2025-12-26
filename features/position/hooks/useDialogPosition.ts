@@ -55,18 +55,24 @@ export const useDialogPosition = () => {
     }
   }, [mode]);
 
-  const formData = useMemo(
-    () => ({
-      parent_position_code: currentPosition?.parent_position_code ?? null,
-      name: currentPosition?.name ?? "",
-      base_salary: currentPosition?.base_salary
+  const formData = useMemo(() => {
+    if (!currentPosition) {
+      return null;
+    }
+
+    return {
+      parent_position_code: currentPosition.parent_position_code ?? null,
+      name: currentPosition.name ?? "",
+      base_salary: currentPosition.base_salary
         ? Number(currentPosition.base_salary)
         : 0,
-      division_code: currentPosition?.division_code ?? "",
-      description: currentPosition?.description ?? "",
-    }),
-    [currentPosition]
-  );
+      division_code: currentPosition.division_code ?? "",
+      description: currentPosition.description ?? "",
+      office_code: currentPosition.office_code,
+      department_code: currentPosition.department_code,
+      position_code: currentPosition.position_code,
+    };
+  }, [currentPosition]);
 
   return {
     isVisible,

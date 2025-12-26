@@ -2,6 +2,7 @@
 import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Position,
+  PositionOption,
   PositionDetail,
   PositionFormData,
 } from "../schemas/positionSchema";
@@ -79,6 +80,48 @@ export async function getPositionById(
     return data.master_positions || data.position || null;
   } catch (error) {
     console.error("getPositionById error:", error);
+    return null;
+  }
+}
+
+/**
+ * Get a list for dropdown
+ */
+export async function getPositionList(
+  office_code?: string,
+  department_code?: string,
+  division_code?: string
+): Promise<PositionOption[] | null> {
+  try {
+    const params = new URLSearchParams();
+
+    // Append parameters only if they exist
+    if (office_code) {
+      params.append("office_code", office_code);
+    }
+    if (department_code) {
+      params.append("department_code", department_code);
+    }
+    if (division_code) {
+      params.append("division_code", division_code);
+    }
+
+    const queryString = params.toString();
+    const url = queryString
+      ? `${BASE_URL}/list?${queryString}`
+      : `${BASE_URL}/list`;
+
+    console.log(url);
+
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error("Failed to fetch position options");
+    }
+
+    const data = await res.json();
+    return data.master_positions;
+  } catch (error) {
+    console.error("getPositionOption error:", error);
     return null;
   }
 }

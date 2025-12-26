@@ -90,7 +90,6 @@ export function useFetchDivision() {
         const formatted = data.map((item: any) => ({
           label: item.name,
           value: item.department_code,
-          office_code: item.office_code,
         }));
         setDepartmentOptions(formatted);
       }

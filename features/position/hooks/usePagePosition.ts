@@ -15,11 +15,21 @@ export function usePagePosition() {
 
   const {
     positions,
-    totalRecords,
     position,
+    officeOptions,
+    departmentOptions,
+    divisionOptions,
+    clearDepartmentOptions,
+    clearDivisionOptions,
+    totalRecords,
     fetchPositions,
     fetchPositionById,
+    fetchOfficeOptions,
+    fetchDepartmentOptions,
+    fetchDivisionOptions,
     isLoading,
+    isOptionsDepartmentLoading,
+    isOptionsDivisionLoading,
   } = useFetchPosition();
 
   const refreshData = useCallback(() => {
@@ -47,18 +57,34 @@ export function usePagePosition() {
   useEffect(() => {
     const showToast = isFirstLoad.current;
     fetchPositions(filter.apiParams, showToast);
+    fetchOfficeOptions();
     isFirstLoad.current = false;
-  }, [filter.apiParams, fetchPositions]);
+  }, [filter.apiParams, fetchPositions, fetchOfficeOptions]);
 
   return {
     positions,
-    totalRecords,
-    isLoading,
     position,
+    officeOptions,
+    departmentOptions,
+    divisionOptions,
+    fetchOfficeOptions,
+    fetchDepartmentOptions,
+    fetchDivisionOptions,
+    clearDepartmentOptions,
+    clearDivisionOptions,
+    totalRecords,
+
+    // Loading state
+    isLoading,
+    isOptionsDepartmentLoading,
+    isOptionsDivisionLoading,
     isSaving,
+
+    // Pagination & Filter
     lazyParams: filter.lazyParams,
     onPageChange: filter.onPageChange,
     filter,
+
     dialog,
     deleteAction,
     handleSave,

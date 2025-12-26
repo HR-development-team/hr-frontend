@@ -2,6 +2,7 @@
 import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Division,
+  DivisionOption,
   DivisionDetail,
   DivisionFormData,
 } from "../schemas/divisionSchema";
@@ -75,6 +76,42 @@ export async function getDivisionById(
     return data.master_divisions || data.division || null;
   } catch (error) {
     console.error("getDivisionById error:", error);
+    return null;
+  }
+}
+
+/**
+ * Get a list for dropdown
+ */
+export async function getDivisionList(
+  office_code?: string,
+  department_code?: string
+): Promise<DivisionOption[] | null> {
+  try {
+    const params = new URLSearchParams();
+
+    // Append parameters only if they exist
+    if (office_code) {
+      params.append("office_code", office_code);
+    }
+    if (department_code) {
+      params.append("department_code", department_code);
+    }
+
+    const queryString = params.toString();
+    const url = queryString
+      ? `${BASE_URL}/list?${queryString}`
+      : `${BASE_URL}/list`;
+
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error("Failed to fetch position options");
+    }
+
+    const data = await res.json();
+    return data.master_divisions;
+  } catch (error) {
+    console.error("getDivisionOption error:", error);
     return null;
   }
 }

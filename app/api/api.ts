@@ -32,6 +32,7 @@ export const API_ENDPOINTS = {
   GETPOSITIONBYID: (id: string) => `${API_URL}/master-positions/${id}`, // Get Position By Id
   GETPOSITIONORGANIZATION: (office_code: string) =>
     `${API_URL}/master-positions/organization/${office_code}`,
+  GETPOSITIONOPTION: `${API_URL}/master-positions/options`,
 
   // --- INI TAMBAHAN: 'Master Divisions' yang sebelumnya hilang ---
   ADDDIVISION: `${API_URL}/master-divisions`, // Create New Divisions
@@ -39,6 +40,7 @@ export const API_ENDPOINTS = {
   EDITDIVISION: (id: string) => `${API_URL}/master-divisions/${id}`, // Update Division By Id
   DELETEDIVISION: (id: string) => `${API_URL}/master-divisions/${id}`, // Delete Divisions By Id
   GETDIVISIONBYID: (id: string) => `${API_URL}/master-divisions/${id}`, // Get Division By Id
+  GETDIVISIONOPTION: `${API_URL}/master-divisions/options`,
 
   // --- Master Employees ---
   ADDEMPLOYEE: `${API_URL}/master-employees`, // Create Employee

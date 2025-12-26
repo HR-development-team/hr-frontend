@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useEffect } from "react";
 import { UserCheck, Layers } from "lucide-react";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
@@ -13,19 +13,32 @@ import PositionFilterDialog from "../components/PositionFilterDialog";
 import TableToolbar from "@components/TableToolbar";
 
 import { usePagePosition } from "../hooks/usePagePosition";
-import { useFetchDivision } from "@features/division/hooks/useFetchDivision";
-import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
-import { useFetchDepartment } from "@features/department/hooks/useFetchDepartment";
 
 export default function PositionManagementPage() {
   const {
+    // Data
     positions,
-    totalRecords,
-    onPageChange,
-    lazyParams,
     position,
+    totalRecords,
+
+    // Options
+    officeOptions,
+
+    // Option Fetchers
+    fetchDepartmentOptions,
+    fetchDivisionOptions,
+    clearDepartmentOptions,
+    clearDivisionOptions,
+
+    // Loading States
     isLoading,
     isSaving,
+
+    // Pagination & Params
+    onPageChange,
+    lazyParams,
+
+    // Actions & Dialogs
     dialog,
     filter,
     deleteAction,
@@ -33,57 +46,39 @@ export default function PositionManagementPage() {
     handleView,
   } = usePagePosition();
 
-  const { offices, fetchOffices } = useFetchOffice();
-  const { departments, fetchDepartments } = useFetchDepartment();
-  const { divisions, fetchDivisions } = useFetchDivision();
-
-  const officeOptions = useMemo(
-    () =>
-      offices.map((office) => ({
-        label: office.name,
-        value: office.office_code || "",
-      })),
-    [offices]
-  );
-
-  const departmentOptions = useMemo(
-    () =>
-      departments.map((dept) => ({
-        label: dept.name,
-        value: dept.department_code || "",
-        office_code: dept.office_code || "",
-      })),
-    [departments]
-  );
-
-  const divisionOptions = useMemo(
-    () =>
-      divisions.map((div) => ({
-        label: div.name,
-        value: div.division_code || "",
-        department_code: div.department_code || "",
-      })),
-    [divisions]
-  );
-
-  const positionOptions = useMemo(() => {
-    return positions.map((pos) => ({
-      label: pos.name,
-      value: pos.position_code,
-      division_code: pos.division_code,
-    }));
-  }, [positions]);
-
   const isFilterActive =
     !!filter.selectedOffice ||
     !!filter.selectedDepartment ||
     !!filter.selectedDivision;
 
+  // Cascade Level 1: Office -> Department
   useEffect(() => {
-    fetchOffices();
-    fetchDepartments();
-    fetchDivisions();
-  }, [fetchOffices, fetchDepartments, fetchDivisions]);
+    if (filter.selectedOffice) {
+      fetchDepartmentOptions(filter.selectedOffice);
+    } else {
+      clearDepartmentOptions();
+      clearDivisionOptions();
+    }
+  }, [
+    filter.selectedOffice,
+    fetchDepartmentOptions,
+    clearDepartmentOptions,
+    clearDivisionOptions,
+  ]);
+
+  // Level 2: Department -> Division
+  useEffect(() => {
+    if (filter.selectedOffice && filter.selectedDepartment) {
+      fetchDivisionOptions(filter.selectedDepartment);
+    } else {
+      clearDivisionOptions();
+    }
+  }, [
+    filter.selectedOffice,
+    filter.selectedDepartment,
+    fetchDivisionOptions,
+    clearDivisionOptions,
+  ]);
 
   return (
     <div>
@@ -130,15 +125,15 @@ export default function PositionManagementPage() {
           <PositionFilterDialog
             isOpen={dialog.isFilterVisible}
             onClose={dialog.closeFilter}
+            // Level 1: Office
             selectedOffice={filter.selectedOffice}
             onOfficeChange={filter.setSelectedOffice}
             officeOptions={officeOptions}
+            // Level 2: Department
             selectedDepartment={filter.selectedDepartment}
             onDepartmentChange={filter.setSelectedDepartment}
-            departmentOptions={departmentOptions}
             selectedDivision={filter.selectedDivision}
             onDivisionChange={filter.setSelectedDivision}
-            divisionOptions={divisionOptions}
           />
 
           {/* Data Table */}
@@ -172,10 +167,7 @@ export default function PositionManagementPage() {
           onSubmit={handleSave}
           isSubmitting={isSaving}
           onClose={dialog.close}
-          divisionOptions={divisionOptions}
-          departmentOptions={departmentOptions}
           officeOptions={officeOptions}
-          positionOptions={positionOptions}
         />
       )}
 
