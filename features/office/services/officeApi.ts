@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { GenericApiResponse } from "@/utils/apiResponse";
-import { Office, OfficeDetail, OfficeFormData } from "../schemas/officeSchema";
+import {
+  Office,
+  OfficeDetail,
+  OfficeFormData,
+  OfficeOption,
+} from "../schemas/officeSchema";
 type OfficeResponse = GenericApiResponse<Office>;
 
 const BASE_URL = "/api/admin/master/office";
@@ -15,8 +20,6 @@ export async function getAllOffices(
     const queryString = params
       ? `?${new URLSearchParams(params as any).toString()}`
       : "";
-
-    console.log(`${BASE_URL}${queryString}`);
 
     const res = await fetch(`${BASE_URL}${queryString}`, {
       method: "GET",
@@ -60,6 +63,21 @@ export async function getOfficeById(id: number): Promise<OfficeDetail | null> {
     return data.master_offices || null;
   } catch (error) {
     console.error("getOfficeById error:", error);
+    return null;
+  }
+}
+
+export async function getOfficeList(): Promise<OfficeOption[] | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/options`);
+    if (!res.ok) {
+      throw new Error("Failed to fetch office options");
+    }
+
+    const data = await res.json();
+    return data.master_offices;
+  } catch (error) {
+    console.error("getOfficeOption error:", error);
     return null;
   }
 }
