@@ -27,7 +27,7 @@ export function useFetchUser() {
       try {
         setIsLoading(true);
         const data = await getAllUsers();
-        setUsers(data);
+        setUsers(data.master_users);
 
         if (showToastMessage) {
           showToast("success", "Berhasil", "Data user berhasil dimuat");
