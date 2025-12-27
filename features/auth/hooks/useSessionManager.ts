@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthProvider";
 import { useIdleTimer } from "./useIdleTimer";
 
-const TIMEOUT_MS = 15 * 60 * 1000;
+const TIMEOUT_MS = 15 * 30 * 1000; // 7.5 Minutes (based on your math)
 
 export type SessionState = "ACTIVE" | "EXPIRED" | "LOGGING_OUT";
 
@@ -24,52 +24,36 @@ export function useSessionManager() {
    */
   const expireSession = useCallback(() => {
     if (hasExpiredRef.current) return;
-
     console.log("[SESSION] Expiring session now.");
     hasExpiredRef.current = true;
     setSessionState("EXPIRED");
   }, []);
 
-  /**
-   * Idle timeout hook
-   */
   useIdleTimer(isTimerActive, expireSession);
 
   /**
-   * 1. INITIALIZATION CHECK (THE FIX)
-   * When the user loads (e.g., page refresh), we check the timestamp BEFORE
-   * deciding if they are "ACTIVE". This prevents the infinite loop.
+   * 1. INITIAL LOAD CHECK
    */
   useEffect(() => {
     if (user) {
       const lastActiveStr = localStorage.getItem("lastActiveTime");
-      // If no time exists, assume it's a fresh login (Active)
       const lastActive = lastActiveStr
         ? parseInt(lastActiveStr, 10)
         : Date.now();
-
       const timeDiff = Date.now() - lastActive;
 
-      // Check if we are ALREADY expired upon load
       if (timeDiff > TIMEOUT_MS) {
-        console.warn(
-          "[SESSION] Restored session is already expired. Diff:",
-          timeDiff
-        );
-        hasExpiredRef.current = true;
-        setSessionState("EXPIRED");
-        // Do NOT update localStorage here. Keep the old time as proof.
+        console.warn("[SESSION] Initial load: Found expired timestamp.");
+        expireSession(); // Use the helper
       } else {
-        // Session is valid, resume it
-        hasExpiredRef.current = false;
-        setSessionState("ACTIVE");
+        // Only update if valid.
         localStorage.setItem("lastActiveTime", Date.now().toString());
       }
     }
-  }, [user]);
+  }, [user, expireSession]);
 
   /**
-   * 2. Visibility / sleep detection
+   * 2. VISIBILITY CHECK (Tab switching)
    */
   useEffect(() => {
     if (!isAuthenticated || sessionState !== "ACTIVE") return;
@@ -87,65 +71,71 @@ export function useSessionManager() {
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        checkSessionValidity();
-      }
-    };
-
-    const handleFocus = () => {
-      checkSessionValidity();
+      if (document.visibilityState === "visible") checkSessionValidity();
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("focus", handleFocus);
+    window.addEventListener("focus", checkSessionValidity); // Also check on focus
 
-    // Initial check
     checkSessionValidity();
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("focus", checkSessionValidity);
     };
-  }, [expireSession, isAuthenticated, sessionState]);
+  }, [isAuthenticated, sessionState, expireSession]);
 
   /**
-   * 3. Activity timestamp sync
+   * 3. ACTIVITY LISTENER (The Fix)
+   * Instead of blindly updating the time, we check the gap first.
    */
   useEffect(() => {
     if (!isTimerActive) return;
 
     const updateTimestamp = () => {
-      // Only update if we are NOT currently expired
-      if (!hasExpiredRef.current) {
-        localStorage.setItem("lastActiveTime", Date.now().toString());
+      if (hasExpiredRef.current) return;
+
+      // [CRITICAL FIX] Read the OLD time first
+      const lastActiveStr = localStorage.getItem("lastActiveTime");
+      const lastActive = lastActiveStr
+        ? parseInt(lastActiveStr, 10)
+        : Date.now();
+
+      // Calculate the gap between NOW and the LAST interaction
+      const timeGap = Date.now() - lastActive;
+
+      // If the gap is huge (e.g. 20 mins), it means the user just came back.
+      // Do NOT update the time. EXPIRE them instead.
+      if (timeGap > TIMEOUT_MS) {
+        console.warn(
+          "[SESSION] Activity detected, but session gap too large. Expiring..."
+        );
+        expireSession();
+        return;
       }
+
+      // If safe, update the time
+      localStorage.setItem("lastActiveTime", Date.now().toString());
     };
 
-    // Throttle this slightly in a real app, but this is fine for now
+    // Use specific events. 'click' and 'keydown' are safest.
+    // 'mousemove' fires too often and might race condition.
     window.addEventListener("click", updateTimestamp);
     window.addEventListener("keydown", updateTimestamp);
+    window.addEventListener("scroll", updateTimestamp);
 
     return () => {
       window.removeEventListener("click", updateTimestamp);
       window.removeEventListener("keydown", updateTimestamp);
+      window.removeEventListener("scroll", updateTimestamp);
     };
-  }, [isTimerActive]);
+  }, [isTimerActive, expireSession]);
 
-  useEffect(() => {
-    console.log("[SESSION STATUS]", {
-      sessionState,
-      expired: hasExpiredRef.current,
-    });
-  }, [sessionState]);
+  // ... (Rest of your logout logic)
 
-  /**
-   * Logout handler
-   */
   const confirmLogout = useCallback(async () => {
-    // Allow logout even if active (optional), but usually only if expired per your UI
     setSessionState("LOGGING_OUT");
     localStorage.removeItem("lastActiveTime");
-
     await logout();
     router.replace("/login");
   }, [logout, router]);
