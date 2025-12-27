@@ -1,56 +1,32 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect } from "react";
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
+import { Button } from "primereact/button";
+import { useFetchEmployee } from "../hooks/useFetchEmployee";
 
-// Define option types with relation keys
-export interface OfficeOption {
+interface OptionType {
   label: string;
   value: string;
-}
-
-export interface DepartmentOption {
-  label: string;
-  value: string;
-  office_code: string; // Relates to Office
-}
-
-export interface DivisionOption {
-  label: string;
-  value: string;
-  department_code: string; // Relates to Department
-}
-
-export interface PositionOption {
-  label: string;
-  value: string;
-  division_code: string; // Relates to Division
 }
 
 interface EmployeeFilterDialogProps {
   isOpen: boolean;
   onClose: () => void;
 
-  // Level 1: Office
   selectedOffice: string | null | undefined;
-  onOfficeChange: (value: string) => void;
-  officeOptions: OfficeOption[];
+  onOfficeChange: (value: string | null) => void;
+  officeOptions: OptionType[];
 
-  // Level 2: Department
   selectedDepartment: string | null | undefined;
-  onDepartmentChange: (value: string) => void;
-  departmentOptions: DepartmentOption[];
+  onDepartmentChange: (value: string | null) => void;
 
-  // Level 3: Division
   selectedDivision: string | null | undefined;
-  onDivisionChange: (value: string) => void;
-  divisionOptions: DivisionOption[];
+  onDivisionChange: (value: string | null) => void;
 
-  // Level 4: Position
   selectedPosition: string | null | undefined;
-  onPositionChange: (value: string) => void;
-  positionOptions: PositionOption[];
+  onPositionChange: (value: string | null) => void;
 }
 
 export default function EmployeeFilterDialog({
@@ -63,39 +39,119 @@ export default function EmployeeFilterDialog({
 
   selectedDepartment,
   onDepartmentChange,
-  departmentOptions,
 
   selectedDivision,
   onDivisionChange,
-  divisionOptions,
 
   selectedPosition,
   onPositionChange,
-  positionOptions,
 }: EmployeeFilterDialogProps) {
-  // 1. Filter Departments based on selected Office
-  const filteredDepartmentOptions = useMemo(() => {
-    if (!selectedOffice) return []; // Strict hierarchy: must select parent first
-    return departmentOptions.filter(
-      (dept) => dept.office_code === selectedOffice
-    );
-  }, [selectedOffice, departmentOptions]);
+  const {
+    departmentOptions,
+    divisionOptions,
+    positionOptions,
 
-  // 2. Filter Divisions based on selected Department
-  const filteredDivisionOptions = useMemo(() => {
-    if (!selectedDepartment) return [];
-    return divisionOptions.filter(
-      (div) => div.department_code === selectedDepartment
-    );
-  }, [selectedDepartment, divisionOptions]);
+    fetchDepartmentOptions,
+    fetchDivisionOptions,
+    fetchPositionOptions,
 
-  // 3. Filter Positions based on selected Division
-  const filteredPositionOptions = useMemo(() => {
-    if (!selectedDivision) return [];
-    return positionOptions.filter(
-      (pos) => pos.division_code === selectedDivision
-    );
-  }, [selectedDivision, positionOptions]);
+    clearDepartmentOptions,
+    clearDivisionOptions,
+    clearPositionOptions,
+
+    isOptionsDepartmentLoading,
+    isOptionsDivisionLoading,
+    isOptionsPositionLoading,
+  } = useFetchEmployee();
+
+  // 1. Sync State (Hydration)
+  useEffect(() => {
+    if (isOpen) {
+      if (selectedOffice) {
+        fetchDepartmentOptions(selectedOffice);
+      } else {
+        clearDepartmentOptions();
+      }
+
+      if (selectedOffice && selectedDepartment) {
+        fetchDivisionOptions(selectedOffice, selectedDepartment);
+      } else {
+        clearDivisionOptions();
+      }
+
+      if (selectedOffice && selectedDepartment && selectedDivision) {
+        fetchPositionOptions(
+          selectedOffice,
+          selectedDepartment,
+          selectedDivision
+        );
+      } else {
+        clearPositionOptions();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // 2. Handlers with Correct API Arguments
+
+  const handleOfficeChange = (val: string | null) => {
+    onOfficeChange(val);
+    onDepartmentChange(null);
+    onDivisionChange(null);
+    onPositionChange(null);
+
+    if (val) {
+      fetchDepartmentOptions(val);
+      clearDivisionOptions();
+      clearPositionOptions();
+    } else {
+      clearDepartmentOptions();
+      clearDivisionOptions();
+      clearPositionOptions();
+    }
+  };
+
+  const handleDepartmentChange = (val: string | null) => {
+    onDepartmentChange(val);
+    onDivisionChange(null);
+    onPositionChange(null);
+
+    // [FIX]: Pass 'selectedOffice' AND 'val' (current department)
+    if (selectedOffice && val) {
+      fetchDivisionOptions(selectedOffice, val);
+      clearPositionOptions();
+    } else {
+      clearDivisionOptions();
+      clearPositionOptions();
+    }
+  };
+
+  const handleDivisionChange = (val: string | null) => {
+    onDivisionChange(val);
+    onPositionChange(null);
+
+    // [FIX]: Pass 'selectedOffice', 'selectedDepartment', AND 'val' (current division)
+    if (selectedOffice && selectedDepartment && val) {
+      fetchPositionOptions(selectedOffice, selectedDepartment, val);
+    } else {
+      clearPositionOptions();
+    }
+  };
+
+  const handleReset = () => {
+    onOfficeChange(null);
+    onDepartmentChange(null);
+    onDivisionChange(null);
+    onPositionChange(null);
+
+    clearDepartmentOptions();
+    clearDivisionOptions();
+    clearPositionOptions();
+  };
+
+  const isDepartmentDisabled = !selectedOffice;
+  const isDivisionDisabled = !selectedDepartment;
+  const isPositionDisabled = !selectedDivision;
 
   return (
     <Dialog
@@ -104,13 +160,27 @@ export default function EmployeeFilterDialog({
       style={{ width: "450px" }}
       modal
       onHide={onClose}
+      footer={
+        <div className="flex justify-content-end gap-2">
+          <Button
+            label="Reset"
+            icon="pi pi-refresh"
+            text
+            onClick={handleReset}
+            className="p-button-secondary gap-1"
+          />
+          <Button
+            label="Terapkan"
+            icon="pi pi-check"
+            onClick={onClose}
+            className="gap-1"
+            autoFocus
+          />
+        </div>
+      }
     >
       <div className="flex flex-column gap-4">
-        <p className="m-0 text-gray-500 text-sm">
-          Filter data karyawan berdasarkan struktur organisasi.
-        </p>
-
-        {/* Level 1: Office */}
+        {/* --- Level 1: Office --- */}
         <div className="flex flex-column gap-2">
           <label htmlFor="office-filter" className="font-semibold">
             1. Kantor
@@ -119,21 +189,17 @@ export default function EmployeeFilterDialog({
             id="office-filter"
             value={selectedOffice}
             options={officeOptions}
-            onChange={(e) => {
-              onOfficeChange(e.value);
-              // Reset children
-              onDepartmentChange("");
-              onDivisionChange("");
-              onPositionChange("");
-            }}
+            onChange={(e) => handleOfficeChange(e.value)}
             placeholder="Pilih Kantor"
             className="w-full"
             showClear
             filter
+            optionLabel="label"
+            optionValue="value"
           />
         </div>
 
-        {/* Level 2: Department */}
+        {/* --- Level 2: Department --- */}
         <div className="flex flex-column gap-2">
           <label htmlFor="dept-filter" className="font-semibold">
             2. Departemen
@@ -141,27 +207,27 @@ export default function EmployeeFilterDialog({
           <Dropdown
             id="dept-filter"
             value={selectedDepartment}
-            options={filteredDepartmentOptions}
-            onChange={(e) => {
-              onDepartmentChange(e.value);
-              // Reset children
-              onDivisionChange("");
-              onPositionChange("");
-            }}
+            options={departmentOptions}
+            onChange={(e) => handleDepartmentChange(e.value)}
+            disabled={isDepartmentDisabled || isOptionsDepartmentLoading}
+            loading={isOptionsDepartmentLoading}
             placeholder={
-              selectedOffice
-                ? "Pilih Departemen"
-                : "Pilih Kantor Terlebih Dahulu"
+              isDepartmentDisabled
+                ? "Pilih Kantor Terlebih Dahulu"
+                : isOptionsDepartmentLoading
+                  ? "Memuat Departemen..."
+                  : "Pilih Departemen"
             }
             className="w-full"
-            showClear
-            filter
-            disabled={!selectedOffice || filteredDepartmentOptions.length === 0}
-            emptyMessage="Tidak ada departemen di kantor ini"
+            showClear={!isDepartmentDisabled}
+            filter={!isDepartmentDisabled}
+            emptyMessage="Tidak ada departemen"
+            optionLabel="label"
+            optionValue="value"
           />
         </div>
 
-        {/* Level 3: Division */}
+        {/* --- Level 3: Division --- */}
         <div className="flex flex-column gap-2">
           <label htmlFor="div-filter" className="font-semibold">
             3. Divisi
@@ -169,28 +235,27 @@ export default function EmployeeFilterDialog({
           <Dropdown
             id="div-filter"
             value={selectedDivision}
-            options={filteredDivisionOptions}
-            onChange={(e) => {
-              onDivisionChange(e.value);
-              // Reset child
-              onPositionChange("");
-            }}
+            options={divisionOptions}
+            onChange={(e) => handleDivisionChange(e.value)}
+            disabled={isDivisionDisabled || isOptionsDivisionLoading}
+            loading={isOptionsDivisionLoading}
             placeholder={
-              selectedDepartment
-                ? "Pilih Divisi"
-                : "Pilih Departemen Terlebih Dahulu"
+              isDivisionDisabled
+                ? "Pilih Departemen Terlebih Dahulu"
+                : isOptionsDivisionLoading
+                  ? "Memuat Divisi..."
+                  : "Pilih Divisi"
             }
             className="w-full"
-            showClear
-            filter
-            disabled={
-              !selectedDepartment || filteredDivisionOptions.length === 0
-            }
-            emptyMessage="Tidak ada divisi di departemen ini"
+            showClear={!isDivisionDisabled}
+            filter={!isDivisionDisabled}
+            emptyMessage="Tidak ada divisi"
+            optionLabel="label"
+            optionValue="value"
           />
         </div>
 
-        {/* Level 4: Position */}
+        {/* --- Level 4: Position --- */}
         <div className="flex flex-column gap-2">
           <label htmlFor="pos-filter" className="font-semibold">
             4. Jabatan
@@ -198,18 +263,23 @@ export default function EmployeeFilterDialog({
           <Dropdown
             id="pos-filter"
             value={selectedPosition}
-            options={filteredPositionOptions}
+            options={positionOptions}
             onChange={(e) => onPositionChange(e.value)}
+            disabled={isPositionDisabled || isOptionsPositionLoading}
+            loading={isOptionsPositionLoading}
             placeholder={
-              selectedDivision
-                ? "Pilih Jabatan"
-                : "Pilih Divisi Terlebih Dahulu"
+              isPositionDisabled
+                ? "Pilih Divisi Terlebih Dahulu"
+                : isOptionsPositionLoading
+                  ? "Memuat Jabatan..."
+                  : "Pilih Jabatan"
             }
             className="w-full"
-            showClear
-            filter
-            disabled={!selectedDivision || filteredPositionOptions.length === 0}
-            emptyMessage="Tidak ada jabatan di divisi ini"
+            showClear={!isPositionDisabled}
+            filter={!isPositionDisabled}
+            emptyMessage="Tidak ada jabatan"
+            optionLabel="label"
+            optionValue="value"
           />
         </div>
       </div>

@@ -12,52 +12,50 @@ import { useFormik } from "formik";
 
 // Components & Utils
 import FormInputText from "@components/FormInputText";
-import {
-  EmployeeFormData,
-  employeeFormSchema,
-} from "../schemas/employeeSchema";
-import { toFormikValidation } from "@utils/formikHelpers";
 import FormDropdown from "@components/FormDropdown";
 import FormCalendar from "@components/FormCalendar";
 import {
-  Office,
-  Department,
-  Division,
-  Position,
-  EmploymentStatus,
-} from "../schemas/optionTypes";
+  EmployeeFormData,
+  employeeUiSchema, // Use UI Schema for validation
+  EmployeeFormValues, // Use UI Type for Formik state
+} from "../schemas/employeeSchema";
+import { toFormikValidation } from "@utils/formikHelpers";
 import { formatDateToYYYYMMDD, safeParseDate } from "@/utils/dateFormat";
+import { useFetchEmployee } from "../hooks/useFetchEmployee";
 
-// Option Interfaces
-export interface SelectOption {
-  label: string;
-  value: string;
-}
-
-const employeeDefaultValues: EmployeeFormData = {
+// Default Form Values (Matches UI Type)
+const employeeDefaultValues: EmployeeFormValues = {
+  // Job
   full_name: "",
   join_date: new Date(),
-  position_code: "",
   office_code: "",
-  user_code: null,
-  employment_status_code: "",
+  // UI Fields (Required for validation, stripped before submit)
+  department_code: "",
+  division_code: "",
+  position_code: "",
 
+  employment_status_code: "",
+  user_code: null,
+
+  // Personal
   contact_phone: null,
   address: null,
-  ktp_number: null,
   birth_place: null,
   birth_date: null,
   gender: null,
   religion: null,
   maritial_status: null,
-  resign_date: null,
-  education: null,
   blood_type: null,
-  profile_picture: null,
+
+  // Docs
+  ktp_number: null,
+  education: null,
+  resign_date: null,
   bpjs_ketenagakerjaan: null,
   bpjs_kesehatan: null,
   npwp: null,
   bank_account: null,
+  profile_picture: null,
 };
 
 interface EmployeeSaveDialogProps {
@@ -67,14 +65,6 @@ interface EmployeeSaveDialogProps {
   employeeData: any;
   onSubmit: (values: EmployeeFormData) => Promise<void>;
   isSubmitting: boolean;
-
-  // CHANGED: We need full arrays for cascading logic
-  offices: Office[];
-  departments: Department[];
-  divisions: Division[];
-  positions: Position[];
-  employmentStatus: EmploymentStatus[];
-  userOptions: SelectOption[]; // This stays simple
 }
 
 export default function EmployeeSaveDialog({
@@ -84,139 +74,124 @@ export default function EmployeeSaveDialog({
   isOpen,
   onClose,
   title,
-  offices = [],
-  departments = [],
-  divisions = [],
-  positions = [],
-  employmentStatus = [],
-  userOptions = [],
 }: EmployeeSaveDialogProps) {
-  const [activeIndex, setActiveIndex] = useState(0); // For Wizard
-  const [selectedDept, setSelectedDept] = useState<string | null>(null);
-  const [selectedDiv, setSelectedDiv] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
+  // 1. Hook for Cascading Options
+  const {
+    // Options
+    officeOptions,
+    departmentOptions,
+    divisionOptions,
+    positionOptions,
+    userOptions,
+    employementOptions,
+
+    // Fetchers
+    fetchOfficeOptions,
+    fetchDepartmentOptions,
+    fetchDivisionOptions,
+    fetchPositionOptions,
+    fetchEmployementOptions,
+    fetchUserOptions,
+
+    // Clearers
+    clearDepartmentOptions,
+    clearDivisionOptions,
+    clearPositionOptions,
+
+    // Loading States
+    isOptionsDepartmentLoading,
+    isOptionsDivisionLoading,
+    isOptionsPositionLoading,
+    isOptionsEmployementLoading,
+    isOptionsUserLoading,
+  } = useFetchEmployee();
+
+  // 2. Initial Values
   const initialValues = useMemo(() => {
     if (employeeData) {
       return {
         ...employeeDefaultValues,
         ...employeeData,
+
+        // Ensure Dates are Date Objects for Calendar
         join_date: safeParseDate(employeeData.join_date) || new Date(),
         birth_date: safeParseDate(employeeData.birth_date),
         resign_date: safeParseDate(employeeData.resign_date),
+
+        // Ensure Dropdowns are Strings (not null) for Controlled Inputs
+        department_code: employeeData.department_code || "",
+        division_code: employeeData.division_code || "",
+        position_code: employeeData.position_code || "",
+        office_code: employeeData.office_code || "",
       };
     }
     return employeeDefaultValues;
   }, [employeeData]);
 
-  // 3. Setup Formik
-  const formik = useFormik<EmployeeFormData>({
+  // 3. Formik Setup
+  const formik = useFormik<EmployeeFormValues>({
     initialValues: initialValues,
     enableReinitialize: true,
-    validationSchema: null,
-    validate: toFormikValidation(employeeFormSchema),
+    // [CRITICAL] Use UI Schema so Dept/Div are required
+    validate: toFormikValidation(employeeUiSchema),
+
     onSubmit: async (values, { setStatus }) => {
       try {
-        const payload = {
-          ...values,
-          join_date: formatDateToYYYYMMDD(values.join_date),
-          birth_date: values.birth_date
-            ? formatDateToYYYYMMDD(values.birth_date)
+        // [CRITICAL] Separate UI fields from API fields
+        const { department_code, division_code, ...apiPayload } = values;
+
+        // Format Dates
+        const formattedPayload = {
+          ...apiPayload,
+          join_date: formatDateToYYYYMMDD(apiPayload.join_date),
+          birth_date: apiPayload.birth_date
+            ? formatDateToYYYYMMDD(apiPayload.birth_date)
             : null,
-          resign_date: values.resign_date
-            ? formatDateToYYYYMMDD(values.resign_date)
+          resign_date: apiPayload.resign_date
+            ? formatDateToYYYYMMDD(apiPayload.resign_date)
             : null,
         };
 
-        await onSubmit(payload as any);
+        // Submit Clean Payload
+        await onSubmit(formattedPayload as unknown as EmployeeFormData);
       } catch (error: any) {
-        setStatus(
-          error?.message || "Terjadi kesalahan saat menyimpan data karyawan"
-        );
+        setStatus(error?.message || "Error saving data");
       }
     },
   });
 
-  const filteredDepartments = useMemo(() => {
-    // Filter departments based on selected formik.values.office_code
-    return departments
-      .filter((d) => d.office_code === formik.values.office_code)
-      .map((d) => ({
-        label: d.name,
-        value: d.department_code,
-        code: d.department_code,
-      }));
-  }, [departments, formik.values.office_code]);
-
-  const filteredDivisions = useMemo(() => {
-    return divisions
-      .filter((d) => d.department_code === selectedDept)
-      .map((d) => ({
-        label: d.name,
-        value: d.division_code,
-        code: d.division_code,
-      }));
-  }, [divisions, selectedDept]);
-
-  const filteredPositions = useMemo(() => {
-    return positions
-      .filter((p) => p.division_code === selectedDiv)
-      .map((p) => ({
-        label: p.name,
-        value: p.position_code,
-        code: p.position_code,
-      }));
-  }, [positions, selectedDiv]);
-
-  // 3. Office Options with Code Display logic
-  const officeOptionsFormatted = useMemo(() => {
-    return offices.map((o) => ({
-      label: o.name,
-      value: o.office_code,
-      code: o.office_code, // Pass code for the template
-    }));
-  }, [offices]);
-
-  // 4. Employment Status list
-  const employmentStatusFormatted = useMemo(() => {
-    return employmentStatus.map((emp) => ({
-      label: emp.name,
-      value: emp.status_code,
-    }));
-  }, [employmentStatus]);
-
-  // Reset wizard on open/close
+  // 4. Handle Hydration (Edit Mode) & Reset
   useEffect(() => {
     if (isOpen) {
-      // A. Reset Wizard & Form
       setActiveIndex(0);
       formik.resetForm();
 
-      // B. Handle Edit Mode (Reverse Lookup)
-      if (employeeData?.position_code) {
-        // 1. Find Position -> Get Division
-        const pos = positions.find(
-          (p) => p.position_code === employeeData.position_code
-        );
+      // ✅ FETCH INDEPENDENT DATA
+      // These lists are required regardless of Add or Edit mode
+      fetchOfficeOptions();
+      fetchEmployementOptions();
+      fetchUserOptions();
 
-        if (pos) {
-          // 2. Set Division (Local State)
-          setSelectedDiv(pos.division_code);
+      if (employeeData) {
+        // EDIT MODE: Hydrate Options
+        const { office_code, department_code, division_code } = employeeData;
 
-          // 3. Find Division -> Get Department
-          const div = divisions.find(
-            (d) => d.division_code === pos.division_code
-          );
-
-          if (div) {
-            // 4. Set Department (Local State)
-            setSelectedDept(div.department_code);
-            // Note: Office is already set via formik.initialValues.office_code
-          }
+        if (office_code) {
+          fetchDepartmentOptions(office_code);
+        }
+        if (office_code && department_code) {
+          fetchDivisionOptions(office_code, department_code);
+        }
+        if (office_code && department_code && division_code) {
+          fetchPositionOptions(office_code, department_code, division_code);
         }
       } else {
-        // C. Handle Add Mode (Reset Local States)
-        setSelectedDept(null);
-        setSelectedDiv(null);
+        // ADD MODE: Clear Options
+        clearDepartmentOptions();
+        clearDivisionOptions();
+        clearPositionOptions();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -225,22 +200,83 @@ export default function EmployeeSaveDialog({
   const handleHide = () => {
     formik.resetForm();
     setActiveIndex(0);
+    clearDepartmentOptions();
+    clearDivisionOptions();
+    clearPositionOptions();
     onClose();
   };
 
-  // --- WIZARD NAVIGATION LOGIC ---
+  // --- CASCADING HANDLERS ---
 
-  // Define which fields belong to which tab for validation
+  const handleOfficeChange = (val: string) => {
+    formik.setFieldValue("office_code", val);
+
+    // Reset Children
+    formik.setFieldValue("department_code", "");
+    formik.setFieldValue("division_code", "");
+    formik.setFieldValue("position_code", "");
+
+    if (val) {
+      fetchDepartmentOptions(val);
+      clearDivisionOptions();
+      clearPositionOptions();
+    } else {
+      clearDepartmentOptions();
+      clearDivisionOptions();
+      clearPositionOptions();
+    }
+  };
+
+  const handleDepartmentChange = (val: string) => {
+    formik.setFieldValue("department_code", val);
+
+    // Reset Children
+    formik.setFieldValue("division_code", "");
+    formik.setFieldValue("position_code", "");
+
+    const currentOffice = formik.values.office_code;
+
+    if (val && currentOffice) {
+      // ✅ Pass both Office and Department
+      fetchDivisionOptions(currentOffice, val);
+      clearPositionOptions();
+    } else {
+      clearDivisionOptions();
+      clearPositionOptions();
+    }
+  };
+
+  const handleDivisionChange = (val: string) => {
+    formik.setFieldValue("division_code", val);
+
+    // Reset Child
+    formik.setFieldValue("position_code", "");
+
+    const currentOffice = formik.values.office_code;
+    const currentDept = formik.values.department_code;
+
+    // ✅ FIX: Pass all 3 arguments (Office -> Dept -> Division)
+    if (val && currentOffice && currentDept) {
+      fetchPositionOptions(currentOffice, currentDept, val);
+    } else {
+      clearPositionOptions();
+    }
+  };
+
+  // --- WIZARD NAVIGATION ---
+
   const fieldsByTab = [
-    // Tab 0: Job
+    // Tab 1: Job
     [
       "full_name",
       "office_code",
+      "department_code",
+      "division_code",
       "position_code",
       "join_date",
       "employment_status_code",
     ],
-    // Tab 1: Personal
+    // Tab 2: Personal
     [
       "birth_place",
       "birth_date",
@@ -249,21 +285,20 @@ export default function EmployeeSaveDialog({
       "contact_phone",
       "address",
     ],
-    // Tab 2: Docs (Optional mostly, so empty array is fine or specific required ones)
+    // Tab 3: Docs
     ["ktp_number"],
   ];
 
   const handleNext = async () => {
-    // 1. Mark fields in current tab as touched to trigger validation UI
     const currentFields = fieldsByTab[activeIndex];
     const touched: { [key: string]: boolean } = {};
     currentFields.forEach((field) => (touched[field] = true));
-    await formik.setTouched({ ...formik.touched, ...touched });
 
-    // 2. Check for errors in current tab
+    await formik.setTouched({ ...formik.touched, ...touched });
     const errors = await formik.validateForm();
+
     const hasErrorInTab = currentFields.some(
-      (field) => errors[field as keyof EmployeeFormData]
+      (field) => errors[field as keyof EmployeeFormValues]
     );
 
     if (!hasErrorInTab) {
@@ -275,12 +310,32 @@ export default function EmployeeSaveDialog({
     setActiveIndex((prev) => prev - 1);
   };
 
-  // Helpers
-  const isFieldInvalid = (name: keyof EmployeeFormData) =>
+  // --- HELPERS ---
+
+  const isFieldInvalid = (name: keyof EmployeeFormValues) =>
     Boolean(formik.touched[name] && formik.errors[name]);
 
-  const getFieldError = (name: keyof EmployeeFormData) =>
+  const getFieldError = (name: keyof EmployeeFormValues) =>
     isFieldInvalid(name) ? String(formik.errors[name]) : undefined;
+
+  const getProps = (name: keyof EmployeeFormValues) => ({
+    id: name,
+    name: name,
+    value: formik.values[name],
+    onChange: formik.handleChange,
+    touched: Boolean(formik.touched[name]),
+    error: formik.errors[name] as string,
+  });
+
+  // Custom Dropdown Template
+  const dropdownItemTemplate = (option: any) => {
+    if (!option) return null;
+    return (
+      <div className="flex align-items-center justify-content-between w-full gap-4">
+        <span>{option.label}</span>
+      </div>
+    );
+  };
 
   // Static Options
   const genderOptions = [
@@ -292,27 +347,6 @@ export default function EmployeeSaveDialog({
     { label: "Belum Menikah", value: "Single" },
   ];
 
-  const getProps = <K extends keyof EmployeeFormData>(name: K) => ({
-    id: name,
-    name: name,
-    value: formik.values[name], // The type is now specific to the key 'K'
-    onChange: formik.handleChange,
-    touched: Boolean(formik.touched[name]),
-    error: formik.errors[name] as string,
-  });
-
-  const dropdownItemTemplate = (option: any) => {
-    if (!option) return null;
-    return (
-      <div className="flex align-items-center justify-content-between w-full gap-4">
-        <span>{option.label}</span>
-        <span className="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 border-round">
-          {option.code}
-        </span>
-      </div>
-    );
-  };
-
   return (
     <Dialog
       header={title}
@@ -321,9 +355,9 @@ export default function EmployeeSaveDialog({
       modal
       className="w-full md:w-8 lg:w-6"
       contentClassName="p-0"
+      // Dynamic Footer
       footer={() => (
         <div className="flex justify-content-between align-items-center w-full p-3 border-top-1 border-gray-100">
-          {/* Left Side: Cancel or Back */}
           <div>
             {activeIndex === 0 ? (
               <Button
@@ -332,6 +366,7 @@ export default function EmployeeSaveDialog({
                 text
                 onClick={handleHide}
                 className="text-gray-600 gap-1"
+                disabled={isSubmitting}
               />
             ) : (
               <Button
@@ -340,14 +375,13 @@ export default function EmployeeSaveDialog({
                 className="gap-1"
                 outlined
                 onClick={handleBack}
+                disabled={isSubmitting}
               />
             )}
           </div>
 
-          {/* Right Side: Next or Save */}
           <div className="flex gap-2">
-            {/* Step Indicators (Optional visual cue) */}
-            <div className="flex align-items-center gap-1 mr-4 text-gray-400 text-sm">
+            <div className="flex align-items-center gap-1 mr-4 text-gray-400 text-sm hidden md:flex">
               <span>Langkah {activeIndex + 1} / 3</span>
             </div>
 
@@ -367,26 +401,26 @@ export default function EmployeeSaveDialog({
                 className="gap-1"
                 onClick={() => formik.submitForm()}
                 loading={isSubmitting}
+                disabled={isSubmitting}
               />
             )}
           </div>
         </div>
-      )} // Use dynamic footer
+      )}
     >
       <form onSubmit={formik.handleSubmit}>
         <TabView
           activeIndex={activeIndex}
-          onTabChange={() => {}}
+          onTabChange={() => {}} // Disable click navigation
           className="p-0"
           renderActiveOnly={false}
           pt={{
-            nav: { className: "pointer-events-none" },
+            nav: { className: "pointer-events-none" }, // Disable clicking tabs directly
           }}
         >
-          {/* --- TAB 1: PEKERJAAN (Job) --- */}
+          {/* --- TAB 1: PEKERJAAN --- */}
           <TabPanel header="1. Pekerjaan" leftIcon="pi pi-briefcase mr-2">
             <div className="grid mt-2 px-3 pb-3">
-              {/* Full Name */}
               <div className="col-12">
                 <FormInputText
                   props={formik.getFieldProps("full_name")}
@@ -397,126 +431,125 @@ export default function EmployeeSaveDialog({
                 />
               </div>
 
-              {/* LEVEL 1: OFFICE */}
+              {/* Level 1: Office */}
               <div className="col-12 md:col-6">
                 <FormDropdown
                   {...getProps("office_code")}
                   label="Kantor"
-                  options={officeOptionsFormatted}
-                  itemTemplate={dropdownItemTemplate} // Custom Template
-                  onChange={(e) => {
-                    formik.setFieldValue("office_code", e.value);
-                    // Reset downstream
-                    setSelectedDept("");
-                    setSelectedDiv("");
-                    formik.setFieldValue("position_code", "");
-                  }}
+                  options={officeOptions}
+                  onChange={(e) => handleOfficeChange(e.value)}
                   placeholder="Pilih Kantor"
                   filter
                   isRequired
+                  itemTemplate={dropdownItemTemplate}
                 />
               </div>
 
-              {/* LEVEL 2: DEPARTMENT (Intermediate - Not saved to Formik directly, just state) */}
+              {/* Level 2: Department */}
               <div className="col-12 md:col-6">
                 <FormDropdown
-                  id="department_temp"
+                  {...getProps("department_code")}
                   label="Departemen"
-                  value={selectedDept}
-                  options={filteredDepartments}
-                  itemTemplate={dropdownItemTemplate}
-                  onChange={(e) => {
-                    setSelectedDept(e.value);
-                    // Reset downstream
-                    setSelectedDiv("");
-                    formik.setFieldValue("position_code", "");
-                  }}
+                  options={departmentOptions}
+                  onChange={(e) => handleDepartmentChange(e.value)}
+                  disabled={
+                    !formik.values.office_code || isOptionsDepartmentLoading
+                  }
+                  loading={isOptionsDepartmentLoading}
                   placeholder={
                     formik.values.office_code
                       ? "Pilih Departemen"
                       : "Pilih Kantor dahulu"
                   }
-                  disabled={!formik.values.office_code}
                   filter
                   isRequired
+                  itemTemplate={dropdownItemTemplate}
                 />
               </div>
 
-              {/* LEVEL 3: DIVISION (Intermediate) */}
+              {/* Level 3: Division */}
               <div className="col-12 md:col-6">
                 <FormDropdown
-                  id="division_temp"
+                  {...getProps("division_code")}
                   label="Divisi"
-                  value={selectedDiv}
-                  itemTemplate={dropdownItemTemplate}
-                  options={filteredDivisions}
-                  onChange={(e) => {
-                    setSelectedDiv(e.value);
-                    // Reset downstream
-                    formik.setFieldValue("position_code", "");
-                  }}
-                  placeholder={
-                    selectedDept ? "Pilih Divisi" : "Pilih Departemen dahulu"
+                  options={divisionOptions}
+                  onChange={(e) => handleDivisionChange(e.value)}
+                  disabled={
+                    !formik.values.department_code || isOptionsDivisionLoading
                   }
-                  disabled={!selectedDept}
+                  loading={isOptionsDivisionLoading}
+                  placeholder={
+                    formik.values.department_code
+                      ? "Pilih Divisi"
+                      : "Pilih Departemen dahulu"
+                  }
                   filter
                   isRequired
+                  itemTemplate={dropdownItemTemplate}
                 />
               </div>
 
-              {/* LEVEL 4: POSITION (Saved to Formik) */}
+              {/* Level 4: Position */}
               <div className="col-12 md:col-6">
                 <FormDropdown
                   {...getProps("position_code")}
                   label="Jabatan"
-                  itemTemplate={dropdownItemTemplate}
-                  options={filteredPositions}
+                  options={positionOptions}
                   onChange={(e) =>
                     formik.setFieldValue("position_code", e.value)
                   }
-                  placeholder={
-                    selectedDiv ? "Pilih Jabatan" : "Pilih Divisi dahulu"
+                  disabled={
+                    !formik.values.division_code || isOptionsPositionLoading
                   }
-                  disabled={!selectedDiv}
+                  loading={isOptionsPositionLoading}
+                  placeholder={
+                    formik.values.division_code
+                      ? "Pilih Jabatan"
+                      : "Pilih Divisi dahulu"
+                  }
                   filter
                   isRequired
+                  itemTemplate={dropdownItemTemplate}
                 />
               </div>
 
-              {/* Join Date */}
               <div className="col-12 md:col-6">
                 <FormCalendar
-                  {...getProps("join_date")}
+                  id="join_date"
+                  name="join_date"
                   label="Tanggal Bergabung"
+                  // FIX: Access value directly so TS knows it is a Date
+                  value={formik.values.join_date}
                   onChange={(e) => formik.setFieldValue("join_date", e.value)}
+                  touched={Boolean(formik.touched.join_date)}
+                  error={formik.errors.join_date as string}
                   isRequired
                 />
               </div>
 
-              {/* Status */}
               <div className="col-12 md:col-6">
                 <FormDropdown
                   {...getProps("employment_status_code")}
                   label="Status Karyawan"
-                  options={employmentStatusFormatted}
+                  options={employementOptions}
                   onChange={(e) =>
                     formik.setFieldValue("employment_status_code", e.value)
                   }
+                  loading={isOptionsEmployementLoading}
                   isRequired
                 />
               </div>
 
-              {/* User Account */}
               <div className="col-12">
                 <FormDropdown
                   {...getProps("user_code")}
                   label="Akun Pengguna (User)"
                   options={userOptions}
                   onChange={(e) => formik.setFieldValue("user_code", e.value)}
-                  placeholder="Pilih Akun Pengguna"
+                  loading={isOptionsUserLoading}
+                  placeholder="Pilih Akun Pengguna (Opsional)"
                   filter
                   showClear
-                  isRequired
                 />
                 <small className="text-gray-500">
                   Pilih jika karyawan ini memiliki akses login sistem.
@@ -525,10 +558,9 @@ export default function EmployeeSaveDialog({
             </div>
           </TabPanel>
 
-          {/* --- TAB 2: PRIBADI (Personal) --- */}
+          {/* --- TAB 2: PRIBADI --- */}
           <TabPanel header="2. Data Pribadi" leftIcon="pi pi-user mr-2">
             <div className="grid mt-2 px-3 pb-3">
-              {/* Birth Place & Date */}
               <div className="col-12 md:col-6">
                 <FormInputText
                   props={formik.getFieldProps("birth_place")}
@@ -540,22 +572,24 @@ export default function EmployeeSaveDialog({
               </div>
               <div className="col-12 md:col-6 flex flex-column gap-2">
                 <FormCalendar
-                  {...getProps("birth_date")}
+                  id="birth_date"
+                  name="birth_date"
                   label="Tanggal Lahir"
+                  // FIX: Access value directly
+                  value={formik.values.birth_date}
                   onChange={(e) => formik.setFieldValue("birth_date", e.value)}
+                  touched={Boolean(formik.touched.birth_date)}
+                  error={formik.errors.birth_date as string}
                   isRequired
                 />
               </div>
 
-              {/* Gender & Marital */}
               <div className="col-12 md:col-6 flex flex-column gap-2">
                 <FormDropdown
                   {...getProps("gender")}
                   label="Jenis Kelamin"
                   options={genderOptions}
                   onChange={(e) => formik.setFieldValue("gender", e.value)}
-                  placeholder="Pilih Jenis Kelamin"
-                  filter
                   isRequired
                 />
               </div>
@@ -567,13 +601,10 @@ export default function EmployeeSaveDialog({
                   onChange={(e) =>
                     formik.setFieldValue("maritial_status", e.value)
                   }
-                  placeholder="Pilih Status Pernikahan"
-                  filter
                   isRequired
                 />
               </div>
 
-              {/* Religion & Blood Type */}
               <div className="col-12 md:col-6">
                 <FormInputText
                   props={formik.getFieldProps("religion")}
@@ -593,7 +624,6 @@ export default function EmployeeSaveDialog({
                 />
               </div>
 
-              {/* Phone */}
               <div className="col-12">
                 <FormInputText
                   props={formik.getFieldProps("contact_phone")}
@@ -604,7 +634,6 @@ export default function EmployeeSaveDialog({
                 />
               </div>
 
-              {/* Address */}
               <div className="col-12 flex flex-column gap-2">
                 <label htmlFor="address" className="font-medium">
                   Alamat Lengkap
@@ -621,10 +650,9 @@ export default function EmployeeSaveDialog({
             </div>
           </TabPanel>
 
-          {/* --- TAB 3: DOKUMEN & LAINNYA (Docs) --- */}
+          {/* --- TAB 3: DOKUMEN --- */}
           <TabPanel header="3. Dokumen" leftIcon="pi pi-file mr-2">
             <div className="grid mt-2 px-3 pb-3">
-              {/* KTP */}
               <div className="col-12">
                 <FormInputText
                   props={formik.getFieldProps("ktp_number")}
@@ -635,7 +663,6 @@ export default function EmployeeSaveDialog({
                 />
               </div>
 
-              {/* BPJS */}
               <div className="col-12 md:col-6">
                 <FormInputText
                   props={formik.getFieldProps("bpjs_ketenagakerjaan")}
@@ -655,7 +682,6 @@ export default function EmployeeSaveDialog({
                 />
               </div>
 
-              {/* NPWP & Bank */}
               <div className="col-12 md:col-6">
                 <FormInputText
                   props={formik.getFieldProps("npwp")}
@@ -675,7 +701,6 @@ export default function EmployeeSaveDialog({
                 />
               </div>
 
-              {/* Education */}
               <div className="col-12">
                 <FormInputText
                   props={formik.getFieldProps("education")}
@@ -686,7 +711,6 @@ export default function EmployeeSaveDialog({
                 />
               </div>
 
-              {/* Resign Date */}
               <div className="col-12 md:col-6 flex flex-column gap-2 mt-2">
                 <label
                   htmlFor="resign_date"
@@ -710,7 +734,6 @@ export default function EmployeeSaveDialog({
           </TabPanel>
         </TabView>
 
-        {/* Global Error Message */}
         {formik.status && (
           <div className="p-3 bg-red-50 text-red-500 border-round text-sm text-right mx-3 mb-2">
             <i className="pi pi-exclamation-circle mr-2"></i>

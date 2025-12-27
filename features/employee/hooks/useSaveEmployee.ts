@@ -36,7 +36,6 @@ export function useSaveEmployee(onSuccess?: () => void) {
 
         // Map through the array: [{field: "...", message: "..."}]
         detail = err.errors.map((e: any) => e.message).join(", ");
-        console.log("Detail error: ", detail);
       }
       // 2. Fallback to top-level message (e.g. from the API generic 500)
       else if (err?.message) {

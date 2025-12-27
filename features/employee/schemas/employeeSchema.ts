@@ -115,6 +115,14 @@ export const employeeFormSchema = z.object({
   bank_account: z.string().optional().nullable(),
 });
 
+export const employeeUiSchema = employeeFormSchema.extend({
+  // These are required for the UI to work, but won't be sent to API
+  office_code: z.string().nonempty("Kantor wajib dipilih"), // Usually in base, but ensure it's here
+  department_code: z.string().nonempty("Departemen wajib dipilih"),
+  division_code: z.string().nonempty("Divisi wajib dipilih"),
+});
+
 export type Employee = z.infer<typeof employeeSchema>;
 export type EmployeeDetail = z.infer<typeof employeeDetailSchema>;
 export type EmployeeFormData = z.infer<typeof employeeFormSchema>;
+export type EmployeeFormValues = z.infer<typeof employeeUiSchema>; // For Formik

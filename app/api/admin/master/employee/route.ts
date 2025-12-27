@@ -16,7 +16,7 @@ const tokenAvailable = (token: string | null) => {
   return null;
 };
 
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
   const token = getAuthToken();
 
   const unauthorizedResponse = tokenAvailable(token);
@@ -24,12 +24,25 @@ export const GET = async () => {
     return unauthorizedResponse;
   }
 
+  const searchParams = request.nextUrl.searchParams;
+
+  const backendParams = {
+    page: searchParams.get("page") || 1,
+    limit: searchParams.get("limit") || 5,
+    search: searchParams.get("search") || "",
+    office_code: searchParams.get("office_code") || "",
+    department_code: searchParams.get("department_code") || "",
+    division_code: searchParams.get("division_code") || "",
+    position_code: searchParams.get("position_code") || "",
+  };
+
   try {
     const response = await Axios.get(API_ENDPOINTS.GETALLEMPLOYEE, {
       headers: {
         "Content-Type": "application.json",
         Authorization: `Bearer ${token}`,
       },
+      params: backendParams,
     });
 
     return NextResponse.json(response.data);
@@ -37,7 +50,7 @@ export const GET = async () => {
     if (error.response) {
       return NextResponse.json(
         { message: error.response.data.message },
-        { status: 404 }
+        { status: error.response.status || 404 }
       );
     }
 
@@ -69,9 +82,6 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json(response.data);
   } catch (error: any) {
     if (error.response) {
-      // --- FIX IS HERE ---
-      // Use 'error.response.data' to get the actual JSON body
-      // (contains "message", "errors", "status", etc.)
       return NextResponse.json(error.response.data, {
         status: error.response.status,
       });

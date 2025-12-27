@@ -11,6 +11,12 @@ export const userSchema = z.object({
   employee_name: z.string().nullable(),
 });
 
+export const userOptionSchema = z.object({
+  user_code: z.string(),
+  email: z.string(),
+  role_name: z.string(),
+});
+
 export const userDetailSchema = userSchema.extend({
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
@@ -27,5 +33,6 @@ export const userFormSchema = z.object({
 });
 
 export type User = z.infer<typeof userSchema>;
+export type UserOption = z.infer<typeof userOptionSchema>;
 export type UserDetail = z.infer<typeof userDetailSchema>;
 export type UserFormData = z.infer<typeof userFormSchema>;

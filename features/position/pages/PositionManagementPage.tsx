@@ -69,7 +69,7 @@ export default function PositionManagementPage() {
   // Level 2: Department -> Division
   useEffect(() => {
     if (filter.selectedOffice && filter.selectedDepartment) {
-      fetchDivisionOptions(filter.selectedDepartment);
+      fetchDivisionOptions(filter.selectedOffice, filter.selectedDepartment);
     } else {
       clearDivisionOptions();
     }
