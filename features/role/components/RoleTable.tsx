@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -9,6 +10,9 @@ import { Role } from "../schemas/roleSchema";
 export interface RoleTableProps {
   data: Role[];
   isLoading: boolean;
+  totalRecords: number;
+  lazyParams: any;
+  onPageChange: (e: any) => void;
   onSetting: (row: Role) => void;
   onEdit: (row: Role) => void;
   onDelete: (row: Role) => void;
@@ -17,6 +21,9 @@ export interface RoleTableProps {
 export default function RoleTable({
   data,
   isLoading,
+  totalRecords,
+  lazyParams,
+  onPageChange,
   onSetting,
   onEdit,
   onDelete,
@@ -25,7 +32,6 @@ export default function RoleTable({
 
   const handleSettingClick = (row: Role) => {
     setNavigatingId(row.id);
-
     setTimeout(() => {
       onSetting(row);
     }, 0);
@@ -35,13 +41,27 @@ export default function RoleTable({
     <DataTable
       value={data}
       loading={isLoading}
+      // Enable Lazy Loading & Pagination Control
+      lazy={true}
       paginator
-      rows={5}
+      first={lazyParams.first}
+      rows={lazyParams.rows}
+      totalRecords={totalRecords}
+      onPage={onPageChange}
       rowsPerPageOptions={[5, 10, 25, 50]}
+      // Styling
       className="border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden"
+      emptyMessage="Tidak ada data role"
+      stripedRows
     >
-      <Column field="role_code" header="Kode Role" style={{ width: "25%" }} />
-      <Column field="name" header="Nama" style={{ width: "25%" }} />
+      <Column
+        field="role_code"
+        header="Kode Role"
+        sortable
+        style={{ width: "25%" }}
+      />
+
+      <Column field="name" header="Nama" sortable style={{ width: "25%" }} />
 
       <Column
         header="Aksi"
@@ -53,6 +73,7 @@ export default function RoleTable({
               icon="pi pi-cog text-sm"
               size="small"
               severity="success"
+              tooltip="Pengaturan"
               loading={navigatingId === row.id}
               onClick={() => handleSettingClick(row)}
             />
@@ -62,6 +83,7 @@ export default function RoleTable({
               icon="pi pi-pencil text-sm"
               size="small"
               severity="warning"
+              tooltip="Edit"
               onClick={() => onEdit(row)}
               disabled={navigatingId !== null}
             />
@@ -71,6 +93,7 @@ export default function RoleTable({
               icon="pi pi-trash text-sm"
               size="small"
               severity="danger"
+              tooltip="Hapus"
               onClick={() => onDelete(row)}
               disabled={navigatingId !== null}
             />

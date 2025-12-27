@@ -4,20 +4,29 @@ import { Settings2 } from "lucide-react";
 import { Card } from "primereact/card";
 
 // Components
-import DataTableRole from "../components/RoleTable";
+import RoleTable from "../components/RoleTable";
 import RoleDeleteDialog from "../components/RoleDeleteDialog";
 import RoleSaveDialog from "../components/RoleSaveDialog";
 import TableToolbar from "@components/TableToolbar";
-import DateRangeFilter from "@components/DateRangeFilter";
 
 // Facade Hook
 import { usePageRole } from "../hooks/usePageRole";
 
 export default function RoleManagementPage() {
   const {
+    // Data
     roles,
+    totalRecords,
+
+    // Loading State
     isLoading,
     isSaving,
+
+    // Pagination
+    lazyParams,
+    onPageChange,
+
+    // Actions & Dialogs
     dialog,
     filter,
     deleteAction,
@@ -58,29 +67,16 @@ export default function RoleManagementPage() {
           <TableToolbar
             searchValue={filter.search}
             onSearchChange={(e) => filter.setSearch(e.target.value)}
-            searchPlaceholder="Cari berdasarkan ID atau nama"
             onAdd={dialog.openAdd}
-            addLabel="Tambah Role"
-            filterContent={
-              <DateRangeFilter
-                startDate={filter.dates.start}
-                endDate={filter.dates.end}
-                onStartDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, start: e.value })
-                }
-                onEndDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, end: e.value })
-                }
-                onApply={filter.applyDateFilter}
-                onClear={filter.clearDateFilter}
-              />
-            }
           />
 
           {/* Data Table */}
-          <DataTableRole
+          <RoleTable
             data={roles}
             isLoading={isLoading}
+            totalRecords={totalRecords}
+            lazyParams={lazyParams}
+            onPageChange={onPageChange}
             onEdit={dialog.openEdit}
             onDelete={deleteAction.requestDelete}
             onSetting={handleSetting}
