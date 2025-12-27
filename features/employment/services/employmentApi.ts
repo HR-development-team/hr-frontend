@@ -1,3 +1,4 @@
+import { Axios } from "@/utils/axios"; // Use custom Axios instance
 import { Employement, EmploymentOption } from "../schemas/employmentSchema";
 
 const BASE_URL = "/api/admin/master/employment";
@@ -7,19 +8,10 @@ const BASE_URL = "/api/admin/master/employment";
  */
 export async function getAllEmploymentStatus(): Promise<Employement[]> {
   try {
-    const res = await fetch(BASE_URL, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch employees");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(BASE_URL);
     return data.employment_status || [];
   } catch (error) {
-    console.error("getAllEmployees error:", error);
+    console.error("getAllEmploymentStatus error:", error);
     return [];
   }
 }
@@ -29,13 +21,7 @@ export async function getAllEmploymentStatus(): Promise<Employement[]> {
  */
 export async function getEmployementList(): Promise<EmploymentOption[] | null> {
   try {
-    const res = await fetch(`${BASE_URL}/list`);
-    console.log("value list: ", res);
-    if (!res.ok) {
-      throw new Error("Failed to fetch employment options");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/list`);
     return data.employment_status;
   } catch (error) {
     console.error("getEmploymentOption error:", error);

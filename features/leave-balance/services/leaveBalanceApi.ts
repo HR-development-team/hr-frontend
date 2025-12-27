@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Axios } from "@/utils/axios";
 import {
   LeaveBalance,
   LeaveBalanceFormData,
@@ -13,26 +15,12 @@ export async function getAllLeaveBalances(
   type_code?: string | null
 ): Promise<LeaveBalance[]> {
   try {
-    const url = new URL(BASE_URL, window.location.origin);
+    // Axios handles query params automatically
+    const params: Record<string, any> = {};
+    if (year) params.year = year;
+    if (type_code) params.type_code = type_code;
 
-    if (year) {
-      url.searchParams.append("year", String(year));
-    }
-
-    if (type_code) {
-      url.searchParams.append("type_code", type_code);
-    }
-
-    const res = await fetch(url.toString(), {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Gagal mendapatkan data saldo cuti");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(BASE_URL, { params });
     return data.leave_balances || [];
   } catch (error) {
     console.error("getAllLeaveBalances error:", error);
@@ -44,38 +32,42 @@ export async function getAllLeaveBalances(
  * Create a single leave balance (Specific Employee)
  */
 export async function createLeaveBalance(payload: LeaveBalanceFormData) {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const { data } = await Axios.post(BASE_URL, payload);
 
-  const data = await res.json();
+    if (data.status !== "00") {
+      throw new Error(data.message || "Gagal menambahkan saldo cuti");
+    }
 
-  if (!res.ok || data.status !== "00") {
-    throw new Error(data.message || "Gagal menambahkan saldo cuti");
+    return data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Gagal menambahkan saldo cuti"
+    );
   }
-
-  return data;
 }
 
 /**
  * Create bulk leave balances (All Employees)
  */
 export async function createBulkLeaveBalance(payload: LeaveBalanceFormData) {
-  const res = await fetch(`${BASE_URL}/bulk`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const { data } = await Axios.post(`${BASE_URL}/bulk`, payload);
 
-  const data = await res.json();
+    if (data.status !== "00") {
+      throw new Error(data.message || "Gagal menambahkan saldo cuti massal");
+    }
 
-  if (!res.ok || data.status !== "00") {
-    throw new Error(data.message || "Gagal menambahkan saldo cuti massal");
+    return data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Gagal menambahkan saldo cuti massal"
+    );
   }
-
-  return data;
 }
 
 /**
@@ -85,55 +77,67 @@ export async function updateLeaveBalance(
   id: number,
   payload: LeaveBalanceFormData
 ) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const { data } = await Axios.put(`${BASE_URL}/${id}`, payload);
 
-  const data = await res.json();
+    if (data.status !== "00") {
+      throw new Error(data.message || "Gagal memperbarui saldo cuti");
+    }
 
-  if (!res.ok || data.status !== "00") {
-    throw new Error(data.message || "Gagal memperbarui saldo cuti");
+    return data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Gagal memperbarui saldo cuti"
+    );
   }
-
-  return data;
 }
 
 /**
  * Delete a specific leave balance
  */
 export async function deleteLeaveBalance(id: number) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
+  try {
+    const { data } = await Axios.delete(`${BASE_URL}/${id}`);
 
-  const data = await res.json();
+    if (data.status !== "00") {
+      throw new Error(data.message || "Gagal menghapus saldo cuti");
+    }
 
-  if (!res.ok || data.status !== "00") {
-    throw new Error(data.message || "Gagal menghapus saldo cuti");
+    return data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Gagal menghapus saldo cuti"
+    );
   }
-
-  return data;
 }
 
 /**
  * Delete bulk leave balances (Based on Year and Type)
  */
 export async function deleteBulkLeaveBalance(year: number, type_code: string) {
-  const url = new URL(`${BASE_URL}/bulk`, window.location.origin);
-  url.searchParams.append("year", String(year));
-  url.searchParams.append("type_code", type_code);
+  try {
+    // Pass query params in the config object
+    const { data } = await Axios.delete(`${BASE_URL}/bulk`, {
+      params: {
+        year,
+        type_code,
+      },
+    });
 
-  const res = await fetch(url.toString(), {
-    method: "DELETE",
-  });
+    if (data.status !== "00") {
+      throw new Error(data.message || "Gagal menghapus saldo cuti massal");
+    }
 
-  const data = await res.json();
-
-  if (!res.ok || data.status !== "00") {
-    throw new Error(data.message || "Gagal menghapus saldo cuti massal");
+    return data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Gagal menghapus saldo cuti massal"
+    );
   }
-
-  return data;
 }

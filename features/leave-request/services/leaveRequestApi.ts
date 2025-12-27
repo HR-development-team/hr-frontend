@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Axios } from "@/utils/axios"; // Use custom Axios instance
 import { LeaveRequest, LeaveStatus } from "../schemas/leaveRequestSchema";
 
 const BASE_URL = "/api/admin/transaction/leave-request";
@@ -7,16 +9,7 @@ const BASE_URL = "/api/admin/transaction/leave-request";
  */
 export async function getAllLeaveRequests(): Promise<LeaveRequest[]> {
   try {
-    const res = await fetch(BASE_URL, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Gagal mengambil data permintaan cuti dari server");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(BASE_URL);
     return data.leave_requests || [];
   } catch (error) {
     console.error("getAllLeaveRequests error:", error);
@@ -31,16 +24,7 @@ export async function getLeaveRequestById(
   id: number
 ): Promise<LeaveRequest | null> {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch leave request details");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/${id}`);
     return data.leave_requests || null;
   } catch (error) {
     console.error("getLeaveRequestById error:", error);
@@ -55,35 +39,37 @@ export async function updateLeaveRequestStatus(
   id: number,
   status: LeaveStatus
 ) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ status }),
-  });
+  try {
+    const { data } = await Axios.put(`${BASE_URL}/${id}`, { status });
 
-  const data = await res.json();
+    // Optional: Keep your specific "00" status check if your backend uses it
+    if (data.status !== "00") {
+      throw new Error(
+        data.message || "Gagal memperbarui status permintaan cuti"
+      );
+    }
 
-  if (!res.ok || data.status !== "00") {
-    throw new Error(data.message || "Gagal memperbarui status permintaan cuti");
+    return data;
+  } catch (error: any) {
+    // Pass backend error message if available
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Gagal memperbarui status permintaan cuti"
+    );
   }
-
-  return data;
 }
 
 /**
  * Delete a leave request
  */
 export async function deleteLeaveRequest(id: number) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to delete leave request");
+  try {
+    const { data } = await Axios.delete(`${BASE_URL}/${id}`);
+    return data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to delete leave request"
+    );
   }
-
-  return res.json();
 }

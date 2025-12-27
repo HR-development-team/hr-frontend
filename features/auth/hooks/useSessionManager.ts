@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthProvider";
 
-// 10 Seconds for testing. Change to 15 * 60 * 1000 for production.
+// 15 Minutes (15 * 60 * 1000)
 const TIMEOUT_MS = 15 * 60 * 1000;
 
 export type SessionState = "ACTIVE" | "EXPIRED" | "LOGGING_OUT";
@@ -15,22 +15,19 @@ export function useSessionManager() {
 
   const [sessionState, setSessionState] = useState<SessionState>("ACTIVE");
   const hasExpiredRef = useRef(false);
+  const lastUpdateRef = useRef(Date.now());
 
-  // Helper: Get time
+  // --- HELPER: Get Time ---
   const getLastActive = () => {
     if (typeof window === "undefined") return Date.now();
     const stored = localStorage.getItem("lastActiveTime");
     return stored ? parseInt(stored, 10) : Date.now();
   };
 
-  // Helper: Set time (Throttled)
-  // We use a ref to prevent spamming LocalStorage on every single mouse pixel move
-  const lastUpdateRef = useRef(Date.now());
-
+  // --- HELPER: Update Time (Throttled) ---
   const updateLastActive = useCallback(() => {
     const now = Date.now();
-    // Only write to DB if 2 seconds have passed since last write
-    // This improves performance significantly
+    // Throttle writes to LocalStorage (once every 2 seconds max)
     if (now - lastUpdateRef.current > 2000) {
       localStorage.setItem("lastActiveTime", now.toString());
       lastUpdateRef.current = now;
@@ -38,20 +35,22 @@ export function useSessionManager() {
   }, []);
 
   const isAuthenticated = !!user;
+  // Only run the timer if user is logged in AND not already expired
   const isTimerActive = isAuthenticated && sessionState === "ACTIVE";
 
-  // --- 1. RESET ON LOGIN/LOGOUT ---
+  // --- 1. INITIALIZATION ---
   useEffect(() => {
-    if (!user) {
+    if (!isAuthenticated) {
+      // Reset state when logged out
       hasExpiredRef.current = false;
       setSessionState("ACTIVE");
     } else {
-      // Initialize time on mount if missing
+      // If logging in, set the initial time if missing
       if (!localStorage.getItem("lastActiveTime")) {
         localStorage.setItem("lastActiveTime", Date.now().toString());
       }
     }
-  }, [user]);
+  }, [isAuthenticated]);
 
   // --- 2. EXPIRATION LOGIC ---
   const expireSession = useCallback(() => {
@@ -60,14 +59,13 @@ export function useSessionManager() {
     setSessionState("EXPIRED");
   }, []);
 
-  // --- 3. ACTIVITY LISTENERS (The Fix) ---
-  // This explicitly updates LocalStorage when you move/click
+  // --- 3. ACTIVITY LISTENERS ---
   useEffect(() => {
     if (!isTimerActive) return;
 
+    // Trigger update on user interaction
     const handleActivity = () => updateLastActive();
 
-    // 'mousemove' is heavy, so we rely on the throttling in updateLastActive
     window.addEventListener("mousemove", handleActivity);
     window.addEventListener("click", handleActivity);
     window.addEventListener("keydown", handleActivity);
@@ -82,26 +80,34 @@ export function useSessionManager() {
   }, [isTimerActive, updateLastActive]);
 
   // --- 4. INTERVAL CHECKER ---
-  // Checks every second if the LocalStorage time is too old
   useEffect(() => {
     if (!isTimerActive) return;
 
     const interval = setInterval(() => {
       const lastActive = getLastActive();
-      if (Date.now() - lastActive > TIMEOUT_MS) {
+      const now = Date.now();
+
+      // Check if time has passed the limit
+      if (now - lastActive > TIMEOUT_MS) {
         expireSession();
       }
-    }, 1000);
+    }, 1000); // Check every second
 
     return () => clearInterval(interval);
   }, [isTimerActive, expireSession]);
 
-  // --- 5. LOGOUT ---
+  // --- 5. LOGOUT HANDLER ---
   const confirmLogout = useCallback(async () => {
     setSessionState("LOGGING_OUT");
+
+    // Clear the idle timer data
     localStorage.removeItem("lastActiveTime");
+
+    // Perform standard logout (clear session/tokens)
     await logout();
-    router.replace("/login");
+
+    // Redirect to the correct path
+    router.replace("/auth/login");
   }, [logout, router]);
 
   return {

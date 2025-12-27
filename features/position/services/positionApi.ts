@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Axios } from "@/utils/axios"; // Use custom Axios instance
 import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Position,
@@ -6,6 +7,7 @@ import {
   PositionDetail,
   PositionFormData,
 } from "../schemas/positionSchema";
+
 type PositionResponse = GenericApiResponse<Position>;
 
 const BASE_URL = "/api/admin/master/position";
@@ -28,35 +30,20 @@ export async function getAllPositions(
   params?: GetPositionsParams
 ): Promise<PositionResponse> {
   try {
-    // 1. Convert the params object into a Query String (e.g. "?page=1&limit=5")
-    const queryString = params
-      ? `?${new URLSearchParams(params as any).toString()}`
-      : "";
-
-    const res = await fetch(`${BASE_URL}${queryString}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch positions");
-    }
-
-    const data = await res.json();
-
-    // 2. Return the FULL data object (containing master_positions AND meta)
-    // The hook will handle extracting the specific arrays.
+    // Axios automatically handles query string serialization via 'params'
+    const { data } = await Axios.get(BASE_URL, { params });
     return data;
   } catch (error) {
     console.error("getAllPositions error:", error);
     // Return a safe fallback structure if it fails
+    // (If 401, interceptor redirects before this returns)
     return {
       status: "99",
       message: "Failed to fetch positions",
       datetime: new Date().toISOString(),
       master_positions: [],
       meta: { page: 0, total: 0, limit: 0, total_page: 0 },
-    };
+    } as any;
   }
 }
 
@@ -67,16 +54,7 @@ export async function getPositionById(
   id: number
 ): Promise<PositionDetail | null> {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch position details");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/${id}`);
     return data.master_positions || data.position || null;
   } catch (error) {
     console.error("getPositionById error:", error);
@@ -93,32 +71,13 @@ export async function getPositionList(
   division_code?: string
 ): Promise<PositionOption[] | null> {
   try {
-    const params = new URLSearchParams();
+    // Construct params object conditionally
+    const params: Record<string, string> = {};
+    if (office_code) params.office_code = office_code;
+    if (department_code) params.department_code = department_code;
+    if (division_code) params.division_code = division_code;
 
-    // Append parameters only if they exist
-    if (office_code) {
-      params.append("office_code", office_code);
-    }
-    if (department_code) {
-      params.append("department_code", department_code);
-    }
-    if (division_code) {
-      params.append("division_code", division_code);
-    }
-
-    const queryString = params.toString();
-    const url = queryString
-      ? `${BASE_URL}/list?${queryString}`
-      : `${BASE_URL}/list`;
-
-    console.log(url);
-
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error("Failed to fetch position options");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/list`, { params });
     return data.master_positions;
   } catch (error) {
     console.error("getPositionOption error:", error);
@@ -130,50 +89,23 @@ export async function getPositionList(
  * Create a new position
  */
 export async function createPosition(payload: PositionFormData) {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to create position");
-  }
-
-  return res.json();
+  // Axios automatically serializes JSON and sets Content-Type
+  const { data } = await Axios.post(BASE_URL, payload);
+  return data;
 }
 
 /**
  * Update an existing position
  */
 export async function updatePosition(id: number, payload: PositionFormData) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to update position");
-  }
-
-  return res.json();
+  const { data } = await Axios.put(`${BASE_URL}/${id}`, payload);
+  return data;
 }
 
 /**
  * Delete a position
  */
 export async function deletePosition(id: number) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to delete position");
-  }
-
-  return res.json();
+  const { data } = await Axios.delete(`${BASE_URL}/${id}`);
+  return data;
 }

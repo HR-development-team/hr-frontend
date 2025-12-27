@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Axios } from "@/utils/axios"; // Use custom Axios instance
 import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Office,
@@ -6,6 +7,7 @@ import {
   OfficeFormData,
   OfficeOption,
 } from "../schemas/officeSchema";
+
 type OfficeResponse = GenericApiResponse<Office>;
 
 const BASE_URL = "/api/admin/master/office";
@@ -17,31 +19,20 @@ export async function getAllOffices(
   params?: Record<string, any>
 ): Promise<OfficeResponse> {
   try {
-    const queryString = params
-      ? `?${new URLSearchParams(params as any).toString()}`
-      : "";
-
-    const res = await fetch(`${BASE_URL}${queryString}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.message || "Failed to fetch offices");
-    }
-
-    return await res.json();
+    // Axios automatically handles query string serialization via 'params'
+    const { data } = await Axios.get(BASE_URL, { params });
+    return data;
   } catch (error) {
-    console.error("getAllPositions error:", error);
+    console.error("getAllOffices error:", error);
     // Return a safe fallback structure if it fails
+    // (If 401, interceptor redirects before this returns)
     return {
       status: "99",
       message: "Failed to fetch offices",
       datetime: new Date().toISOString(),
-      master_positions: [],
+      master_positions: [], // Make sure this key matches your actual OfficeResponse type or use 'master_offices: []'
       meta: { page: 0, total: 0, limit: 0, total_page: 0 },
-    };
+    } as any;
   }
 }
 
@@ -50,16 +41,7 @@ export async function getAllOffices(
  */
 export async function getOfficeById(id: number): Promise<OfficeDetail | null> {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch office details");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/${id}`);
     return data.master_offices || null;
   } catch (error) {
     console.error("getOfficeById error:", error);
@@ -72,12 +54,7 @@ export async function getOfficeById(id: number): Promise<OfficeDetail | null> {
  */
 export async function getOfficeList(): Promise<OfficeOption[] | null> {
   try {
-    const res = await fetch(`${BASE_URL}/options`);
-    if (!res.ok) {
-      throw new Error("Failed to fetch office options");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/options`);
     return data.master_offices;
   } catch (error) {
     console.error("getOfficeOption error:", error);
@@ -89,50 +66,23 @@ export async function getOfficeList(): Promise<OfficeOption[] | null> {
  * Create a new office
  */
 export async function createOffice(payload: OfficeFormData) {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to create office");
-  }
-
-  return res.json();
+  // Axios automatically serializes the body and sets Content-Type
+  const { data } = await Axios.post(BASE_URL, payload);
+  return data;
 }
 
 /**
  * Update an existing office
  */
 export async function updateOffice(id: number, payload: OfficeFormData) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to update office");
-  }
-
-  return res.json();
+  const { data } = await Axios.put(`${BASE_URL}/${id}`, payload);
+  return data;
 }
 
 /**
  * Delete an office
  */
 export async function deleteOffice(id: number) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to delete office");
-  }
-
-  return res.json();
+  const { data } = await Axios.delete(`${BASE_URL}/${id}`);
+  return data;
 }

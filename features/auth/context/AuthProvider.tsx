@@ -30,8 +30,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // 2. Initial load
+  // 2. Initial load (FIXED)
   useEffect(() => {
+    // Check if token exists in storage BEFORE calling API.
+    // Ensure the key ("accessToken") matches what you set in your Login logic.
+    const token = sessionStorage.getItem("accessToken");
+
+    if (!token) {
+      // No token found? We are definitely logged out.
+      // Stop loading and DO NOT call the API.
+      setIsLoading(false);
+      return;
+    }
+
+    // Token exists? Okay, let's verify it with the API.
     refreshUser();
   }, []);
 
@@ -40,6 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await loginUser(values);
+
+      // CRITICAL: Ensure token is saved BEFORE fetching user
+      if (response.auth.token) {
+        sessionStorage.setItem("accessToken", response.auth.token);
+      }
 
       await refreshUser();
       localStorage.setItem("lastActiveTime", Date.now().toString());
@@ -57,6 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await logoutUser();
       setUser(null);
+      // Clean up storage
+      sessionStorage.removeItem("accessToken");
+      localStorage.removeItem("lastActiveTime");
     } catch (error) {
       console.error("Logout error", error);
     } finally {
