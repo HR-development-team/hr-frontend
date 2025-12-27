@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -9,6 +10,9 @@ import { User } from "../schemas/userSchema";
 export interface UserTableProps {
   data: User[];
   isLoading: boolean;
+  totalRecords: number;
+  lazyParams: any;
+  onPageChange: (e: any) => void;
   onView: (row: User) => void;
   onEdit: (row: User) => void;
   onDelete: (row: User) => void;
@@ -17,6 +21,9 @@ export interface UserTableProps {
 export default function UserTable({
   data,
   isLoading,
+  totalRecords,
+  lazyParams,
+  onPageChange,
   onView,
   onEdit,
   onDelete,
@@ -25,7 +32,6 @@ export default function UserTable({
 
   const handleViewClick = async (row: User) => {
     setViewingId(row.id);
-
     setTimeout(async () => {
       await onView(row);
       setViewingId(null);
@@ -36,19 +42,45 @@ export default function UserTable({
     <DataTable
       value={data}
       loading={isLoading}
+      // 1. Enable Lazy Loading & Pagination Control
+      lazy={true}
       paginator
-      rows={5}
+      first={lazyParams.first}
+      rows={lazyParams.rows}
+      totalRecords={totalRecords}
+      onPage={onPageChange}
       rowsPerPageOptions={[5, 10, 25, 50]}
+      // 2. Styling
       className="border-1 border-gray-50 border-round-xl shadow-1 overflow-hidden"
       emptyMessage="Tidak ada data user"
+      stripedRows
     >
-      <Column field="user_code" header="Kode User" style={{ width: "20%" }} />
-      <Column field="email" header="Email" style={{ width: "25%" }} />
-      <Column field="role_name" header="Role" style={{ width: "20%" }} />
+      <Column
+        field="user_code"
+        header="Kode User"
+        sortable
+        style={{ width: "20%" }}
+      />
+
+      <Column field="email" header="Email" sortable style={{ width: "25%" }} />
+
+      <Column
+        field="role_name"
+        header="Role"
+        sortable
+        style={{ width: "20%" }}
+      />
+
       <Column
         header="Karyawan"
         style={{ width: "20%" }}
-        body={(row: User) => row.employee_name || "-"}
+        body={(row: User) => (
+          <span
+            className={row.employee_name ? "text-gray-900" : "text-gray-400"}
+          >
+            {row.employee_name || "-"}
+          </span>
+        )}
       />
 
       <Column

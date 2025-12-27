@@ -74,6 +74,7 @@ export const API_ENDPOINTS = {
   DELETEROLE: (id: string) => `${API_URL}/roles/${id}`, // Delete Role
   GETROLEBYID: (id: string) => `${API_URL}/roles/${id}`, // Get Role
   GETROLEBYCODE: (code: string) => `${API_URL}/roles/code/${code}`, // Get Role
+  GETROLEOPTION: `${API_URL}/roles/options`,
 
   // --- Permission  ---
   GETPERMISSIONBYROLECODE: (code: string) =>

@@ -29,12 +29,7 @@ export default function TableToolbar({
       {filterContent && (
         <div className="w-full lg:mr-3 flex-1">{filterContent}</div>
       )}
-
-      {/* Spacer - pushes search and actions to the right on desktop */}
-      {filterContent && <div className="hidden lg:block flex-1" />}
-
-      {/* Search and Actions */}
-      <div className="flex flex-column sm:flex-row align-items-stretch sm:align-items-center gap-3 w-full lg:w-auto">
+      <div className="flex flex-column sm:flex-row align-items-stretch sm:align-items-center gap-3 w-full lg:w-auto lg:ml-auto">
         {/* Search Input */}
         {onSearchChange && (
           <div className="w-full">

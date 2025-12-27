@@ -1,51 +1,80 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useMemo } from "react";
-import { useDebounce } from "primereact/hooks";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { DataTableStateEvent } from "primereact/datatable";
+import { useDebounce } from "@/hooks/useDebounce";
 
-export type DateRangeState = {
-  start: Date | null;
-  end: Date | null;
-};
+interface LazyTableState {
+  first: number;
+  rows: number;
+  page: number;
+}
 
 export const useFilterUser = () => {
+  const [lazyParams, setLazyParams] = useState<LazyTableState>({
+    first: 0,
+    rows: 5,
+    page: 1,
+  });
+
   const [search, setSearch] = useState("");
-  const [dates, setDates] = useState<DateRangeState>({
-    start: null,
-    end: null,
+  const debouncedSearch = useDebounce(search, 500);
+
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+
+  const [activeFilters, setActiveFilters] = useState({
+    search: "",
+    role_code: null as string | null,
   });
 
-  const [debouncedSearch] = useDebounce(search, 500);
-  const [appliedDates, setAppliedDates] = useState<DateRangeState>({
-    start: null,
-    end: null,
-  });
+  const handleRoleChange = useCallback((value: string | null) => {
+    setSelectedRole(value);
+  }, []);
 
-  const applyDateFilter = () => {
-    setAppliedDates(dates);
+  const onPageChange = (event: DataTableStateEvent) => {
+    setLazyParams({
+      first: event.first,
+      rows: event.rows,
+      page: (event.page ?? 0) + 1,
+    });
   };
 
-  const clearDateFilter = () => {
-    const empty = { start: null, end: null };
-    setDates(empty);
-    setAppliedDates(empty);
-  };
+  useEffect(() => {
+    setLazyParams((prev) => ({ ...prev, first: 0, page: 1 }));
 
-  const queryParams = useMemo(() => {
-    return {
+    setActiveFilters({
       search: debouncedSearch,
-      startDate: appliedDates.start,
-      endDate: appliedDates.end,
+      role_code: selectedRole,
+    });
+  }, [debouncedSearch, selectedRole]);
+
+  const apiParams = useMemo(() => {
+    const params: Record<string, any> = {
+      page: lazyParams.page,
+      limit: lazyParams.rows,
     };
-  }, [debouncedSearch, appliedDates]);
+
+    if (activeFilters.search) params.search = activeFilters.search;
+    if (activeFilters.role_code) params.role_code = activeFilters.role_code;
+
+    return params;
+  }, [lazyParams, activeFilters]);
 
   return {
+    // Search
     search,
     setSearch,
-    dates,
-    setDates,
-    applyDateFilter,
-    clearDateFilter,
-    queryParams,
+
+    // Role Filter
+    selectedRole,
+    setSelectedRole: handleRoleChange,
+
+    // Pagination
+    lazyParams,
+    onPageChange,
+
+    // API
+    apiParams,
   };
 };

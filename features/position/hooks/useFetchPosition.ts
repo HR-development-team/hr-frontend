@@ -115,8 +115,6 @@ export function useFetchPosition() {
 
   const fetchDivisionOptions = useCallback(
     async (office_code?: string, department_code?: string) => {
-      console.log("office code:", office_code);
-      console.log("department code:", department_code);
       try {
         setIsOptionsDivisionLoading(true);
         const data = await getDivisionList(office_code, department_code);

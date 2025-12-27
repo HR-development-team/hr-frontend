@@ -27,7 +27,7 @@ export function useFetchRoles() {
       try {
         setIsLoading(true);
         const data = await getAllRoles();
-        setRoles(data);
+        setRoles(data.roles);
 
         if (showToastMessage) {
           showToast("success", "Berhasil", "Data role berhasil dimuat");

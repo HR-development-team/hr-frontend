@@ -16,7 +16,7 @@ const tokenAvailable = (token: string | null) => {
   return null;
 };
 
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
   const token = getAuthToken();
 
   const unauthorizedResponse = tokenAvailable(token);
@@ -25,12 +25,22 @@ export const GET = async () => {
     return unauthorizedResponse;
   }
 
+  const searchParams = request.nextUrl.searchParams;
+
+  const backendParams = {
+    page: searchParams.get("page") || 1,
+    limit: searchParams.get("limit") || 5,
+    search: searchParams.get("search") || "",
+    role_code: searchParams.get("role_code") || "",
+  };
+
   try {
     const response = await Axios.get(API_ENDPOINTS.GETALLUSER, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
+      params: backendParams,
     });
 
     return NextResponse.json(response.data);

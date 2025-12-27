@@ -11,6 +11,12 @@ export const RoleSchema = z.object({
   ...RoleBaseSchema.shape,
 });
 
+export const roleOptionSchema = z.object({
+  role_code: z.string(),
+  name: z.string(),
+});
+
 export const RoleListSchema = z.array(RoleSchema);
 export type Role = z.infer<typeof RoleSchema>;
+export type RoleOption = z.infer<typeof roleOptionSchema>;
 export type RoleFormData = z.infer<typeof RoleBaseSchema>;
