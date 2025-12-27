@@ -1,17 +1,37 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Employee,
   EmployeeDetail,
   EmployeeFormData,
 } from "../schemas/employeeSchema";
+type EmployeeResponse = GenericApiResponse<Employee>;
 
 const BASE_URL = "/api/admin/master/employee";
+
+export interface GetEmployeesParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  office_code?: string;
+  department_code?: string;
+  division_code?: string;
+  position_code?: string;
+  [key: string]: any;
+}
 
 /**
  * Fetch all employees
  */
-export async function getAllEmployees(): Promise<Employee[]> {
+export async function getAllEmployees(
+  params?: GetEmployeesParams
+): Promise<EmployeeResponse> {
   try {
-    const res = await fetch(BASE_URL, {
+    const queryString = params
+      ? `?${new URLSearchParams(params as any).toString()}`
+      : "";
+
+    const res = await fetch(`${BASE_URL}${queryString}`, {
       method: "GET",
       cache: "no-store",
     });
@@ -21,11 +41,16 @@ export async function getAllEmployees(): Promise<Employee[]> {
     }
 
     const data = await res.json();
-    // Accommodate 'master_employees' or 'employees' depending on exact API response
-    return data.master_employees || data.employees || [];
+    return data;
   } catch (error) {
     console.error("getAllEmployees error:", error);
-    return [];
+    return {
+      status: "99",
+      message: "Failed to fetch employees",
+      datetime: new Date().toISOString(),
+      master_positions: [],
+      meta: { page: 0, total: 0, limit: 0, total_page: 0 },
+    };
   }
 }
 

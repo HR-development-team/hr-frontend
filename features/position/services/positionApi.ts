@@ -52,7 +52,7 @@ export async function getAllPositions(
     // Return a safe fallback structure if it fails
     return {
       status: "99",
-      message: "Failed to fetch offices",
+      message: "Failed to fetch positions",
       datetime: new Date().toISOString(),
       master_positions: [],
       meta: { page: 0, total: 0, limit: 0, total_page: 0 },

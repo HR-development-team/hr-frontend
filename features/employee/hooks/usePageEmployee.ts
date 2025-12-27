@@ -1,80 +1,61 @@
-import { useCallback, useEffect, useMemo } from "react";
+"use client";
+
+import { useEffect, useCallback, useRef } from "react";
 import { useDialogEmployee } from "./useDialogEmployee";
 import { useFilterEmployee } from "./useFilterEmployee";
 import { useFetchEmployee } from "../hooks/useFetchEmployee";
 import { useSaveEmployee } from "../hooks/useSaveEmployee";
 import { useDeleteEmployee } from "../hooks/useDeleteEmployee";
-import { Employee, EmployeeFormData } from "../schemas/employeeSchema";
-import { useFetchOffice } from "@features/office/hooks/useFetchOffice";
-import { useFetchPosition } from "@features/position/hooks/useFetchPosition";
-import { useFetchUser } from "@features/user/hooks/useFetchUser";
-import { useFetchDepartment } from "@features/department/hooks/useFetchDepartment";
-import { useFetchDivision } from "@features/division/hooks/useFetchDivision";
-import { useFetchEmployment } from "@features/employment/hooks/useFetchEmployment";
+import { EmployeeFormData, Employee } from "../schemas/employeeSchema";
 
 export function usePageEmployee() {
   const dialog = useDialogEmployee();
   const filter = useFilterEmployee();
+  const isFirstLoad = useRef(true);
 
-  // 1. Data Hooks
-  const { employees, employee, fetchEmployees, fetchEmployeeById, isLoading } =
-    useFetchEmployee();
-  const { offices, fetchOffices } = useFetchOffice();
-  const { positions, fetchPositions } = useFetchPosition();
-  const { users, fetchUsers } = useFetchUser();
+  // 1. Centralized Data & Options from useFetchEmployee
   const {
-    employmentStatus,
-    fetchEmploymentStatus,
-    isLoading: isLoadingEmployment,
-  } = useFetchEmployment();
+    // Main Data
+    employees,
+    employee,
+    totalRecords,
+    isLoading,
 
-  // 2. NEW: Fetch Departments & Divisions for Cascading Dropdowns
-  const { departments, fetchDepartments } = useFetchDepartment();
-  const { divisions, fetchDivisions } = useFetchDivision();
+    // Options (Standardized)
+    officeOptions,
+    departmentOptions,
+    divisionOptions,
+    positionOptions,
 
-  // 3. Fetch Dependencies
-  const fetchDependencies = useCallback(async () => {
-    // Run in parallel for speed
-    await Promise.all([
-      fetchOffices(),
-      fetchDepartments(), // Add this
-      fetchDivisions(), // Add this
-      fetchPositions(),
-      fetchEmploymentStatus(),
-      fetchUsers(false),
-    ]);
-  }, [
-    fetchOffices,
-    fetchDepartments,
-    fetchDivisions,
-    fetchPositions,
-    fetchEmploymentStatus,
-    fetchUsers,
-  ]);
+    // Loading States for Options
+    isOptionsDepartmentLoading,
+    isOptionsDivisionLoading,
+    isOptionsPositionLoading,
 
-  const refreshData = useCallback(
-    (showToast: boolean = false) => {
-      fetchEmployees(showToast);
-    },
-    [fetchEmployees]
-  );
+    fetchEmployees,
+    fetchEmployeeById,
+    fetchOfficeOptions,
+    fetchDepartmentOptions,
+    fetchDivisionOptions,
+    fetchPositionOptions,
 
-  // 4. Transform Users into SelectOptions
-  const userOptions = useMemo(() => {
-    return users.map((user) => ({
-      label: user.email,
-      value: user.user_code || "",
-    }));
-  }, [users]);
+    // Clear Actions (for cascading resets)
+    clearDepartmentOptions,
+    clearDivisionOptions,
+    clearPositionOptions,
+  } = useFetchEmployee();
 
-  // Actions
+  const refreshData = useCallback(() => {
+    fetchEmployees(filter.apiParams, false);
+  }, [fetchEmployees, filter.apiParams]);
+
   const { saveEmployee, isSaving } = useSaveEmployee(() => {
     dialog.close();
-    refreshData(false);
+    refreshData();
   });
 
   const deleteAction = useDeleteEmployee(() => {
-    refreshData(false);
+    refreshData();
   });
 
   const handleSave = async (values: EmployeeFormData) => {
@@ -87,34 +68,50 @@ export function usePageEmployee() {
   };
 
   useEffect(() => {
-    refreshData(true);
-    fetchDependencies();
-  }, [refreshData, fetchDependencies]);
+    const showToast = isFirstLoad.current;
+    fetchEmployees(filter.apiParams, showToast);
+    fetchOfficeOptions();
+    isFirstLoad.current = false;
+  }, [filter.apiParams, fetchEmployees, fetchOfficeOptions]);
 
   return {
-    // Main Data
+    // Data
     employees,
     employee,
-    employmentStatus,
+    totalRecords,
+
+    // Options
+    officeOptions,
+    departmentOptions,
+    divisionOptions,
+    positionOptions,
+
+    // Fetchers (Exposed for UI cascading)
+    fetchOfficeOptions,
+    fetchDepartmentOptions,
+    fetchDivisionOptions,
+    fetchPositionOptions,
+
+    // Clearers
+    clearDepartmentOptions,
+    clearDivisionOptions,
+    clearPositionOptions,
+
+    // Loading States
     isLoading,
-    isLoadingEmployment,
+    isOptionsDepartmentLoading,
+    isOptionsDivisionLoading,
+    isOptionsPositionLoading,
     isSaving,
 
-    // Raw Dependencies (Pass these raw to Dialog for cascading)
-    offices,
-    departments,
-    divisions,
-    positions,
-
-    // Formatted Options
-    userOptions,
-
-    // Sub-Hooks
-    dialog,
+    // Pagination & Filter
+    lazyParams: filter.lazyParams,
+    onPageChange: filter.onPageChange,
     filter,
-    deleteAction,
 
-    // Handlers
+    // Actions
+    dialog,
+    deleteAction,
     handleSave,
     handleView,
   };

@@ -50,14 +50,14 @@ export const API_ENDPOINTS = {
   GETEMPLOYEEBYID: (id: string) => `${API_URL}/master-employees/${id}`, // Get Employee By Id
 
   // --- Master Employment Status ---
-  ADDEMPLOYEMENTSTATUS: `${API_URL}/employment-statuses`, // Create Employement Status
-  GETALLEMPLOYEMENTSTATUS: `${API_URL}/employment-statuses`, // Get All Employment Status
-  EDITEMPLOYEMENTSTATUS: (id: string) => `${API_URL}/employment-statuses/${id}`, // Update Employement By Id
-  DELETEEMPLOYEMENTSTATUS: (id: string) =>
-    `${API_URL}/employment-statuses/${id}`, // Delete Employement By Id
-  GETEMPLOYEMENTBYID: (id: string) => `${API_URL}/employment-statuses/${id}`, // Get Employement By Id
+  ADDEMPLOYEMENTSTATUS: `${API_URL}/employment-status`, // Create Employement Status
+  GETALLEMPLOYEMENTSTATUS: `${API_URL}/employment-status`, // Get All Employment Status
+  EDITEMPLOYEMENTSTATUS: (id: string) => `${API_URL}/employment-status/${id}`, // Update Employement By Id
+  DELETEEMPLOYEMENTSTATUS: (id: string) => `${API_URL}/employment-status/${id}`, // Delete Employement By Id
+  GETEMPLOYEMENTBYID: (id: string) => `${API_URL}/employment-status/${id}`, // Get Employement By Id
   GETEMPLOYEMENTBYCODE: (code: string) =>
-    `${API_URL}/employment-statuses/code/${code}`, // Get Employement By Code
+    `${API_URL}/employment-status/code/${code}`, // Get Employement By Code
+  GETEMPLOYEMENTOPTION: `${API_URL}/employment-status/options`,
 
   // --- User ---
   ADDUSER: `${API_URL}/users`, // Create User
@@ -65,6 +65,7 @@ export const API_ENDPOINTS = {
   EDITUSER: (id: string) => `${API_URL}/users/${id}`, // Update User
   DELETEUSER: (id: string) => `${API_URL}/users/${id}`, // Delete User
   GETUSERBYID: (id: string) => `${API_URL}/users/${id}`, // Get User
+  GETUSEROPTION: `${API_URL}/users/options`,
 
   // --- Role  ---
   ADDROLE: `${API_URL}/roles`, // Create Role

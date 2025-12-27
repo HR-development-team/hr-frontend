@@ -1,16 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
-import { Users, UserCog } from "lucide-react";
+import { Users, UserCog } from "lucide-react"; // Removed unused imports: useEffect, useMemo
 import { Card } from "primereact/card";
-import { Button } from "primereact/button"; // Import Button
+import { Button } from "primereact/button";
 
 // Components
 import EmployeeTable from "../components/EmployeeTable";
 import EmployeeDeleteDialog from "../components/EmployeeDeleteDialog";
 import EmployeeSaveDialog from "../components/EmployeeSaveDialog";
 import EmployeeViewDialog from "../components/EmployeeViewDialog";
-import EmployeeFilterDialog from "../components/EmployeeFilterDialog"; // Import Filter Dialog
+import EmployeeFilterDialog from "../components/EmployeeFilterDialog";
 import TableToolbar from "@components/TableToolbar";
 
 // Facade Hook
@@ -18,104 +17,35 @@ import { usePageEmployee } from "../hooks/usePageEmployee";
 
 export default function EmployeeManagementPage() {
   const {
-    // Data & Status
+    // Data
     employees,
     employee,
-    employmentStatus,
+    totalRecords,
+
+    // Options (Level 1 only needed for passing to Root inputs)
+    officeOptions,
+
+    // Loading State
     isLoading,
     isSaving,
 
-    // Dependencies (Raw Arrays)
-    offices,
-    departments,
-    divisions,
-    positions,
+    // Pagination & Params
+    onPageChange,
+    lazyParams,
 
-    // Dependencies (Formatted Options)
-    userOptions,
-
-    // Sub-Hooks
+    // Actions & Dialogs
     dialog,
-    filter, // This now contains selectedOffice, setSelectedOffice, etc.
+    filter,
     deleteAction,
-
-    // Handlers
     handleSave,
     handleView,
   } = usePageEmployee();
-
-  // We need to map raw data to { label, value, parentCode }
-  const filterOptions = useMemo(() => {
-    return {
-      offices: offices.map((o) => ({
-        label: o.name,
-        value: o.office_code,
-      })),
-      departments: departments.map((d) => ({
-        label: d.name,
-        value: d.department_code,
-        office_code: d.office_code, // Crucial for cascading
-      })),
-      divisions: divisions.map((d) => ({
-        label: d.name,
-        value: d.division_code,
-        department_code: d.department_code, // Crucial for cascading
-      })),
-      positions: positions.map((p) => ({
-        label: p.name,
-        value: p.position_code,
-        division_code: p.division_code, // Crucial for cascading
-      })),
-    };
-  }, [offices, departments, divisions, positions]);
 
   const isFilterActive =
     !!filter.selectedOffice ||
     !!filter.selectedDepartment ||
     !!filter.selectedDivision ||
-    filter.selectedPosition;
-
-  const filteredEmployees = useMemo(() => {
-    let result = employees;
-
-    // Level 1: Office
-    if (filter.selectedOffice) {
-      result = result.filter(
-        (emp) => emp.office_code === filter.selectedOffice
-      );
-    }
-
-    // Level 2: Department
-    if (filter.selectedDepartment) {
-      result = result.filter(
-        (emp) => emp.department_code === filter.selectedDepartment
-      );
-    }
-
-    // Level 3: Division
-    if (filter.selectedDivision) {
-      result = result.filter(
-        (emp) => emp.division_code === filter.selectedDivision
-      );
-    }
-
-    // Search
-    if (filter.search) {
-      const lowerSearch = filter.search.toLowerCase();
-      result = result.filter(
-        (emp) =>
-          emp.position_name.toLowerCase().includes(lowerSearch) ||
-          emp.position_code?.toLowerCase().includes(lowerSearch)
-      );
-    }
-    return result;
-  }, [
-    employees,
-    filter.selectedOffice,
-    filter.selectedDepartment,
-    filter.selectedDivision,
-    filter.search,
-  ]);
+    !!filter.selectedPosition;
 
   // ---------------------------------------------------------------------
   //    Render
@@ -163,38 +93,39 @@ export default function EmployeeManagementPage() {
             }
           />
 
+          <EmployeeFilterDialog
+            isOpen={dialog.isFilterVisible}
+            onClose={() => dialog.closeFilter()}
+            // Level 1: Office (Passed from Page)
+            selectedOffice={filter.selectedOffice}
+            onOfficeChange={filter.setSelectedOffice}
+            officeOptions={officeOptions}
+            // Level 2: Department (Handled Internally by Dialog)
+            selectedDepartment={filter.selectedDepartment}
+            onDepartmentChange={filter.setSelectedDepartment}
+            // Level 3: Division (Handled Internally by Dialog)
+            selectedDivision={filter.selectedDivision}
+            onDivisionChange={filter.setSelectedDivision}
+            // Level 4: Position (Handled Internally by Dialog)
+            selectedPosition={filter.selectedPosition}
+            onPositionChange={filter.setSelectedPosition}
+          />
+
           {/* Data Table */}
           <EmployeeTable
-            data={filteredEmployees}
+            data={employees}
             isLoading={isLoading}
             onView={handleView}
             onEdit={dialog.openEdit}
             onDelete={deleteAction.requestDelete}
+            totalRecords={totalRecords}
+            lazyParams={lazyParams}
+            onPageChange={onPageChange}
           />
         </div>
       </Card>
 
       {/* --- Dialogs --- */}
-
-      {/* 4. Hierarchy Filter Dialog */}
-      <EmployeeFilterDialog
-        isOpen={dialog.isFilterVisible}
-        onClose={() => dialog.closeFilter()}
-        // State
-        selectedOffice={filter.selectedOffice}
-        onOfficeChange={filter.setSelectedOffice}
-        selectedDepartment={filter.selectedDepartment}
-        onDepartmentChange={filter.setSelectedDepartment}
-        selectedDivision={filter.selectedDivision}
-        onDivisionChange={filter.setSelectedDivision}
-        selectedPosition={filter.selectedPosition}
-        onPositionChange={filter.setSelectedPosition}
-        // Options
-        officeOptions={filterOptions.offices}
-        departmentOptions={filterOptions.departments}
-        divisionOptions={filterOptions.divisions}
-        positionOptions={filterOptions.positions}
-      />
 
       {/* Delete Confirmation */}
       <EmployeeDeleteDialog
@@ -214,12 +145,6 @@ export default function EmployeeManagementPage() {
           onSubmit={handleSave}
           isSubmitting={isSaving}
           onClose={dialog.close}
-          offices={offices}
-          departments={departments}
-          divisions={divisions}
-          positions={positions}
-          employmentStatus={employmentStatus}
-          userOptions={userOptions}
         />
       )}
 
