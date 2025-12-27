@@ -1,3 +1,4 @@
+import { Axios } from "@/utils/axios"; // Use custom Axios instance
 import {
   OfficeStructure,
   PositionStructure,
@@ -10,16 +11,7 @@ const BASE_URL = "/api/admin/organization";
  */
 export async function getAllOfficeOrganizations(): Promise<OfficeStructure[]> {
   try {
-    const res = await fetch(BASE_URL, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch office organizations");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(BASE_URL);
     return data.offices || [];
   } catch (error) {
     console.error("getAllOfficeOrganizations error:", error);
@@ -34,16 +26,7 @@ export async function getPositionHierarchyByOffice(
   officeCode: string
 ): Promise<PositionStructure[]> {
   try {
-    const res = await fetch(`${BASE_URL}/${officeCode}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch positions organizations");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/${officeCode}`);
     return data.master_positions || [];
   } catch (error) {
     console.error("getPositionHierarchyByOffice error:", error);

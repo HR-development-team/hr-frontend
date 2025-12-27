@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Axios } from "@/utils/axios"; // Use custom Axios instance
 import {
   LeaveType,
   LeaveTypeDetail,
@@ -11,16 +13,7 @@ const BASE_URL = "/api/admin/master/leave-type";
  */
 export async function getAllLeaveTypes(): Promise<LeaveType[]> {
   try {
-    const res = await fetch(BASE_URL, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch leave types");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(BASE_URL);
     return data.leave_types || [];
   } catch (error) {
     console.error("getAllLeaveTypes error:", error);
@@ -35,16 +28,7 @@ export async function getLeaveTypeById(
   id: number
 ): Promise<LeaveTypeDetail | null> {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch leave type details");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/${id}`);
     return data.leave_types || data.leave_type || null;
   } catch (error) {
     console.error("getLeaveTypeById error:", error);
@@ -56,50 +40,45 @@ export async function getLeaveTypeById(
  * Create a new leave type
  */
 export async function createLeaveType(payload: LeaveTypeFormData) {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to create leave type");
+  try {
+    // Axios automatically handles JSON stringification and headers
+    const { data } = await Axios.post(BASE_URL, payload);
+    return data;
+  } catch (error: any) {
+    // If specific error data exists (e.g., validation), throw it
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error("Failed to create leave type");
   }
-
-  return res.json();
 }
 
 /**
  * Update an existing leave type
  */
 export async function updateLeaveType(id: number, payload: LeaveTypeFormData) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to update leave type");
+  try {
+    const { data } = await Axios.put(`${BASE_URL}/${id}`, payload);
+    return data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error("Failed to update leave type");
   }
-
-  return res.json();
 }
 
 /**
  * Delete a leave type
  */
 export async function deleteLeaveType(id: number) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to delete leave type");
+  try {
+    const { data } = await Axios.delete(`${BASE_URL}/${id}`);
+    return data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error("Failed to delete leave type");
   }
-
-  return res.json();
 }

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Axios } from "@/utils/axios"; // Use custom Axios instance
 import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Department,
@@ -27,34 +28,20 @@ export async function getAllDepartments(
   params?: GetDepartmentsParams
 ): Promise<DepartmentResponse> {
   try {
-    // 1. Convert params to Query String
-    const queryString = params
-      ? `?${new URLSearchParams(params as any).toString()}`
-      : "";
-
-    const res = await fetch(`${BASE_URL}${queryString}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch departments");
-    }
-
-    const data = await res.json();
-
-    // 2. Return FULL data (meta + master_departments)
+    // Axios automatically handles query string serialization via 'params'
+    const { data } = await Axios.get(BASE_URL, { params });
     return data;
   } catch (error) {
     console.error("getAllDepartments error:", error);
     // Return safe fallback
+    // (If 401, interceptor redirects before this returns)
     return {
       status: "99",
       message: "Failed to fetch departments",
       datetime: new Date().toISOString(),
-      master_departments: [],
+      master_departments: [], // Ensure this key matches your actual API response key
       meta: { page: 0, total: 0, limit: 0, total_page: 0 },
-    } as any; // Cast to any if structure slightly differs, or strictly match GenericApiResponse
+    } as any;
   }
 }
 
@@ -65,17 +52,7 @@ export async function getDepartmentById(
   id: number
 ): Promise<DepartmentDetail | null> {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch department details");
-    }
-
-    const data = await res.json();
-
+    const { data } = await Axios.get(`${BASE_URL}/${id}`);
     // Handle potential naming variations from backend (singular vs plural)
     return data.master_departments || data.department || null;
   } catch (error) {
@@ -91,38 +68,24 @@ export async function getDepartmentList(
   office_code?: string
 ): Promise<DepartmentOption[] | null> {
   try {
-    const url = office_code
-      ? `${BASE_URL}/list?office_code=${office_code}`
-      : `${BASE_URL}/list`;
-
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error("Failed to fetch department options");
-    }
-
-    const data = await res.json();
+    // Pass query params object, Axios handles the string building
+    const { data } = await Axios.get(`${BASE_URL}/list`, {
+      params: office_code ? { office_code } : {},
+    });
     return data.master_departments;
   } catch (error) {
     console.error("getDepartmentOption error:", error);
     return null;
   }
 }
+
 /**
  * Create a new department
  */
 export async function createDepartment(payload: DepartmentFormData) {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to create department");
-  }
-
-  return res.json();
+  // Axios automatically serializes JSON and sets Content-Type
+  const { data } = await Axios.post(BASE_URL, payload);
+  return data;
 }
 
 /**
@@ -132,32 +95,14 @@ export async function updateDepartment(
   id: number,
   payload: DepartmentFormData
 ) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to update department");
-  }
-
-  return res.json();
+  const { data } = await Axios.put(`${BASE_URL}/${id}`, payload);
+  return data;
 }
 
 /**
  * Delete a department
  */
 export async function deleteDepartment(id: number) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to delete department");
-  }
-
-  return res.json();
+  const { data } = await Axios.delete(`${BASE_URL}/${id}`);
+  return data;
 }

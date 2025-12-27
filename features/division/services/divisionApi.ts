@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Axios } from "@/utils/axios"; // Use custom Axios instance
 import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   Division,
@@ -28,29 +29,18 @@ export async function getAllDivisions(
   params?: GetDivisionsParams
 ): Promise<DivisionResponse> {
   try {
-    const queryString = params
-      ? `?${new URLSearchParams(params as any).toString()}`
-      : "";
-
-    const res = await fetch(`${BASE_URL}${queryString}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch divisions");
-    }
-
-    const data = await res.json();
+    // Axios automatically handles query string serialization via 'params'
+    const { data } = await Axios.get(BASE_URL, { params });
     return data;
   } catch (error) {
     console.error("getAllDivisions error:", error);
     // Return safe fallback
+    // (If 401, interceptor redirects before this returns)
     return {
       status: "99",
       message: "Failed to fetch divisions",
       datetime: new Date().toISOString(),
-      master_divisions: [],
+      master_divisions: [], // Ensure this matches your API response structure (e.g. master_divisions)
       meta: { page: 0, total: 0, limit: 0, total_page: 0 },
     } as any;
   }
@@ -63,16 +53,8 @@ export async function getDivisionById(
   id: number
 ): Promise<DivisionDetail | null> {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch division details");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/${id}`);
+    // Handle potential response variations (list vs single object) if necessary
     return data.master_divisions || data.division || null;
   } catch (error) {
     console.error("getDivisionById error:", error);
@@ -88,27 +70,12 @@ export async function getDivisionList(
   department_code?: string
 ): Promise<DivisionOption[] | null> {
   try {
-    const params = new URLSearchParams();
+    // Construct params object conditionally
+    const params: Record<string, string> = {};
+    if (office_code) params.office_code = office_code;
+    if (department_code) params.department_code = department_code;
 
-    // Append parameters only if they exist
-    if (office_code) {
-      params.append("office_code", office_code);
-    }
-    if (department_code) {
-      params.append("department_code", department_code);
-    }
-
-    const queryString = params.toString();
-    const url = queryString
-      ? `${BASE_URL}/list?${queryString}`
-      : `${BASE_URL}/list`;
-
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error("Failed to fetch position options");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/list`, { params });
     return data.master_divisions;
   } catch (error) {
     console.error("getDivisionOption error:", error);
@@ -120,50 +87,23 @@ export async function getDivisionList(
  * Create a new division
  */
 export async function createDivision(payload: DivisionFormData) {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to create division");
-  }
-
-  return res.json();
+  // Axios automatically serializes JSON and sets Content-Type
+  const { data } = await Axios.post(BASE_URL, payload);
+  return data;
 }
 
 /**
  * Update an existing division
  */
 export async function updateDivision(id: number, payload: DivisionFormData) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to update division");
-  }
-
-  return res.json();
+  const { data } = await Axios.put(`${BASE_URL}/${id}`, payload);
+  return data;
 }
 
 /**
  * Delete a division
  */
 export async function deleteDivision(id: number) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to delete division");
-  }
-
-  return res.json();
+  const { data } = await Axios.delete(`${BASE_URL}/${id}`);
+  return data;
 }

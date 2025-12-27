@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Axios } from "@/utils/axios"; // Use custom Axios instance
 import { GenericApiResponse } from "@/utils/apiResponse";
 import {
   User,
@@ -6,6 +7,7 @@ import {
   UserFormData,
   UserOption,
 } from "../schemas/userSchema";
+
 type UserResponse = GenericApiResponse<User>;
 
 const BASE_URL = "/api/admin/management/user";
@@ -26,32 +28,20 @@ export async function getAllUsers(
   params?: GetUsersParams
 ): Promise<UserResponse> {
   try {
-    // 1. Convert the params object into a Query String (e.g. "?page=1&limit=5")
-    const queryString = params
-      ? `?${new URLSearchParams(params as any).toString()}`
-      : "";
-
-    const res = await fetch(`${BASE_URL}${queryString}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch users");
-    }
-
-    const data = await res.json();
+    // Axios automatically handles query string serialization via 'params'
+    const { data } = await Axios.get(BASE_URL, { params });
     return data;
   } catch (error) {
     console.error("getAllUsers error:", error);
     // Return a safe fallback structure if it fails
+    // (If 401, interceptor redirects before this returns)
     return {
       status: "99",
       message: "Failed to fetch users",
       datetime: new Date().toISOString(),
-      master_positions: [],
+      master_positions: [], // Make sure this key matches your actual UserResponse type or use 'users: []'
       meta: { page: 0, total: 0, limit: 0, total_page: 0 },
-    };
+    } as any;
   }
 }
 
@@ -60,16 +50,7 @@ export async function getAllUsers(
  */
 export async function getUserById(id: number): Promise<UserDetail | null> {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch user");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/${id}`);
     return data.users || null;
   } catch (error) {
     console.error("getUserById error:", error);
@@ -84,24 +65,10 @@ export async function getUserList(
   role_code?: string
 ): Promise<UserOption[] | null> {
   try {
-    const params = new URLSearchParams();
-
-    // Append parameters only if they exist
-    if (role_code) {
-      params.append("role_code", role_code);
-    }
-
-    const queryString = params.toString();
-    const url = queryString
-      ? `${BASE_URL}/list?${queryString}`
-      : `${BASE_URL}/list`;
-
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error("Failed to fetch user options");
-    }
-
-    const data = await res.json();
+    // Pass query params as an object, Axios builds the string
+    const { data } = await Axios.get(`${BASE_URL}/list`, {
+      params: role_code ? { role_code } : {},
+    });
     return data.users;
   } catch (error) {
     console.error("getUserOption error:", error);
@@ -113,47 +80,23 @@ export async function getUserList(
  * Create a new user
  */
 export async function createUser(payload: UserFormData) {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to create user");
-  }
-
-  return res.json();
+  // Axios automatically serializes the body and sets Content-Type
+  const { data } = await Axios.post(BASE_URL, payload);
+  return data;
 }
 
 /**
  * Update an existing user
  */
 export async function updateUser(id: number, payload: UserFormData) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to update user");
-  }
-
-  return res.json();
+  const { data } = await Axios.put(`${BASE_URL}/${id}`, payload);
+  return data;
 }
 
 /**
  * Delete a user
  */
 export async function deleteUser(id: number) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) throw new Error("Failed to delete user");
-
-  return res.json();
+  const { data } = await Axios.delete(`${BASE_URL}/${id}`);
+  return data;
 }

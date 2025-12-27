@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Axios } from "@/utils/axios"; // Use your custom Axios instance
 import { GenericApiResponse } from "@/utils/apiResponse";
 import { Role, RoleFormData, RoleOption } from "../schemas/roleSchema";
+
 type RoleResponse = GenericApiResponse<Role>;
 
 // Define the interface for the parameters we expect
@@ -17,47 +19,27 @@ export async function getAllRoles(
   params?: GetRolesParams
 ): Promise<RoleResponse> {
   try {
-    // 1. Convert the params object into a Query String (e.g. "?page=1&limit=5")
-    const queryString = params
-      ? `?${new URLSearchParams(params as any).toString()}`
-      : "";
-
-    const res = await fetch(`${BASE_URL}${queryString}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch roles");
-    }
-
-    const data = await res.json();
+    // Axios handles Query Strings automatically via the 'params' object
+    const { data } = await Axios.get(BASE_URL, { params });
     return data;
   } catch (error) {
     console.error("getAllRoles error:", error);
+
     // Return a safe fallback structure if it fails
+    // (Note: If it's a 401, the interceptor will redirect before we get here)
     return {
       status: "99",
       message: "Failed to fetch roles",
       datetime: new Date().toISOString(),
-      master_positions: [],
+      master_positions: [], // Note: check if this key matches your API response type
       meta: { page: 0, total: 0, limit: 0, total_page: 0 },
-    };
+    } as any; // Cast as any because fallback structure might slightly differ from T
   }
 }
 
 export async function getRoleById(id: number): Promise<Role | null> {
   try {
-    const res = await fetch(`${BASE_URL}/${id}`, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch role");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/${id}`);
     return data.roles || null;
   } catch (error) {
     console.error("getRoleById error:", error);
@@ -70,14 +52,7 @@ export async function getRoleById(id: number): Promise<Role | null> {
  */
 export async function getRoleList(): Promise<RoleOption[] | null> {
   try {
-    const url = `${BASE_URL}/list`;
-
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error("Failed to fetch user options");
-    }
-
-    const data = await res.json();
+    const { data } = await Axios.get(`${BASE_URL}/list`);
     return data.roles;
   } catch (error) {
     console.error("getRoleOption error:", error);
@@ -86,37 +61,17 @@ export async function getRoleList(): Promise<RoleOption[] | null> {
 }
 
 export async function createRole(payload: RoleFormData) {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to create role");
-  }
-
-  return res.json();
+  // Axios automatically stringifies JSON and sets Content-Type
+  const { data } = await Axios.post(BASE_URL, payload);
+  return data;
 }
 
 export async function updateRole(id: number, payload: RoleFormData) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) throw new Error("Failed to update role");
-
-  return res.json();
+  const { data } = await Axios.put(`${BASE_URL}/${id}`, payload);
+  return data;
 }
 
 export async function deleteRole(id: number) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) throw new Error("Failed to delete role");
-
-  return res.json();
+  const { data } = await Axios.delete(`${BASE_URL}/${id}`);
+  return data;
 }
