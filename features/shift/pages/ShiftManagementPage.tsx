@@ -41,20 +41,6 @@ export default function ShiftManagementPage() {
             searchPlaceholder="Cari berdasarkan ID atau nama"
             //   onAdd={dialog.openAdd}
             addLabel="Tambah Role"
-            filterContent={
-              <DateRangeFilter
-                startDate={filter.dates.start}
-                endDate={filter.dates.end}
-                onStartDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, start: e.value })
-                }
-                onEndDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, end: e.value })
-                }
-                onApply={filter.applyDateFilter}
-                onClear={filter.clearDateFilter}
-              />
-            }
           />
         </div>
       </Card>
