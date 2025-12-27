@@ -1,38 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { API_ENDPOINTS } from "@/api/api";
-import { Axios } from "@/utils/axios";
 import { NextRequest, NextResponse } from "next/server";
+import Axios from "axios";
+import { API_ENDPOINTS } from "@/api/api";
 
 export const POST = async (request: NextRequest) => {
   try {
     const body = await request.json();
-    const response = await Axios.post(API_ENDPOINTS.LOGIN, body);
+
+    // 1. Forward the login request to the Backend
+    const response = await Axios.post(API_ENDPOINTS.LOGIN, body, {
+      withCredentials: true,
+    });
 
     const loginData = response.data;
-    const token = loginData?.auth?.token;
-    const userRole = loginData?.auth?.user.role_code;
-
     const responseToBrowser = NextResponse.json(loginData);
+    const backendCookies = response.headers["set-cookie"];
 
-    if (userRole) {
-      responseToBrowser.cookies.set("token", token, {
-        httpOnly: true,
-        secure: true, // only in development
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24,
+    if (backendCookies) {
+      backendCookies.forEach((cookie) => {
+        responseToBrowser.headers.append("Set-Cookie", cookie);
       });
     }
 
     return responseToBrowser;
   } catch (error: any) {
     if (error.response) {
-      // [FIX] Don't hardcode the message.
-      // Read the actual error message sent by the Express backend.
       const backendMessage = error.response.data?.message || "Login gagal";
       const status = error.response.status;
-
-      return NextResponse.json({ message: backendMessage }, { status: status });
+      return NextResponse.json({ message: backendMessage }, { status });
     }
 
     return NextResponse.json(
