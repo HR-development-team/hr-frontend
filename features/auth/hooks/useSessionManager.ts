@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthProvider";
 import { useIdleTimer } from "./useIdleTimer";
 
-const TIMEOUT_MS = 15 * 30 * 1000;
+const TIMEOUT_MS = 15 * 60 * 1000;
 
 export type SessionState = "ACTIVE" | "EXPIRED" | "LOGGING_OUT";
 
@@ -25,17 +25,51 @@ export function useSessionManager() {
   const expireSession = useCallback(() => {
     if (hasExpiredRef.current) return;
 
+    console.log("[SESSION] Expiring session now.");
     hasExpiredRef.current = true;
     setSessionState("EXPIRED");
   }, []);
 
   /**
-   * Idle timeout
+   * Idle timeout hook
    */
   useIdleTimer(isTimerActive, expireSession);
 
   /**
-   * Visibility / sleep detection
+   * 1. INITIALIZATION CHECK (THE FIX)
+   * When the user loads (e.g., page refresh), we check the timestamp BEFORE
+   * deciding if they are "ACTIVE". This prevents the infinite loop.
+   */
+  useEffect(() => {
+    if (user) {
+      const lastActiveStr = localStorage.getItem("lastActiveTime");
+      // If no time exists, assume it's a fresh login (Active)
+      const lastActive = lastActiveStr
+        ? parseInt(lastActiveStr, 10)
+        : Date.now();
+
+      const timeDiff = Date.now() - lastActive;
+
+      // Check if we are ALREADY expired upon load
+      if (timeDiff > TIMEOUT_MS) {
+        console.warn(
+          "[SESSION] Restored session is already expired. Diff:",
+          timeDiff
+        );
+        hasExpiredRef.current = true;
+        setSessionState("EXPIRED");
+        // Do NOT update localStorage here. Keep the old time as proof.
+      } else {
+        // Session is valid, resume it
+        hasExpiredRef.current = false;
+        setSessionState("ACTIVE");
+        localStorage.setItem("lastActiveTime", Date.now().toString());
+      }
+    }
+  }, [user]);
+
+  /**
+   * 2. Visibility / sleep detection
    */
   useEffect(() => {
     if (!isAuthenticated || sessionState !== "ACTIVE") return;
@@ -75,15 +109,19 @@ export function useSessionManager() {
   }, [expireSession, isAuthenticated, sessionState]);
 
   /**
-   * Activity timestamp sync
+   * 3. Activity timestamp sync
    */
   useEffect(() => {
     if (!isTimerActive) return;
 
     const updateTimestamp = () => {
-      localStorage.setItem("lastActiveTime", Date.now().toString());
+      // Only update if we are NOT currently expired
+      if (!hasExpiredRef.current) {
+        localStorage.setItem("lastActiveTime", Date.now().toString());
+      }
     };
 
+    // Throttle this slightly in a real app, but this is fine for now
     window.addEventListener("click", updateTimestamp);
     window.addEventListener("keydown", updateTimestamp);
 
@@ -93,33 +131,24 @@ export function useSessionManager() {
     };
   }, [isTimerActive]);
 
-  /**
-   * RESET session state on fresh login
-   */
   useEffect(() => {
-    if (user) {
-      hasExpiredRef.current = false;
-      setSessionState("ACTIVE");
-      localStorage.setItem("lastActiveTime", Date.now().toString());
-    }
-  }, [user]);
-
-  useEffect(() => {
-    console.log("[SESSION]", { sessionState, expired: hasExpiredRef.current });
+    console.log("[SESSION STATUS]", {
+      sessionState,
+      expired: hasExpiredRef.current,
+    });
   }, [sessionState]);
 
   /**
    * Logout handler
    */
   const confirmLogout = useCallback(async () => {
-    if (sessionState !== "EXPIRED") return;
-
+    // Allow logout even if active (optional), but usually only if expired per your UI
     setSessionState("LOGGING_OUT");
     localStorage.removeItem("lastActiveTime");
 
     await logout();
     router.replace("/login");
-  }, [logout, router, sessionState]);
+  }, [logout, router]);
 
   return {
     sessionState,

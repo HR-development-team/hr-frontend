@@ -2,12 +2,14 @@
 
 import { Axios } from "@/utils/axios";
 import { NextResponse } from "next/server";
-import { cookies } from "next/dist/client/components/headers";
+import { cookies } from "next/headers";
 import { API_ENDPOINTS } from "@/api/api";
 
 export const DELETE = async () => {
-  const tokenCookie = cookies().get("token");
+  const cookieStore = cookies();
+  const tokenCookie = cookieStore.get("accessToken");
 
+  // If cookie is already gone, return success immediately
   if (!tokenCookie) {
     return NextResponse.json(
       { message: "Sudah keluar (Tidak ada sesi aktif)" },
@@ -29,7 +31,7 @@ export const DELETE = async () => {
   } catch (error: any) {
     console.error("Backend logout failed:", error.message);
   } finally {
-    cookies().delete("token");
+    cookieStore.delete("accessToken");
   }
 
   return NextResponse.json({ message: apiMessage });
