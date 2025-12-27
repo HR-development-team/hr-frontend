@@ -1,27 +1,32 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
 import { User as UserIcon } from "lucide-react";
 import { Card } from "primereact/card";
-
-// Components
+import { Button } from "primereact/button";
 import UserTable from "../components/UserTable";
 import UserDeleteDialog from "../components/UserDeleteDialog";
 import UserSaveDialog from "../components/UserSaveDialog";
 import UserViewDialog from "../components/UserViewDialog";
+import UserFilterDialog from "../components/UserFilterDialog";
 import TableToolbar from "@components/TableToolbar";
-import DateRangeFilter from "@components/DateRangeFilter";
-
-// Facade Hook
 import { usePageUser } from "../hooks/usePageUser";
-import { useFetchRoles } from "@features/role/hooks/useFetchRole";
 
 export default function UserManagementPage() {
   const {
+    // Data
     users,
     user,
+    totalRecords,
+
+    // Loading State
     isLoading,
     isSaving,
+
+    // Pagination
+    lazyParams,
+    onPageChange,
+
+    // Actions & Dialogs
     dialog,
     filter,
     deleteAction,
@@ -29,18 +34,11 @@ export default function UserManagementPage() {
     handleView,
   } = usePageUser();
 
-  const { roles, fetchRoles } = useFetchRoles();
-
-  useEffect(() => {
-    fetchRoles(false);
-  }, [fetchRoles]);
-
-  const roleOptions = useMemo(() => {
-    return roles.map((r) => ({ label: r.name, value: r.role_code }));
-  }, [roles]);
+  // Check if any filter is active for button styling
+  const isFilterActive = !!filter.selectedRole;
 
   // ---------------------------------------------------------------------
-  //  Render
+  //    Render
   // ---------------------------------------------------------------------
   return (
     <div>
@@ -72,23 +70,26 @@ export default function UserManagementPage() {
           <TableToolbar
             searchValue={filter.search}
             onSearchChange={(e) => filter.setSearch(e.target.value)}
-            searchPlaceholder="Cari berdasarkan Email atau Nama"
+            searchPlaceholder="Cari berdasarkan Email..."
             onAdd={dialog.openAdd}
-            addLabel="Tambah User"
+            addLabel="Tambah"
             filterContent={
-              <DateRangeFilter
-                startDate={filter.dates.start}
-                endDate={filter.dates.end}
-                onStartDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, start: e.value })
-                }
-                onEndDateChange={(e) =>
-                  filter.setDates({ ...filter.dates, end: e.value })
-                }
-                onApply={filter.applyDateFilter}
-                onClear={filter.clearDateFilter}
+              <Button
+                label="Filter"
+                icon="pi pi-filter"
+                className="gap-1 w-full lg:w-auto"
+                onClick={dialog.openFilter}
+                outlined={!isFilterActive}
               />
             }
+          />
+
+          {/* Filter Dialog */}
+          <UserFilterDialog
+            isOpen={dialog.isFilterVisible}
+            onClose={dialog.closeFilter}
+            selectedRole={filter.selectedRole}
+            onRoleChange={filter.setSelectedRole}
           />
 
           {/* Data Table */}
@@ -98,6 +99,10 @@ export default function UserManagementPage() {
             onView={handleView}
             onEdit={dialog.openEdit}
             onDelete={deleteAction.requestDelete}
+            // Pagination Props
+            totalRecords={totalRecords}
+            lazyParams={lazyParams}
+            onPageChange={onPageChange}
           />
         </div>
       </Card>
@@ -119,7 +124,6 @@ export default function UserManagementPage() {
           onSubmit={handleSave}
           isSubmitting={isSaving}
           onClose={dialog.close}
-          roleOptions={roleOptions}
         />
       )}
 

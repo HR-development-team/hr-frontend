@@ -10,6 +10,9 @@ export const useDialogUser = () => {
     null
   );
 
+  // 1. Add Filter Visibility State
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
+
   // Open for adding a new user
   const openAdd = useCallback(() => {
     setMode("add");
@@ -33,8 +36,16 @@ export const useDialogUser = () => {
 
   const close = useCallback(() => {
     setIsVisible(false);
-    // Delay clearing data slightly to prevent UI flicker while closing
     setTimeout(() => setCurrentUser(null), 200);
+  }, []);
+
+  // 2. Add Filter Handlers
+  const openFilter = useCallback(() => {
+    setIsFilterVisible(true);
+  }, []);
+
+  const closeFilter = useCallback(() => {
+    setIsFilterVisible(false);
   }, []);
 
   // Derived Values
@@ -71,5 +82,9 @@ export const useDialogUser = () => {
     openEdit,
     openView,
     close,
+    // 3. Export Filter Controls
+    isFilterVisible,
+    openFilter,
+    closeFilter,
   };
 };

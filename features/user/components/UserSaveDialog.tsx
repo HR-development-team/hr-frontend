@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { useEffect } from "react";
 import FormInputText from "@components/FormInputText";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -9,11 +10,7 @@ import { classNames } from "primereact/utils";
 import { useFormik } from "formik";
 import { UserFormData, userFormSchema } from "../schemas/userSchema";
 import { toFormikValidation } from "@utils/formikHelpers";
-
-export interface RoleOption {
-  label: string;
-  value: string;
-}
+import { useFetchUser } from "../hooks/useFetchUser";
 
 interface UserSaveDialogProps {
   isOpen: boolean;
@@ -22,8 +19,8 @@ interface UserSaveDialogProps {
   userData: UserFormData | null;
   onSubmit: (values: UserFormData) => Promise<void>;
   isSubmitting: boolean;
-  roleOptions: RoleOption[];
 }
+
 const userDefaultValues: UserFormData = {
   email: "",
   role_code: "",
@@ -37,8 +34,18 @@ export default function UserSaveDialog({
   isOpen,
   onClose,
   title,
-  roleOptions,
 }: UserSaveDialogProps) {
+  // 1. Fetch Roles Internal
+  const { roleOptions, fetchRoleOptions, isOptionsRoleLoading } =
+    useFetchUser();
+
+  // 2. Fetch on Open
+  useEffect(() => {
+    if (isOpen) {
+      fetchRoleOptions();
+    }
+  }, [isOpen, fetchRoleOptions]);
+
   // Setup Formik
   const formik = useFormik<UserFormData>({
     initialValues: userData || userDefaultValues,
@@ -124,6 +131,12 @@ export default function UserSaveDialog({
               "p-invalid": isFieldInvalid("role_code"),
             })}
             filter
+            // Bind Loading State
+            loading={isOptionsRoleLoading}
+            disabled={isOptionsRoleLoading}
+            // Fix [object Object] issue
+            optionLabel="label"
+            optionValue="value"
           />
           {isFieldInvalid("role_code") && (
             <small className="p-error">{getFieldError("role_code")}</small>

@@ -3,40 +3,48 @@
 
 import { useCallback, useState } from "react";
 import { User, UserDetail } from "../schemas/userSchema";
-import { getAllUsers, getUserById } from "../services/userApi";
+import { getAllUsers, getUserById, getUserList } from "../services/userApi";
 import { useToastContext } from "@components/ToastProvider";
+import { getRoleList } from "@features/role/services/roleApi";
 
 export function useFetchUser() {
   const { showToast } = useToastContext();
+
+  // Data States
   const [users, setUsers] = useState<User[]>([]);
   const [user, setUser] = useState<UserDetail | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
 
-  /**
-   * Fetch all users
-   */
+  // Option States
+  const [userOptions, setUserOptions] = useState<
+    { label: string; value: string; role_name?: string }[]
+  >([]);
+  const [roleOptions, setRoleOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+
+  // Loading States
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isOptionsUserLoading, setIsOptionsUserLoading] =
+    useState<boolean>(false);
+  const [isOptionsRoleLoading, setIsOptionsRoleLoading] =
+    useState<boolean>(false);
+
   const fetchUsers = useCallback(
-    async (
-      showToastMessage: boolean = true,
-      params?: {
-        search?: string;
-        startDate?: Date | null;
-        endDate?: Date | null;
-      }
-    ) => {
+    async (params: any = {}, showToastMessage: boolean = false) => {
       try {
         setIsLoading(true);
-        const data = await getAllUsers();
-        setUsers(data.master_users);
+        const response = await getAllUsers(params);
+
+        setUsers(response.users || response.data || []);
+        setTotalRecords(response.meta?.total || 0);
 
         if (showToastMessage) {
           showToast("success", "Berhasil", "Data user berhasil dimuat");
         }
       } catch (err: any) {
-        if (showToastMessage) {
-          showToast("error", "Gagal", err.message);
-        }
         setUsers([]);
+        showToast("error", "Gagal", err.message || "Terjadi kesalahan");
       } finally {
         setIsLoading(false);
       }
@@ -44,27 +52,89 @@ export function useFetchUser() {
     [showToast]
   );
 
-  /**
-   * Fetch a single user detail by ID
-   */
-  const fetchUserByIdHandler = useCallback(async (id: number) => {
-    setIsLoading(true);
-    const data = await getUserById(id);
-    setUser(data);
-    setIsLoading(false);
+  const fetchUserById = useCallback(
+    async (id: number) => {
+      try {
+        setIsLoading(true);
+        const data = await getUserById(id);
+        setUser(data);
+      } catch (err: any) {
+        console.error("Error fetching user details:", err);
+        showToast("error", "Gagal", "Gagal memuat detail user");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [showToast]
+  );
+
+  const fetchUserOptions = useCallback(async (params: any = {}) => {
+    try {
+      setIsOptionsUserLoading(true);
+      const data = await getUserList(params);
+
+      if (data) {
+        const formattedOptions = data.map((item: any) => ({
+          label: item.email,
+          value: item.user_code,
+          role_name: item.role_name,
+        }));
+
+        setUserOptions(formattedOptions);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user options", err);
+    } finally {
+      setIsOptionsUserLoading(false);
+    }
   }, []);
 
-  /**
-   * Reset selected user
-   */
+  const fetchRoleOptions = useCallback(async () => {
+    try {
+      setIsOptionsRoleLoading(true);
+      const data = await getRoleList();
+
+      if (data) {
+        const formattedOptions = data.map((item: any) => ({
+          label: item.name,
+          value: item.role_code,
+        }));
+
+        setRoleOptions(formattedOptions);
+      }
+    } catch (err) {
+      console.error("Failed to fetch role options", err);
+    } finally {
+      setIsOptionsRoleLoading(false);
+    }
+  }, []);
+
   const clearUser = useCallback(() => setUser(null), []);
+  const clearUserOptions = useCallback(() => {
+    setUserOptions([]);
+  }, []);
+  const clearRoleOptions = useCallback(() => {
+    setRoleOptions([]);
+  }, []);
 
   return {
     users,
     user,
+    userOptions,
+    roleOptions,
+    totalRecords,
+
     isLoading,
+    isOptionsUserLoading,
+    isOptionsRoleLoading,
+
     fetchUsers,
-    fetchUserById: fetchUserByIdHandler,
+    fetchUserById,
+    fetchUserOptions,
+    fetchRoleOptions,
+
     clearUser,
+    clearUserOptions,
+    clearRoleOptions,
   };
 }
