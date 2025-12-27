@@ -8,35 +8,30 @@ import { useToastContext } from "@components/ToastProvider";
 
 export function useFetchRoles() {
   const { showToast } = useToastContext();
+
+  // Data States
   const [roles, setRoles] = useState<Role[]>([]);
   const [role, setRole] = useState<Role | null>(null);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
+
+  // Loading States
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  /**
-   * Fetch all roles
-   */
   const fetchRoles = useCallback(
-    async (
-      showToastMessage: boolean = true,
-      params?: {
-        search?: string;
-        startDate?: Date | null;
-        endDate?: Date | null;
-      }
-    ) => {
+    async (params: any = {}, showToastMessage: boolean = false) => {
       try {
         setIsLoading(true);
-        const data = await getAllRoles();
-        setRoles(data.roles);
+        const response = await getAllRoles(params);
+
+        setRoles(response.roles || response.data || []);
+        setTotalRecords(response.meta?.total || 0);
 
         if (showToastMessage) {
           showToast("success", "Berhasil", "Data role berhasil dimuat");
         }
       } catch (err: any) {
-        if (showToastMessage) {
-          showToast("error", "Gagal", err.message);
-        }
         setRoles([]);
+        showToast("error", "Gagal", err.message || "Terjadi kesalahan");
       } finally {
         setIsLoading(false);
       }
@@ -44,27 +39,31 @@ export function useFetchRoles() {
     [showToast]
   );
 
-  /**
-   * Fetch a single role detail by ID
-   */
-  const fetchRoleByIdHandler = useCallback(async (id: number) => {
-    setIsLoading(true);
-    const data = await getRoleById(id);
-    setRole(data);
-    setIsLoading(false);
-  }, []);
+  const fetchRoleById = useCallback(
+    async (id: number) => {
+      try {
+        setIsLoading(true);
+        const data = await getRoleById(id);
+        setRole(data);
+      } catch (err: any) {
+        console.error("Error fetching role details:", err);
+        showToast("error", "Gagal", "Gagal memuat detail role");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [showToast]
+  );
 
-  /**
-   * Reset selected role
-   */
   const clearRole = useCallback(() => setRole(null), []);
 
   return {
     roles,
     role,
+    totalRecords,
     isLoading,
     fetchRoles,
-    fetchRoleById: fetchRoleByIdHandler,
+    fetchRoleById,
     clearRole,
   };
 }

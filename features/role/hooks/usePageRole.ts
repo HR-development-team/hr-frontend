@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useDialogRole } from "./useDialogRole";
 import { useFilterRole } from "./useFilterRole";
@@ -11,18 +11,15 @@ import { Role, RoleFormData } from "../schemas/roleSchema";
 
 export function usePageRole() {
   const router = useRouter();
-
   const dialog = useDialogRole();
   const filter = useFilterRole();
+  const isFirstLoad = useRef(true);
 
-  const { roles, fetchRoles, isLoading } = useFetchRoles();
+  const { roles, role, totalRecords, fetchRoles, isLoading } = useFetchRoles();
 
-  const refreshData = useCallback(
-    (showToast: boolean = false) => {
-      fetchRoles(showToast, filter.queryParams);
-    },
-    [fetchRoles, filter.queryParams]
-  );
+  const refreshData = useCallback(() => {
+    fetchRoles(filter.apiParams, false);
+  }, [fetchRoles, filter.apiParams]);
 
   const { saveRole, isSaving } = useSaveRole(() => {
     dialog.close();
@@ -37,22 +34,31 @@ export function usePageRole() {
     await saveRole(values, dialog.currentRole?.id);
   };
 
-  const handleSetting = (role: Role) => {
-    router.push(`/admin/management/roles/${role.role_code}`);
+  const handleSetting = async (row: Role) => {
+    router.push(`/admin/management/roles/${row.role_code}`);
   };
 
   useEffect(() => {
-    refreshData(true);
-  }, [refreshData]);
+    const showToast = isFirstLoad.current;
+    fetchRoles(filter.apiParams, showToast);
+    isFirstLoad.current = false;
+  }, [filter.apiParams, fetchRoles]);
+
   return {
     // Data & Status
     roles,
+    role,
+    totalRecords,
     isLoading,
     isSaving,
 
-    // Sub-Controllers (exposed for UI binding)
-    dialog,
+    // Pagination (Directly pass to PrimeReact DataTable)
+    lazyParams: filter.lazyParams,
+    onPageChange: filter.onPageChange,
+
+    // Logic Modules
     filter,
+    dialog,
     deleteAction,
 
     // Handlers

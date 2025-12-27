@@ -8,6 +8,7 @@ import { useFormik } from "formik";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { toFormikValidation } from "@utils/formikHelpers";
+import { useEffect } from "react";
 
 interface RoleSaveDialogProps {
   isOpen: boolean;
@@ -58,6 +59,13 @@ export default function RoleSaveDialog({
     formik.resetForm();
     onClose();
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   return (
     <Dialog
