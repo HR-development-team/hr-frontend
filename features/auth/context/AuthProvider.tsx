@@ -42,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await loginUser(values);
 
       await refreshUser();
+      localStorage.setItem("lastActiveTime", Date.now().toString());
 
       return response;
     } catch (error) {
