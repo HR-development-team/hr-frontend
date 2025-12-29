@@ -15,10 +15,10 @@ Axios.interceptors.response.use(
         const currentPath = window.location.pathname;
 
         // --- CRITICAL FIX ---
-        if (!currentPath.startsWith("/auth/login")) {
+        if (!currentPath.startsWith("/login")) {
           console.log("Session expired. Logging out...");
           sessionStorage.removeItem("accessToken");
-          window.location.href = "/auth/login";
+          window.location.href = "/login";
         }
       }
     }

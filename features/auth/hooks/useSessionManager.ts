@@ -107,7 +107,7 @@ export function useSessionManager() {
     await logout();
 
     // Redirect to the correct path
-    router.replace("/auth/login");
+    router.replace("/login");
   }, [logout, router]);
 
   return {
