@@ -1,19 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthToken } from "@features/auth/utils/authUtils";
 import { Axios } from "@/utils/axios";
 import { API_ENDPOINTS } from "@/api/api";
 
-export const GET = async (request: NextRequest) => {
-  const token = getAuthToken();
-
+// Standard helper
+const validateToken = (token: string | null) => {
   if (!token) {
     return NextResponse.json(
       { message: "Akses ditolak: Tidak terauntetikasi" },
       { status: 401 }
     );
   }
+  return null;
+};
+
+export const GET = async () => {
+  const token = getAuthToken();
+  const authError = validateToken(token);
+  if (authError) return authError;
 
   try {
     const response = await Axios.get(API_ENDPOINTS.GETALLATTENDANCESESSION, {
@@ -25,29 +30,20 @@ export const GET = async (request: NextRequest) => {
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    if (error.response) {
-      return NextResponse.json(
-        { message: error.response.data.message },
-        { status: 404 }
-      );
-    }
+    // Dynamic status handling
+    const status = error.response?.status || 500;
+    const data = error.response?.data || {
+      message: "Gagal mendapatkan data sesi absensi",
+    };
 
-    return NextResponse.json(
-      { message: "Gagal mendapatkan data master departemen" },
-      { status: 500 }
-    );
+    return NextResponse.json(data, { status });
   }
 };
 
 export const POST = async (request: NextRequest) => {
   const token = getAuthToken();
-
-  if (!token) {
-    return NextResponse.json(
-      { message: "Akses ditolak: Tidak terauntetikasi" },
-      { status: 401 }
-    );
-  }
+  const authError = validateToken(token);
+  if (authError) return authError;
 
   try {
     const body = await request.json();
@@ -56,6 +52,7 @@ export const POST = async (request: NextRequest) => {
       body,
       {
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       }
@@ -63,19 +60,12 @@ export const POST = async (request: NextRequest) => {
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    if (error.response) {
-      console.error("❌ BACKEND ERROR STATUS:", error.response.status);
-      console.error("❌ BACKEND ERROR DATA:", error.response.data);
+    // Return FULL error data for validation (422)
+    const status = error.response?.status || 500;
+    const data = error.response?.data || {
+      message: "Gagal menambahkan sesi absensi",
+    };
 
-      return NextResponse.json(error.response.data.errors, {
-        status: error.response.status,
-      });
-    } else {
-      console.error("⚠️ REQUEST SETUP ERROR:", error.message);
-      return NextResponse.json(
-        { message: "Gagal menambahkan data master departemen" },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(data, { status });
   }
 };

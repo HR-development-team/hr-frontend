@@ -18,7 +18,7 @@ export interface GetDepartmentsParams {
   limit?: number;
   search?: string;
   office_code?: string;
-  [key: string]: any; // Allow flexibility
+  [key: string]: any;
 }
 
 /**
@@ -28,20 +28,12 @@ export async function getAllDepartments(
   params?: GetDepartmentsParams
 ): Promise<DepartmentResponse> {
   try {
-    // Axios automatically handles query string serialization via 'params'
     const { data } = await Axios.get(BASE_URL, { params });
     return data;
   } catch (error) {
     console.error("getAllDepartments error:", error);
-    // Return safe fallback
-    // (If 401, interceptor redirects before this returns)
-    return {
-      status: "99",
-      message: "Failed to fetch departments",
-      datetime: new Date().toISOString(),
-      master_departments: [], // Ensure this key matches your actual API response key
-      meta: { page: 0, total: 0, limit: 0, total_page: 0 },
-    } as any;
+    // Throw error so the UI (TanStack Query/UseEffect) can handle the error state
+    throw error;
   }
 }
 
@@ -53,7 +45,6 @@ export async function getDepartmentById(
 ): Promise<DepartmentDetail | null> {
   try {
     const { data } = await Axios.get(`${BASE_URL}/${id}`);
-    // Handle potential naming variations from backend (singular vs plural)
     return data.master_departments || data.department || null;
   } catch (error) {
     console.error("getDepartmentById error:", error);
@@ -68,7 +59,6 @@ export async function getDepartmentList(
   office_code?: string
 ): Promise<DepartmentOption[] | null> {
   try {
-    // Pass query params object, Axios handles the string building
     const { data } = await Axios.get(`${BASE_URL}/list`, {
       params: office_code ? { office_code } : {},
     });
@@ -83,9 +73,16 @@ export async function getDepartmentList(
  * Create a new department
  */
 export async function createDepartment(payload: DepartmentFormData) {
-  // Axios automatically serializes JSON and sets Content-Type
-  const { data } = await Axios.post(BASE_URL, payload);
-  return data;
+  try {
+    const { data } = await Axios.post(BASE_URL, payload);
+    return data;
+  } catch (error: any) {
+    // Extract backend validation errors
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw error;
+  }
 }
 
 /**
@@ -95,14 +92,28 @@ export async function updateDepartment(
   id: number,
   payload: DepartmentFormData
 ) {
-  const { data } = await Axios.put(`${BASE_URL}/${id}`, payload);
-  return data;
+  try {
+    const { data } = await Axios.put(`${BASE_URL}/${id}`, payload);
+    return data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw error;
+  }
 }
 
 /**
  * Delete a department
  */
 export async function deleteDepartment(id: number) {
-  const { data } = await Axios.delete(`${BASE_URL}/${id}`);
-  return data;
+  try {
+    const { data } = await Axios.delete(`${BASE_URL}/${id}`);
+    return data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw error;
+  }
 }

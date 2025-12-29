@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthToken } from "@features/auth/utils/authUtils";
 import { Axios } from "@/utils/axios";
 import { API_ENDPOINTS } from "@/api/api";
 
-const tokenAvailable = (token: string | null) => {
+// Helper to check token presence
+const validateToken = (token: string | null) => {
   if (!token) {
     return NextResponse.json(
       { message: "Akses ditolak: Tidak terauntetikasi" },
@@ -17,11 +17,8 @@ const tokenAvailable = (token: string | null) => {
 
 export const GET = async (request: NextRequest) => {
   const token = getAuthToken();
-
-  const unauthorizedResponse = tokenAvailable(token);
-  if (unauthorizedResponse) {
-    return unauthorizedResponse;
-  }
+  const authError = validateToken(token);
+  if (authError) return authError;
 
   const searchParams = request.nextUrl.searchParams;
 
@@ -43,27 +40,20 @@ export const GET = async (request: NextRequest) => {
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    if (error.response) {
-      return NextResponse.json(
-        { message: error.response.data.message },
-        { status: error.response.status || 404 }
-      );
-    }
+    // Forward the exact error from the backend (e.g., 404 Not Found, 403 Forbidden)
+    const status = error.response?.status || 500;
+    const data = error.response?.data || {
+      message: "Gagal mendapatkan data master departemen",
+    };
 
-    return NextResponse.json(
-      { message: "Gagal mendapatkan data master departemen" },
-      { status: 500 }
-    );
+    return NextResponse.json(data, { status });
   }
 };
 
 export const POST = async (request: NextRequest) => {
   const token = getAuthToken();
-
-  const unauthorizedResponse = tokenAvailable(token);
-  if (unauthorizedResponse) {
-    return unauthorizedResponse;
-  }
+  const authError = validateToken(token);
+  if (authError) return authError;
 
   try {
     const body = await request.json();
@@ -76,15 +66,12 @@ export const POST = async (request: NextRequest) => {
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    if (error.response) {
-      return NextResponse.json(error.response.data, {
-        status: error.response.status,
-      });
-    }
+    // Forward validation errors (422) or server errors (500)
+    const status = error.response?.status || 500;
+    const data = error.response?.data || {
+      message: "Gagal menambahkan data master departemen",
+    };
 
-    return NextResponse.json(
-      { message: "Gagal menambahkan data master departemen" },
-      { status: 500 }
-    );
+    return NextResponse.json(data, { status });
   }
 };

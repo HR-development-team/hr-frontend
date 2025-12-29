@@ -4,25 +4,21 @@ import { getAuthToken } from "@features/auth/utils/authUtils";
 import { Axios } from "@/utils/axios";
 import { API_ENDPOINTS } from "@/api/api";
 
-const tokenAvailable = (token: string | null) => {
+const validateToken = (token: string | null) => {
   if (!token) {
     return NextResponse.json(
       { message: "Akses ditolak: Tidak terauntetikasi" },
       { status: 401 }
     );
   }
-
   return null;
 };
 
-// This endpoint is specific for DROPDOWNS
+// This endpoint is specific for POSITION DROPDOWNS
 export const GET = async (request: NextRequest) => {
   const token = getAuthToken();
-
-  const unauthorizedResponse = tokenAvailable(token);
-  if (unauthorizedResponse) {
-    return unauthorizedResponse;
-  }
+  const authError = validateToken(token);
+  if (authError) return authError;
 
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -30,30 +26,28 @@ export const GET = async (request: NextRequest) => {
     const departmentCode = searchParams.get("department_code");
     const divisionCode = searchParams.get("division_code");
 
+    // Construct params object dynamically (cleaner if some are null)
+    const params: Record<string, string> = {};
+    if (officeCode) params.office_code = officeCode;
+    if (departmentCode) params.department_code = departmentCode;
+    if (divisionCode) params.division_code = divisionCode;
+
     const response = await Axios.get(API_ENDPOINTS.GETPOSITIONOPTION, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      params: {
-        office_code: officeCode,
-        department_code: departmentCode,
-        division_code: divisionCode,
-      },
+      params: params,
     });
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    if (error.response) {
-      return NextResponse.json(
-        { message: error.response.data.message },
-        { status: 404 }
-      );
-    }
+    // Dynamic status handling
+    const status = error.response?.status || 500;
+    const data = error.response?.data || {
+      message: "Gagal mendapatkan data master jabatan",
+    };
 
-    return NextResponse.json(
-      { message: "Gagal mendapatkan data master jabatan" },
-      { status: 500 }
-    );
+    return NextResponse.json(data, { status });
   }
 };

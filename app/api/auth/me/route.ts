@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { getAuthToken } from "@features/auth/utils/authUtils";
-import { verifyToken } from "@features/auth/utils/verifyToken";
 import { Axios } from "@/utils/axios";
 import { NextResponse } from "next/server";
 import { API_ENDPOINTS } from "@/api/api";
@@ -9,11 +7,11 @@ import { API_ENDPOINTS } from "@/api/api";
 export const GET = async () => {
   const token = getAuthToken();
 
-  try {
-    if (token) {
-      await verifyToken(token);
-    }
+  if (!token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
 
+  try {
     const response = await Axios.get(API_ENDPOINTS.GETUSER, {
       headers: {
         "Content-Type": "application/json",
@@ -23,16 +21,12 @@ export const GET = async () => {
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    if (error.response) {
-      return NextResponse.json(
-        { message: error.response.data.message },
-        { status: error.response.status }
-      );
-    }
+    // Pass the actual error from the backend (status and data)
+    const status = error.response?.status || 500;
+    const data = error.response?.data || {
+      message: "Gagal mendapatkan data user",
+    };
 
-    return NextResponse.json(
-      { message: "Gagal mendapatkan data user" },
-      { status: 500 }
-    );
+    return NextResponse.json(data, { status });
   }
 };
