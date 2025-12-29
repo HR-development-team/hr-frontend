@@ -72,11 +72,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     setIsLoading(true);
     try {
-      await logoutUser();
+      await logoutUser(); // Call backend (Backend should also allow Set-Cookie: token=; Max-Age=0)
+
       setUser(null);
-      // Clean up storage
+
+      // Clear Client Storage
       sessionStorage.removeItem("accessToken");
       localStorage.removeItem("lastActiveTime");
+
+      // Clear Cookie
+      document.cookie =
+        "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
     } catch (error) {
       console.error("Logout error", error);
     } finally {

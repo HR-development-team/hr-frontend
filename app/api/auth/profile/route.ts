@@ -29,12 +29,8 @@ export const GET = async () => {
     console.error("Gagal mendapatkan data profil:", error.response.data);
     if (error.response) {
       return NextResponse.json(
-        {
-          message:
-            error.response.data?.message ||
-            "Gagal mendapatkan data profil dari server.",
-        },
-        { status: error.response.data.status || 500 }
+        { message: error.response.data?.message },
+        { status: error.response.status }
       );
     }
 
