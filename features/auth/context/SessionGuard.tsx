@@ -14,7 +14,7 @@ export const SessionGuard = () => {
   const { user, isLoading } = useAuth();
   const { isExpired, confirmLogout } = useSessionManager();
 
-  const isPublicRoute = pathname.startsWith("/auth/login");
+  const isPublicRoute = pathname === "/login";
 
   useEffect(() => {
     if (!isLoading && !user && !isPublicRoute) {
