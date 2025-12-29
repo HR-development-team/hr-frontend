@@ -26,12 +26,12 @@ export const GET = async () => {
     if (error.response) {
       return NextResponse.json(
         { message: error.response.data.message },
-        { status: 404 }
+        { status: error.response.status }
       );
     }
 
     return NextResponse.json(
-      { message: "Gagal mendapatkan data master divisi" },
+      { message: "Gagal mendapatkan data user" },
       { status: 500 }
     );
   }

@@ -19,7 +19,7 @@ export const SessionGuard = () => {
   useEffect(() => {
     if (!isLoading && !user && !isPublicRoute) {
       console.log("SessionGuard: No authenticated user found. Redirecting...");
-      router.replace("/auth/login");
+      router.replace("/login");
     }
   }, [isLoading, user, isPublicRoute, router]);
 
