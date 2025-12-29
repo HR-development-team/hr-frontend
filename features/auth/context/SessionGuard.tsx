@@ -1,11 +1,35 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { Button } from "primereact/button";
-import { useSessionManager } from "../hooks/useSessionManager";
 import { Dialog } from "primereact/dialog";
+import { ProgressSpinner } from "primereact/progressspinner";
+import { useAuth } from "../context/AuthProvider";
+import { useSessionManager } from "../hooks/useSessionManager";
 
 export const SessionGuard = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, isLoading } = useAuth();
   const { isExpired, confirmLogout } = useSessionManager();
+
+  const isPublicRoute = pathname.startsWith("/auth/login");
+
+  useEffect(() => {
+    if (!isLoading && !user && !isPublicRoute) {
+      console.log("SessionGuard: No authenticated user found. Redirecting...");
+      router.replace("/auth/login");
+    }
+  }, [isLoading, user, isPublicRoute, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex align-items-center justify-content-center fixed top-0 left-0 w-full h-full bg-white-alpha-90 z-5">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   return (
     <Dialog
