@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { API_ENDPOINTS } from "@/api/api";
 import { getAuthToken } from "@features/auth/utils/authUtils";
 import { Axios } from "@/utils/axios";
@@ -11,15 +10,21 @@ interface paramsProp {
   };
 }
 
-export const GET = async (request: NextRequest, { params }: paramsProp) => {
-  const token = getAuthToken();
-
+// Consistent helper
+const validateToken = (token: string | null) => {
   if (!token) {
     return NextResponse.json(
       { message: "Akses ditolak: Tidak terauntetikasi" },
       { status: 401 }
     );
   }
+  return null;
+};
+
+export const GET = async (request: NextRequest, { params }: paramsProp) => {
+  const token = getAuthToken();
+  const authError = validateToken(token);
+  if (authError) return authError;
 
   try {
     const response = await Axios.get(
@@ -34,16 +39,12 @@ export const GET = async (request: NextRequest, { params }: paramsProp) => {
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    if (error.response) {
-      return NextResponse.json(
-        { message: error.response.data.message },
-        { status: 404 }
-      );
-    }
+    // Dynamic status handling
+    const status = error.response?.status || 500;
+    const data = error.response?.data || {
+      message: "Gagal mendapatkan data organisasi kantor",
+    };
 
-    return NextResponse.json(
-      { message: "Gagal mendapatkan data organisasi kantor" },
-      { status: 500 }
-    );
+    return NextResponse.json(data, { status });
   }
 };
