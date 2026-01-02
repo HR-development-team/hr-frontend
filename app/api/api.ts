@@ -1,153 +1,159 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const API_ENDPOINTS = {
-  // --- Auth ---
+  // Auth
   LOGIN: `${API_URL}/auth/login`,
   LOGOUT: `${API_URL}/auth/logout`,
-  GETUSER: `${API_URL}/auth/me`, // Get Current User
-  KEEPALIVE: `${API_URL}/auth/keep-alive`, // Extend session token
+  GETUSER: `${API_URL}/auth/me`,
+  KEEPALIVE: `${API_URL}/auth/keep-alive`,
 
-  // --- Master Office ---
-  ADDOFFICE: `${API_URL}/master-offices`, // Create New Office
-  GETALLOFFICE: `${API_URL}/master-offices`, // Get All Office
-  EDITOFFICE: (id: string) => `${API_URL}/master-offices/${id}`, // Update Office By Id
-  DELETEOFFICE: (id: string) => `${API_URL}/master-offices/${id}`, // Delete Office By Id
-  GETOFFICEBYID: (id: string) => `${API_URL}/master-offices/${id}`, // Get Office By Id
+  // Master Office
+  ADDOFFICE: `${API_URL}/master-offices`,
+  GETALLOFFICE: `${API_URL}/master-offices`,
+  EDITOFFICE: (id: string) => `${API_URL}/master-offices/${id}`,
+  DELETEOFFICE: (id: string) => `${API_URL}/master-offices/${id}`,
+  GETOFFICEBYID: (id: string) => `${API_URL}/master-offices/${id}`,
   GETOFFICEORGANIZATION: `${API_URL}/master-offices/organization`,
   GETOFFICEOPTION: `${API_URL}/master-offices/options`,
 
-  // --- Master Departments ---
-  ADDDEPARTMENT: `${API_URL}/master-departments`, // Create New Department
-  GETALLDEPARTMENT: `${API_URL}/master-departments`, // Get All Department
-  EDITDEPARTMENT: (id: string) => `${API_URL}/master-departments/${id}`, // Update Department By Id
-  DELETEDEPARTMENT: (id: string) => `${API_URL}/master-departments/${id}`, // Delete Department By Id
-  GETDEPARTMENTBYID: (id: string) => `${API_URL}/master-departments/${id}`, // Get Department By Id
+  // Master Departments
+  ADDDEPARTMENT: `${API_URL}/master-departments`,
+  GETALLDEPARTMENT: `${API_URL}/master-departments`,
+  EDITDEPARTMENT: (id: string) => `${API_URL}/master-departments/${id}`,
+  DELETEDEPARTMENT: (id: string) => `${API_URL}/master-departments/${id}`,
+  GETDEPARTMENTBYID: (id: string) => `${API_URL}/master-departments/${id}`,
   GETDEPARTMENTOPTION: `${API_URL}/master-departments/options`,
 
-  // --- INI SAYA PERBAIKI: Ini 'Master Positions' (sesuai path Anda) ---
-  ADDPOSITION: `${API_URL}/master-positions`, // Create New Position
-  GETALLPOSITION: `${API_URL}/master-positions`, // Get All Position
-  EDITPOSITION: (id: string) => `${API_URL}/master-positions/${id}`, // Update Position By Id
-  DELETEPOSITION: (id: string) => `${API_URL}/master-positions/${id}`, // Delete Position By Id
-  GETPOSITIONBYID: (id: string) => `${API_URL}/master-positions/${id}`, // Get Position By Id
+  // Master Positions
+  ADDPOSITION: `${API_URL}/master-positions`,
+  GETALLPOSITION: `${API_URL}/master-positions`,
+  EDITPOSITION: (id: string) => `${API_URL}/master-positions/${id}`,
+  DELETEPOSITION: (id: string) => `${API_URL}/master-positions/${id}`,
+  GETPOSITIONBYID: (id: string) => `${API_URL}/master-positions/${id}`,
   GETPOSITIONORGANIZATION: (office_code: string) =>
     `${API_URL}/master-positions/organization/${office_code}`,
   GETPOSITIONOPTION: `${API_URL}/master-positions/options`,
 
-  // --- INI TAMBAHAN: 'Master Divisions' yang sebelumnya hilang ---
-  ADDDIVISION: `${API_URL}/master-divisions`, // Create New Divisions
-  GETALLDIVISION: `${API_URL}/master-divisions`, // Get All Division
-  EDITDIVISION: (id: string) => `${API_URL}/master-divisions/${id}`, // Update Division By Id
-  DELETEDIVISION: (id: string) => `${API_URL}/master-divisions/${id}`, // Delete Divisions By Id
-  GETDIVISIONBYID: (id: string) => `${API_URL}/master-divisions/${id}`, // Get Division By Id
+  // Master Divisions
+  ADDDIVISION: `${API_URL}/master-divisions`,
+  GETALLDIVISION: `${API_URL}/master-divisions`,
+  EDITDIVISION: (id: string) => `${API_URL}/master-divisions/${id}`,
+  DELETEDIVISION: (id: string) => `${API_URL}/master-divisions/${id}`,
+  GETDIVISIONBYID: (id: string) => `${API_URL}/master-divisions/${id}`,
   GETDIVISIONOPTION: `${API_URL}/master-divisions/options`,
 
-  // --- Master Employees ---
-  ADDEMPLOYEE: `${API_URL}/master-employees`, // Create Employee
-  GETALLEMPLOYEE: `${API_URL}/master-employees`, // Get All Employee
-  EDITEMPLOYEE: (id: string) => `${API_URL}/master-employees/${id}`, // Update Employee By Id
-  DELETEEMPLOYEE: (id: string) => `${API_URL}/master-employees/${id}`, // Delete Employee By Id
-  GETEMPLOYEEBYID: (id: string) => `${API_URL}/master-employees/${id}`, // Get Employee By Id
+  // Master Employees
+  ADDEMPLOYEE: `${API_URL}/master-employees`,
+  GETALLEMPLOYEE: `${API_URL}/master-employees`,
+  EDITEMPLOYEE: (id: string) => `${API_URL}/master-employees/${id}`,
+  DELETEEMPLOYEE: (id: string) => `${API_URL}/master-employees/${id}`,
+  GETEMPLOYEEBYID: (id: string) => `${API_URL}/master-employees/${id}`,
 
-  // --- Master Employment Status ---
-  ADDEMPLOYEMENTSTATUS: `${API_URL}/employment-status`, // Create Employement Status
-  GETALLEMPLOYEMENTSTATUS: `${API_URL}/employment-status`, // Get All Employment Status
-  EDITEMPLOYEMENTSTATUS: (id: string) => `${API_URL}/employment-status/${id}`, // Update Employement By Id
-  DELETEEMPLOYEMENTSTATUS: (id: string) => `${API_URL}/employment-status/${id}`, // Delete Employement By Id
-  GETEMPLOYEMENTBYID: (id: string) => `${API_URL}/employment-status/${id}`, // Get Employement By Id
+  // Master Shifts
+  ADDSHIFT: `${API_URL}/master-shifts`,
+  GETALLSHIFT: `${API_URL}/master-shifts`,
+  EDITSHIFT: (id: string) => `${API_URL}/master-shifts/${id}`,
+  DELETESHIFT: (id: string) => `${API_URL}/master-shifts/${id}`,
+  GETSHIFTBYID: (id: string) => `${API_URL}/master-shifts/${id}`,
+  GETSHIFTOPTION: `${API_URL}/master-shifts/options`,
+
+  // Master Employment Status
+  ADDEMPLOYEMENTSTATUS: `${API_URL}/employment-status`,
+  GETALLEMPLOYEMENTSTATUS: `${API_URL}/employment-status`,
+  EDITEMPLOYEMENTSTATUS: (id: string) => `${API_URL}/employment-status/${id}`,
+  DELETEEMPLOYEMENTSTATUS: (id: string) => `${API_URL}/employment-status/${id}`,
+  GETEMPLOYEMENTBYID: (id: string) => `${API_URL}/employment-status/${id}`,
   GETEMPLOYEMENTBYCODE: (code: string) =>
-    `${API_URL}/employment-status/code/${code}`, // Get Employement By Code
+    `${API_URL}/employment-status/code/${code}`,
   GETEMPLOYEMENTOPTION: `${API_URL}/employment-status/options`,
 
-  // --- User ---
-  ADDUSER: `${API_URL}/users`, // Create User
-  GETALLUSER: `${API_URL}/users`, // Get All User
-  EDITUSER: (id: string) => `${API_URL}/users/${id}`, // Update User
-  DELETEUSER: (id: string) => `${API_URL}/users/${id}`, // Delete User
-  GETUSERBYID: (id: string) => `${API_URL}/users/${id}`, // Get User
+  // User
+  ADDUSER: `${API_URL}/users`,
+  GETALLUSER: `${API_URL}/users`,
+  EDITUSER: (id: string) => `${API_URL}/users/${id}`,
+  DELETEUSER: (id: string) => `${API_URL}/users/${id}`,
+  GETUSERBYID: (id: string) => `${API_URL}/users/${id}`,
   GETUSEROPTION: `${API_URL}/users/options`,
 
-  // --- Role  ---
-  ADDROLE: `${API_URL}/roles`, // Create Role
-  GETALLROLE: `${API_URL}/roles`, // Get All Role
-  EDITROLE: (id: string) => `${API_URL}/roles/${id}`, // Update Role
-  DELETEROLE: (id: string) => `${API_URL}/roles/${id}`, // Delete Role
-  GETROLEBYID: (id: string) => `${API_URL}/roles/${id}`, // Get Role
-  GETROLEBYCODE: (code: string) => `${API_URL}/roles/code/${code}`, // Get Role
+  // Role
+  ADDROLE: `${API_URL}/roles`,
+  GETALLROLE: `${API_URL}/roles`,
+  EDITROLE: (id: string) => `${API_URL}/roles/${id}`,
+  DELETEROLE: (id: string) => `${API_URL}/roles/${id}`,
+  GETROLEBYID: (id: string) => `${API_URL}/roles/${id}`,
+  GETROLEBYCODE: (code: string) => `${API_URL}/roles/code/${code}`,
   GETROLEOPTION: `${API_URL}/roles/options`,
 
-  // --- Permission  ---
+  // Permission
   GETPERMISSIONBYROLECODE: (code: string) =>
-    `${API_URL}/permissions/role/${code}`, // Get Permission By Role Code
-  GETCURRENTUSERPERMISSION: `${API_URL}/permissions/me/`, // Get Current User Permission
+    `${API_URL}/permissions/role/${code}`,
+  GETCURRENTUSERPERMISSION: `${API_URL}/permissions/me/`,
   EDITPERMISSIONBYROLECODE: (code: string) =>
-    `${API_URL}/permissions/role/${code}`, // Update Permission By Role Code
+    `${API_URL}/permissions/role/${code}`,
 
-  // --- Master Leave Type ---
-  ADDLEAVETYPE: `${API_URL}/master-leave-types`, // Create New Leave Type
-  GETALLLEAVETYPE: `${API_URL}/master-leave-types`, // Get All Leave Type
-  EDITLEAVETYPE: (id: string) => `${API_URL}/master-leave-types/${id}`, // Update Leave Type By Id
-  DELETELEAVETYPE: (id: string) => `${API_URL}/master-leave-types/${id}`, // Delete Leave Type By Id
-  GETLEAVETYPEBYID: (id: string) => `${API_URL}/master-leave-types/${id}`, // Get Leave Type By Id
+  // Master Leave Type
+  ADDLEAVETYPE: `${API_URL}/master-leave-types`,
+  GETALLLEAVETYPE: `${API_URL}/master-leave-types`,
+  EDITLEAVETYPE: (id: string) => `${API_URL}/master-leave-types/${id}`,
+  DELETELEAVETYPE: (id: string) => `${API_URL}/master-leave-types/${id}`,
+  GETLEAVETYPEBYID: (id: string) => `${API_URL}/master-leave-types/${id}`,
 
-  // --- Dashboard ---
-  GETADMINDASHBOARD: `${API_URL}/admin/dashboard/metrics`, // Get Admin Dashboard Data
-  GETEMPLOYEEDASHBOARD: `${API_URL}/employees/dashboard/metrics`, // INI TAMBAHAN: Get Employee Dashboard Data
+  // Dashboard
+  GETADMINDASHBOARD: `${API_URL}/admin/dashboard/metrics`,
+  GETEMPLOYEEDASHBOARD: `${API_URL}/employees/dashboard/metrics`,
 
-  // --- Profiles ---
-  GETPROFILES: `${API_URL}/profiles`, // Get Profile
-  UPDATEUSERPROFILE: `${API_URL}/profiles`, // Update Profile
+  // Profiles
+  GETPROFILES: `${API_URL}/profiles`,
+  UPDATEUSERPROFILE: `${API_URL}/profiles`,
 
-  // --- Leave Request ---
-  POSTLEAVEREQUEST: `${API_URL}/employee/leave-requests`, // Submit Leave Request (Menggantikan POSTREQUEST)
-  GETALLLEAVEREQUEST: `${API_URL}/empoloyee/leave-requests`, // Get All Leave Request (Menggantikan GETALLREQUEST)
+  // Leave Request
+  POSTLEAVEREQUEST: `${API_URL}/employee/leave-requests`,
+  GETALLLEAVEREQUEST: `${API_URL}/empoloyee/leave-requests`,
   UPDATELEAVEREQUESTSTATUS: (id: string) =>
-    `${API_URL}/employee/leave-requests/${id}/status`, // INI TAMBAHAN: Update Leave Request Status
-  GETLEAVEBYUSER: (id: string) => `${API_URL}/leave-requests/user/${id}`, // Ini dari kode Anda
+    `${API_URL}/employee/leave-requests/${id}/status`,
+  GETLEAVEBYUSER: (id: string) => `${API_URL}/leave-requests/user/${id}`,
   GETLEAVEBYEMPLOYEE: `${API_URL}/employee/leave-requests/me`,
-  // --- INI TAMBAHAN: Attendance Session ---
-  ADDATTENDANCESESSION: `${API_URL}/attendance-sessions`, // Create New Attendance Session
-  GETALLATTENDANCESESSION: `${API_URL}/attendance-sessions`, // Get All Attendance Session
-  GETATTENDANCESESSIONBYID: (id: string) =>
-    `${API_URL}/attendance-sessions/${id}`, // Get Attendance Session By Id
-  EDITATTENDANCESESSION: (id: string) => `${API_URL}/attendance-sessions/${id}`, // Update Attendance Session
-  DELETEATTENDANCESESSION: (id: string) =>
-    `${API_URL}/attendance-sessions/${id}`, // Delete Attendance Session By Id
-  CLOSEATTENDANCESESSION: (id: string) =>
-    `${API_URL}/attendance-sessions/${id}/status`, // Closed Attendance Session
 
-  // --- INI TAMBAHAN: Attendances ---
-  EMPLOYEECHECKIN: `${API_URL}/attendances/check-in`, // Employee Check In
-  EMPLOYEECHECKOUT: `${API_URL}/attendances/check-out`, // Employee Check Out
-  GETALLATTENDANCE: `${API_URL}/attendances`, // Get All Attendance
-  GETCURRENTEMPLOYEEATTENDANCE: `${API_URL}/attendances`, // Get Current Employee Attendance
+  // Attendance Session
+  ADDATTENDANCESESSION: `${API_URL}/attendance-sessions`,
+  GETALLATTENDANCESESSION: `${API_URL}/attendance-sessions`,
+  GETATTENDANCESESSIONBYID: (id: string) =>
+    `${API_URL}/attendance-sessions/${id}`,
+  EDITATTENDANCESESSION: (id: string) => `${API_URL}/attendance-sessions/${id}`,
+  DELETEATTENDANCESESSION: (id: string) =>
+    `${API_URL}/attendance-sessions/${id}`,
+  CLOSEATTENDANCESESSION: (id: string) =>
+    `${API_URL}/attendance-sessions/${id}/status`,
+
+  // Attendances
+  EMPLOYEECHECKIN: `${API_URL}/attendances/check-in`,
+  EMPLOYEECHECKOUT: `${API_URL}/attendances/check-out`,
+  GETALLATTENDANCE: `${API_URL}/attendances`,
+  GETCURRENTEMPLOYEEATTENDANCE: `${API_URL}/attendances`,
   GETATTENDANCEBYID: (id: string) => `${API_URL}/attendance/${id}`,
   GETATTENDANCEHISTORY: `${API_URL}/attendances`,
 
-  // --- INI TAMBAHAN: Leave Balance ---
-  ADDLEAVEBALANCEFORALL: `${API_URL}/leave-balances/bulk`, // Add Leave Balance For All Emp...
-  ADDLEAVEBALACEFORONE: `${API_URL}/leave-balances`, // Add Leave Balance For One Empl...
-  GETALLLEAVEBALANCEREPORT: `${API_URL}/leave-balances`, // Get All Leave Balance Report
-  GETCURRENTEMPLOYEELEAVEBALANCE: `${API_URL}/leave-balances/me`, // Get Current Employee Leave B...
-  UPDATELEAVEBALANCE: (id: string) => `${API_URL}/leave-balances/${id}`, // Update Leave Balance For Spe...
-  DELETELEAVEBALANCE: (id: string) => `${API_URL}/leave-balances/${id}`, // Delete Leave Balance for Speci...
-  DELETEALLLEAVEBALANCE: `${API_URL}/leave-balances/bulk`, // Delete Leave Balance for All Employees
+  // Leave Balance
+  ADDLEAVEBALANCEFORALL: `${API_URL}/leave-balances/bulk`,
+  ADDLEAVEBALACEFORONE: `${API_URL}/leave-balances`,
+  GETALLLEAVEBALANCEREPORT: `${API_URL}/leave-balances`,
+  GETCURRENTEMPLOYEELEAVEBALANCE: `${API_URL}/leave-balances/me`,
+  UPDATELEAVEBALANCE: (id: string) => `${API_URL}/leave-balances/${id}`,
+  DELETELEAVEBALANCE: (id: string) => `${API_URL}/leave-balances/${id}`,
+  DELETEALLLEAVEBALANCE: `${API_URL}/leave-balances/bulk`,
 
-  // --- INI TAMBAHAN: Payroll Periods ---
-  ADDPAYROLLPERIOD: `${API_URL}/payroll-periods`, // Create Payroll Periods
-  GETALLPAYROLLPERIODS: `${API_URL}/payroll-periods`, // Get All Payroll Periods
-  GETPAYROLLPERIODBYID: (id: string) => `${API_URL}/payroll-periods/${id}`, // Get Payroll Period By Id
+  // Payroll Periods
+  ADDPAYROLLPERIOD: `${API_URL}/payroll-periods`,
+  GETALLPAYROLLPERIODS: `${API_URL}/payroll-periods`,
+  GETPAYROLLPERIODBYID: (id: string) => `${API_URL}/payroll-periods/${id}`,
   UPDATEPAYROLLPERIODSTATUS: (id: string) =>
-    `${API_URL}/payroll-periods/${id}/status`, // Update Status Payroll Periods
-  DELETEPAYROLLPERIOD: (id: string) => `${API_URL}/payroll-periods/${id}`, // Delete Payroll Periods
+    `${API_URL}/payroll-periods/${id}/status`,
+  DELETEPAYROLLPERIOD: (id: string) => `${API_URL}/payroll-periods/${id}`,
 
-  // --- INI TAMBAHAN: Payroll ---
-  GENERATEPAYROLL: `${API_URL}/payrolls/generate`, // Generate Payroll for All Employ...
-  GETALLPAYROLL: `${API_URL}/payrolls`, // Get All Payroll
-  GETPAYROLLBYID: (id: string) => `${API_URL}/payrolls/${id}`, // Get Payroll By Id
-  EDITPAYROLL: (id: string) => `${API_URL}/payrolls/${id}`, // Update Payroll By Id
-  DELETEPAYROLL: (id: string) => `${API_URL}/payrolls/${id}`, // DELETE Payroll by id
-
-  // --- INI TAMBAHAN: roles ---
-  GETALLROLES: `${API_URL}/roles`,
+  // Payroll
+  GENERATEPAYROLL: `${API_URL}/payrolls/generate`,
+  GETALLPAYROLL: `${API_URL}/payrolls`,
+  GETPAYROLLBYID: (id: string) => `${API_URL}/payrolls/${id}`,
+  EDITPAYROLL: (id: string) => `${API_URL}/payrolls/${id}`,
+  DELETEPAYROLL: (id: string) => `${API_URL}/payrolls/${id}`,
 };

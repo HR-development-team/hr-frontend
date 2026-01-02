@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation"; // Removed useRouter as we use window.location
+import { usePathname } from "next/navigation";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
-import { ProgressSpinner } from "primereact/progressspinner";
+// Removed ProgressSpinner import
 import { useAuth } from "../context/AuthProvider";
 
 export const SessionGuard = ({ children }: { children: React.ReactNode }) => {
@@ -30,7 +30,7 @@ export const SessionGuard = ({ children }: { children: React.ReactNode }) => {
 
   // 2. CHECK FOR MISSING USER (Initial Load)
   useEffect(() => {
-    // If loading is finished, but there is no user on a protected route...
+    // We still wait for isLoading to be false before deciding to show the dialog
     if (!isLoading && !user && !isPublicRoute) {
       setShowExpiredDialog(true);
     }
@@ -38,26 +38,13 @@ export const SessionGuard = ({ children }: { children: React.ReactNode }) => {
 
   // 3. HANDLE "LOGIN KEMBALI" CLICK
   const handleRedirect = () => {
-    // 1. Close the dialog UI
     setShowExpiredDialog(false);
-
-    // 2. Force a HARD reload to clear all React state and memory.
-    // 'router.replace' keeps the app state, which can cause bugs on logout.
+    // Force a HARD reload to clear state
     window.location.href = "/login";
   };
 
-  // 4. LOADING SPINNER
-  // Hide spinner if the dialog is showing (so they don't overlap)
-  if (isLoading && !showExpiredDialog) {
-    return (
-      <div
-        className="flex align-items-center justify-content-center fixed top-0 left-0 w-full h-full bg-white-alpha-90"
-        style={{ zIndex: 9999 }}
-      >
-        <ProgressSpinner />
-      </div>
-    );
-  }
+  // 4. LOADING SPINNER REMOVED
+  // The app will now render {children} immediately while isLoading is true.
 
   // 5. RENDER CONTENT + DIALOG
   return (

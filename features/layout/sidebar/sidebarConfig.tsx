@@ -65,20 +65,14 @@ export const SIDEBAR_ITEMS: MenuItem[] = [
     ],
   },
   {
-    id: "transaction",
-    label: "Transaksi",
+    id: "attendance",
+    label: "Absensi",
     icon: ClipboardList,
     children: [
       {
-        label: "Pengajuan Cuti",
-        href: "/admin/transaction/leave-request",
-        // Example feature name
-        requiredFeature: "Leave Request",
-      },
-      {
-        label: "Saldo Cuti",
-        href: "/admin/transaction/leave-balance",
-        requiredFeature: "Leave Balance",
+        label: "Shift Kerja",
+        href: "/admin/master/shift",
+        requiredFeature: "Shift Management",
       },
     ],
   },
