@@ -43,9 +43,21 @@ export const useLoginForm = () => {
         } else {
           router.push("/admin/dashboard");
         }
-      } catch (error: any) {
-        setStatus(error.message);
-        showToast("error", "Login Gagal", error.message);
+      } catch (err: any) {
+        const errorData = err.response?.data;
+        const validationErrors = errorData?.errors;
+
+        let displayMessage = "Terjadi kesalahan saat menyimpan data shift";
+        if (Array.isArray(validationErrors) && validationErrors.length > 0) {
+          displayMessage = validationErrors
+            .map((e: any) => e.message)
+            .join(", ");
+        } else if (errorData?.message) {
+          displayMessage = errorData.message;
+        }
+
+        showToast("error", "Gagal", displayMessage);
+        setStatus(displayMessage);
       } finally {
         setSubmitting(false);
       }
