@@ -38,6 +38,7 @@ export interface AuthContextType {
   login: (credentials: LoginFormData) => Promise<LoginResponse>;
   logout: () => Promise<void>;
   updateAuthUser: (newUserData: Partial<User>) => void;
+  isManualLogout: boolean;
 }
 
 export interface PermissionItem {
