@@ -27,12 +27,10 @@ export const GET = async (request: NextRequest) => {
     limit: searchParams.get("limit") || 5,
     search: searchParams.get("search") || "",
     office_code: searchParams.get("office_code") || "",
-    department_code: searchParams.get("department_code") || "",
-    division_code: searchParams.get("division_code") || "",
   };
 
   try {
-    const response = await Axios.get(API_ENDPOINTS.GETALLPOSITION, {
+    const response = await Axios.get(API_ENDPOINTS.GETALLSHIFT, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -45,7 +43,7 @@ export const GET = async (request: NextRequest) => {
     // Dynamic status and message handling
     const status = error.response?.status || 500;
     const data = error.response?.data || {
-      message: "Gagal mendapatkan data master jabatan",
+      message: "Gagal mendapatkan data master shift",
     };
 
     return NextResponse.json(data, { status });
@@ -60,7 +58,7 @@ export const POST = async (request: NextRequest) => {
   try {
     const body = await request.json();
 
-    const response = await Axios.post(API_ENDPOINTS.ADDPOSITION, body, {
+    const response = await Axios.post(API_ENDPOINTS.ADDSHIFT, body, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -72,7 +70,7 @@ export const POST = async (request: NextRequest) => {
     // Return FULL error data to handle validation (422) properly
     const status = error.response?.status || 500;
     const data = error.response?.data || {
-      message: "Gagal menambahkan data master jabatan",
+      message: "Gagal menambahkan data master shift",
     };
 
     return NextResponse.json(data, { status });

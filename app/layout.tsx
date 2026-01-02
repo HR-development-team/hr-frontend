@@ -28,16 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} ${robotoMono.variable}`}>
-        {/* Providers must be inside Body */}
         <AuthProvider>
           <PrimeReactProvider>
             <ClientOnlyTopLoader />
             <SessionGuard>
-              {/* 1. Global UI Components */}
-              <ToastProvider>
-                {/* 2. The Page Content */}
-                {children}
-              </ToastProvider>
+              <ToastProvider>{children}</ToastProvider>
             </SessionGuard>
           </PrimeReactProvider>
         </AuthProvider>

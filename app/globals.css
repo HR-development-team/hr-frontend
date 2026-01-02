@@ -110,3 +110,19 @@ body {
 .pf-group:hover .pf-group-hover-text-white {
   color: #ffffff !important;
 }
+
+/* Compact InputNumber Styles */
+.compact-input-number .p-inputtext {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  font-size: 0.875rem; /* text-sm */
+}
+
+.compact-input-number .p-inputnumber-button {
+  width: 2rem !important; /* Make buttons narrower (default is usually 3rem) */
+  padding: 0;
+}
+
+.compact-input-number .p-inputnumber-button .p-icon {
+  font-size: 0.75rem; /* Smaller arrow icons */
+}
