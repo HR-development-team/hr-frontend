@@ -9,6 +9,7 @@ export async function loginUser(
   payload: LoginFormData
 ): Promise<LoginResponse> {
   const { data } = await Axios.post(`${BASE_URL}/login`, payload);
+  console.log(data);
   return data;
 }
 
