@@ -92,6 +92,13 @@ export default function ShiftTable({
       emptyMessage="Tidak ada data shift"
     >
       <Column
+        field="shift_code"
+        header="Kode Shift"
+        sortable
+        style={{ width: "20%" }}
+      />
+
+      <Column
         field="name"
         header="Nama Shift"
         sortable
