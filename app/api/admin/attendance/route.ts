@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextRequest, NextResponse } from "next/server";
+import { API_ENDPOINTS } from "@/api/api";
 import { getAuthToken } from "@features/auth/utils/authUtils";
 import { Axios } from "@/utils/axios";
-import { API_ENDPOINTS } from "@/api/api";
+import { NextRequest, NextResponse } from "next/server";
 
-// Standard helper
+// Standard helper for token validation
 const validateToken = (token: string | null) => {
   if (!token) {
     return NextResponse.json(
@@ -15,25 +15,35 @@ const validateToken = (token: string | null) => {
   return null;
 };
 
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
   const token = getAuthToken();
   const authError = validateToken(token);
   if (authError) return authError;
 
+  const searchParams = request.nextUrl.searchParams;
+
+  const backendParams = {
+    page: searchParams.get("page") || 1,
+    limit: searchParams.get("limit") || 5,
+    search: searchParams.get("search") || "",
+    office_code: searchParams.get("office_code") || "",
+  };
+
   try {
-    const response = await Axios.get(API_ENDPOINTS.GETALLATTENDANCESESSION, {
+    const response = await Axios.get(API_ENDPOINTS.GETALLSHIFT, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
+      params: backendParams,
     });
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    // Dynamic status handling
+    // Dynamic status and message handling
     const status = error.response?.status || 500;
     const data = error.response?.data || {
-      message: "Gagal mendapatkan data sesi absensi",
+      message: "Gagal mendapatkan data master shift",
     };
 
     return NextResponse.json(data, { status });
@@ -47,23 +57,20 @@ export const POST = async (request: NextRequest) => {
 
   try {
     const body = await request.json();
-    const response = await Axios.post(
-      API_ENDPOINTS.ADDATTENDANCESESSION,
-      body,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+
+    const response = await Axios.post(API_ENDPOINTS.ADDSHIFT, body, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    // Return FULL error data for validation (422)
+    // Return FULL error data to handle validation (422) properly
     const status = error.response?.status || 500;
     const data = error.response?.data || {
-      message: "Gagal menambahkan sesi absensi",
+      message: "Gagal menambahkan data master shift",
     };
 
     return NextResponse.json(data, { status });

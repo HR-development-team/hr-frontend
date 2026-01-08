@@ -71,8 +71,13 @@ export const SIDEBAR_ITEMS: MenuItem[] = [
     children: [
       {
         label: "Shift Kerja",
-        href: "/admin/master/shift",
+        href: "/admin/attendance/shift",
         requiredFeature: "Shift Management",
+      },
+      {
+        label: "Absensi Karyawan",
+        href: "/admin/attendance",
+        requiredFeature: "Attendance Management",
       },
     ],
   },

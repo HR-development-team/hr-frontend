@@ -10,7 +10,7 @@ import {
 
 type ShiftResponse = GenericApiResponse<Shift>;
 
-const BASE_URL = "/api/admin/master/shift";
+const BASE_URL = "/api/admin/attendance/shift";
 
 // Define the interface for the parameters we expect
 export interface GetShiftsParams {
