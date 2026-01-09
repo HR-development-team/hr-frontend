@@ -86,11 +86,34 @@ export async function getPositionList(
 }
 
 /**
- * Create a new position
+ * Create a regular position
  */
 export async function createPosition(payload: PositionFormData) {
-  // Axios automatically serializes JSON and sets Content-Type
   const { data } = await Axios.post(BASE_URL, payload);
+  return data;
+}
+
+/**
+ * Create Head of Office (Kepala Kantor)
+ */
+export async function createHeadOffice(payload: PositionFormData) {
+  const { data } = await Axios.post(`${BASE_URL}/office`, payload);
+  return data;
+}
+
+/**
+ * Create Head of Department (Kepala Departemen)
+ */
+export async function createHeadDepartment(payload: PositionFormData) {
+  const { data } = await Axios.post(`${BASE_URL}/department`, payload);
+  return data;
+}
+
+/**
+ * Create Head of Division (Kepala Divisi)
+ */
+export async function createHeadDivision(payload: PositionFormData) {
+  const { data } = await Axios.post(`${BASE_URL}/division`, payload);
   return data;
 }
 

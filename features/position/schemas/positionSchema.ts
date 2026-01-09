@@ -37,6 +37,8 @@ export const positionFormSchema = z.object({
     .number()
     .min(1000000, "Gaji pokok minimal 1.000.000")
     .positive("Gaji pokok harus berupa angka positif"),
+  office_code: z.string().nonempty("Kantor wajib dipilih"),
+  department_code: z.string().nonempty("Departemen wajib dipilih"),
   division_code: z.string().nonempty("Divisi wajib dipilih"),
   description: z.string().nullable().optional(),
 });

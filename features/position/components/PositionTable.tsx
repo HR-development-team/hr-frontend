@@ -96,9 +96,8 @@ export default function PositionTable({
       />
 
       <Column
-        field="base_salary"
-        header="Gaji Pokok"
-        body={salaryBodyTemplate}
+        field="scope"
+        header="Tipe Jabatan"
         sortable
         style={{ width: "20%" }}
       />
