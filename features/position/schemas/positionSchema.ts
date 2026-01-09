@@ -28,7 +28,6 @@ export const positionDetailSchema = positionSchema.extend({
 });
 
 export const positionFormSchema = z.object({
-  parent_position_code: z.string().nullable().optional(),
   name: z
     .string()
     .min(3, "Nama jabatan minimal 3 karakter")
