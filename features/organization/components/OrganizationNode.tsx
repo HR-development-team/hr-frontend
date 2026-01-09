@@ -22,7 +22,7 @@ import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 interface OrganizationNodeProps {
   offices: OfficeStructure[];
   hierarychyStructured: HierarchyResponse[];
-  positionHierarchy: PositionStructure[];
+  // positionHierarchy: PositionStructure[];
   selectedOffice: OfficeStructure | null;
   isLoading: boolean;
   onOfficeClick: (office: OfficeStructure) => void;
