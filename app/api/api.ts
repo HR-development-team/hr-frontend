@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
   DELETEOFFICE: (id: string) => `${API_URL}/master-offices/${id}`,
   GETOFFICEBYID: (id: string) => `${API_URL}/master-offices/${id}`,
   GETOFFICEORGANIZATION: `${API_URL}/master-offices/organization`,
+  GETOFFICEHIERARCHY: (officeCode: string) => `${API_URL}/master-offices/organization/${officeCode}`,
   GETOFFICEOPTION: `${API_URL}/master-offices/options`,
 
   // Master Departments

@@ -11,7 +11,8 @@ export function usePageOrganization() {
 
     // New props
     selectedOffice,
-    positionHierarchy,
+    // positionHierarchy,
+    hierarchyStructured,
     handleOfficeClick,
     handleBackToOffice,
   } = useFetchOfficeOrganization();
@@ -32,7 +33,8 @@ export function usePageOrganization() {
     isLoading,
     // Pass these to the component
     selectedOffice,
-    positionHierarchy,
+    // positionHierarchy,
+    hierarchyStructured,
     handleOfficeClick,
     handleBackToOffice,
   };

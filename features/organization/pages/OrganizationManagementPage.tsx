@@ -8,7 +8,9 @@ export default function OrganizationManagementPage() {
   const {
     // Data
     offices,
-    positionHierarchy,
+    // positionHierarchy,
+    hierarchyStructured,
+
     selectedOffice,
     isLoading,
 
@@ -36,7 +38,8 @@ export default function OrganizationManagementPage() {
 
       <OrganizationNode
         offices={offices}
-        positionHierarchy={positionHierarchy}
+        // positionHierarchy={positionHierarchy}
+        hierarychyStructured={hierarchyStructured}
         selectedOffice={selectedOffice}
         isLoading={isLoading}
         onOfficeClick={handleOfficeClick}
