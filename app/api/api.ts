@@ -26,6 +26,9 @@ export const API_ENDPOINTS = {
 
   // Master Positions
   ADDPOSITION: `${API_URL}/master-positions`,
+  ADDOFFICELEADERPOSITION: `${API_URL}/master-positions/office`,
+  ADDDEPARTMENTLEADERPOSITION: `${API_URL}/master-positions/department`,
+  ADDDIVISIONLEADERPOSITION: `${API_URL}/master-positions/division`,
   GETALLPOSITION: `${API_URL}/master-positions`,
   EDITPOSITION: (id: string) => `${API_URL}/master-positions/${id}`,
   DELETEPOSITION: (id: string) => `${API_URL}/master-positions/${id}`,

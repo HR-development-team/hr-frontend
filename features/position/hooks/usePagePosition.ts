@@ -22,11 +22,15 @@ export function usePagePosition() {
     clearDepartmentOptions,
     clearDivisionOptions,
     totalRecords,
+
+    // Actions
     fetchPositions,
     fetchPositionById,
     fetchOfficeOptions,
     fetchDepartmentOptions,
     fetchDivisionOptions,
+
+    // Loading States
     isLoading,
     isOptionsDepartmentLoading,
     isOptionsDivisionLoading,
@@ -46,7 +50,12 @@ export function usePagePosition() {
   });
 
   const handleSave = async (values: PositionFormData) => {
-    await savePosition(values, dialog.currentPosition?.id);
+    const currentId =
+      dialog.currentPosition && "id" in dialog.currentPosition
+        ? dialog.currentPosition.id
+        : undefined;
+
+    await savePosition(values, currentId, dialog.positionType);
   };
 
   const handleView = async (row: Position) => {
@@ -58,35 +67,44 @@ export function usePagePosition() {
     const showToast = isFirstLoad.current;
     fetchPositions(filter.apiParams, showToast);
     fetchOfficeOptions();
+
     isFirstLoad.current = false;
   }, [filter.apiParams, fetchPositions, fetchOfficeOptions]);
 
   return {
+    // Data
     positions,
     position,
+    totalRecords,
+
+    // Options
     officeOptions,
     departmentOptions,
     divisionOptions,
-    fetchOfficeOptions,
+
+    // Option Fetchers (for the Filter Dialog)
     fetchDepartmentOptions,
     fetchDivisionOptions,
     clearDepartmentOptions,
     clearDivisionOptions,
-    totalRecords,
+    fetchOfficeOptions,
 
-    // Loading state
+    // Loading State
     isLoading,
     isOptionsDepartmentLoading,
     isOptionsDivisionLoading,
     isSaving,
 
-    // Pagination & Filter
+    // Pagination
     lazyParams: filter.lazyParams,
     onPageChange: filter.onPageChange,
-    filter,
 
+    // Sub-Hooks
+    filter,
     dialog,
     deleteAction,
+
+    // Main Actions
     handleSave,
     handleView,
   };

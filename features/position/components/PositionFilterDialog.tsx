@@ -23,7 +23,19 @@ interface PositionFilterDialogProps {
 
   selectedDivision: string | null | undefined;
   onDivisionChange: (value: string | null) => void;
+
+  selectedScope: string | null | undefined;
+  onScopeChange: (value: string | null) => void;
 }
+
+// Hardcoded Scope Options
+const scopeOptions: OptionType[] = [
+  { label: "Semua", value: "" },
+  { label: "Staff Reguler", value: "staff" },
+  { label: "Kepala Kantor", value: "office_lead" },
+  { label: "Kepala Departemen", value: "department_lead" },
+  { label: "Kepala Divisi", value: "division_lead" },
+];
 
 export default function PositionFilterDialog({
   isOpen,
@@ -38,6 +50,9 @@ export default function PositionFilterDialog({
 
   selectedDivision,
   onDivisionChange,
+
+  selectedScope,
+  onScopeChange,
 }: PositionFilterDialogProps) {
   const {
     departmentOptions,
@@ -69,7 +84,6 @@ export default function PositionFilterDialog({
 
   const handleOfficeChange = (val: string | null) => {
     onOfficeChange(val);
-
     onDepartmentChange(null);
     onDivisionChange(null);
 
@@ -100,6 +114,7 @@ export default function PositionFilterDialog({
     onOfficeChange(null);
     onDepartmentChange(null);
     onDivisionChange(null);
+    onScopeChange(null);
     clearDepartmentOptions();
     clearDivisionOptions();
   };
@@ -131,6 +146,24 @@ export default function PositionFilterDialog({
       }
     >
       <div className="flex flex-column gap-4">
+        {/* --- Scope Filter (New) --- */}
+        <div className="flex flex-column gap-2">
+          <label htmlFor="scope-filter" className="font-semibold">
+            Jenis Jabatan (Scope)
+          </label>
+          <Dropdown
+            id="scope-filter"
+            value={selectedScope}
+            options={scopeOptions}
+            onChange={(e) => onScopeChange(e.value)}
+            placeholder="Pilih Scope Jabatan"
+            className="w-full"
+            showClear
+            optionLabel="label"
+            optionValue="value"
+          />
+        </div>
+
         {/* --- Level 1: Office --- */}
         <div className="flex flex-column gap-2">
           <label htmlFor="office-filter" className="font-semibold">
@@ -145,7 +178,6 @@ export default function PositionFilterDialog({
             className="w-full"
             showClear
             filter
-            // Fix [object Object] bug
             optionLabel="label"
             optionValue="value"
           />
@@ -161,7 +193,6 @@ export default function PositionFilterDialog({
             value={selectedDepartment}
             options={departmentOptions}
             onChange={(e) => handleDepartmentChange(e.value)}
-            // State Control
             disabled={isDepartmentDisabled || isOptionsDepartmentLoading}
             loading={isOptionsDepartmentLoading}
             placeholder={
@@ -175,7 +206,6 @@ export default function PositionFilterDialog({
             showClear={!isDepartmentDisabled}
             filter={!isDepartmentDisabled}
             emptyMessage="Tidak ada departemen untuk kantor ini"
-            // Fix [object Object] bug
             optionLabel="label"
             optionValue="value"
           />
@@ -191,7 +221,6 @@ export default function PositionFilterDialog({
             value={selectedDivision}
             options={divisionOptions}
             onChange={(e) => onDivisionChange(e.value)}
-            // State Control
             disabled={isDivisionDisabled || isOptionsDivisionLoading}
             loading={isOptionsDivisionLoading}
             placeholder={
@@ -205,7 +234,6 @@ export default function PositionFilterDialog({
             showClear={!isDivisionDisabled}
             filter={!isDivisionDisabled}
             emptyMessage="Tidak ada divisi untuk departemen ini"
-            // Fix [object Object] bug
             optionLabel="label"
             optionValue="value"
           />

@@ -29,6 +29,7 @@ export const GET = async (request: NextRequest) => {
     office_code: searchParams.get("office_code") || "",
     department_code: searchParams.get("department_code") || "",
     division_code: searchParams.get("division_code") || "",
+    scope: searchParams.get("scope") || "",
   };
 
   try {

@@ -26,12 +26,14 @@ export const useFilterPosition = () => {
     null
   );
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
+  const [selectedScope, setSelectedScope] = useState<string | null>(null);
 
   const [activeFilters, setActiveFilters] = useState({
     search: "",
     office: null as string | null,
     department: null as string | null,
     division: null as string | null,
+    scope: null as string | null,
   });
 
   const handleOfficeChange = useCallback((value: string | null) => {
@@ -64,10 +66,13 @@ export const useFilterPosition = () => {
     if (activeFilters.department)
       params.department_code = activeFilters.department;
     if (activeFilters.division) params.division_code = activeFilters.division;
+    // NEW: Add Scope to API Params
+    if (activeFilters.scope) params.scope = activeFilters.scope;
 
     return params;
   }, [lazyParams, activeFilters]);
 
+  // Sync state to active filters and reset page
   useEffect(() => {
     setLazyParams((prev) => ({ ...prev, first: 0, page: 1 }));
     setActiveFilters({
@@ -75,8 +80,15 @@ export const useFilterPosition = () => {
       office: selectedOffice,
       department: selectedDepartment,
       division: selectedDivision,
+      scope: selectedScope,
     });
-  }, [debouncedSearch, selectedOffice, selectedDepartment, selectedDivision]);
+  }, [
+    debouncedSearch,
+    selectedOffice,
+    selectedDepartment,
+    selectedDivision,
+    selectedScope,
+  ]);
 
   return {
     search,
@@ -87,6 +99,8 @@ export const useFilterPosition = () => {
     setSelectedDepartment: handleDepartmentChange,
     selectedDivision,
     setSelectedDivision,
+    selectedScope,
+    setSelectedScope,
     lazyParams,
     onPageChange,
     apiParams,

@@ -46,6 +46,24 @@ export default function PositionManagementPage() {
     handleView,
   } = usePagePosition();
 
+  const addMenuItems = [
+    {
+      label: "Kepala Kantor",
+      icon: "pi pi-building",
+      command: () => dialog.openAdd("head_office"),
+    },
+    {
+      label: "Kepala Departemen",
+      icon: "pi pi-briefcase",
+      command: () => dialog.openAdd("head_department"),
+    },
+    {
+      label: "Kepala Divisi",
+      icon: "pi pi-sitemap",
+      command: () => dialog.openAdd("head_division"),
+    },
+  ];
+
   const isFilterActive =
     !!filter.selectedOffice ||
     !!filter.selectedDepartment ||
@@ -111,6 +129,7 @@ export default function PositionManagementPage() {
             onSearchChange={(e) => filter.setSearch(e.target.value)}
             searchPlaceholder="Cari Nama atau Kode"
             onAdd={dialog.openAdd}
+            addMenuItems={addMenuItems}
             filterContent={
               <Button
                 label="Filter"
@@ -134,6 +153,8 @@ export default function PositionManagementPage() {
             onDepartmentChange={filter.setSelectedDepartment}
             selectedDivision={filter.selectedDivision}
             onDivisionChange={filter.setSelectedDivision}
+            selectedScope={filter.selectedScope}
+            onScopeChange={filter.setSelectedScope}
           />
 
           {/* Data Table */}
@@ -168,6 +189,7 @@ export default function PositionManagementPage() {
           isSubmitting={isSaving}
           onClose={dialog.close}
           officeOptions={officeOptions}
+          positionType={dialog.positionType}
         />
       )}
 
