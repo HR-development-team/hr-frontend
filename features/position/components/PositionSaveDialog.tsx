@@ -17,13 +17,13 @@ import {
 } from "../schemas/positionSchema";
 import { toFormikValidation } from "@utils/formikHelpers";
 import { useFetchPosition } from "../hooks/useFetchPosition";
-import { PositionType } from "../hooks/useDialogPosition";
 
 export interface OfficeOption {
   label: string;
   value: string;
 }
 
+// Ensure type matches your extra form data fields
 export type PositionDialogData = PositionFormData & {
   office_code?: string;
   department_code?: string;
@@ -38,17 +38,13 @@ interface PositionSaveDialogProps {
   onSubmit: (values: PositionFormData) => Promise<void>;
   isSubmitting: boolean;
   officeOptions: OfficeOption[];
-  positionType?: PositionType;
 }
 
 const positionDefaultValues: PositionFormData = {
-  office_code: "",
-  department_code: "",
   division_code: "",
   name: "",
   base_salary: 0,
   description: "",
-  parent_position_code: null,
 };
 
 export default function PositionSaveDialog({
@@ -59,7 +55,6 @@ export default function PositionSaveDialog({
   onClose,
   title,
   officeOptions = [],
-  positionType = "regular",
 }: PositionSaveDialogProps) {
   const {
     departmentOptions,
@@ -83,21 +78,13 @@ export default function PositionSaveDialog({
     null
   );
 
-  // --- Logic Helpers ---
-  const isHeadOffice = positionType === "head_office";
-  const isHeadDept = positionType === "head_department";
-  const isHeadDiv = positionType === "head_division"; // NEW HELPER
-
   const initialValues = useMemo(() => {
     if (positionData) {
       return {
-        office_code: positionData.office_code || "",
-        department_code: positionData.department_code || "",
         division_code: positionData.division_code || "",
         name: positionData.name || "",
         base_salary: Number(positionData.base_salary) || 0,
         description: positionData.description || "",
-        parent_position_code: positionData.parent_position_code || null,
       };
     }
     return positionDefaultValues;
@@ -107,47 +94,10 @@ export default function PositionSaveDialog({
     initialValues: initialValues,
     enableReinitialize: true,
     validationSchema: null,
-
-    // --- UPDATED VALIDATION LOGIC ---
-    validate: (values) => {
-      const validateFn = toFormikValidation(positionFormSchema);
-      const errors = validateFn(values);
-
-      if (isHeadOffice) {
-        // Head of Office: No Dept, No Div, No Parent
-        delete errors.department_code;
-        delete errors.division_code;
-        delete errors.parent_position_code;
-      } else if (isHeadDept) {
-        // Head of Dept: No Div, No Parent
-        delete errors.division_code;
-        delete errors.parent_position_code;
-      } else if (isHeadDiv) {
-        // Head of Div: Needs Div, but NO Parent
-        delete errors.parent_position_code;
-      }
-
-      return errors;
-    },
-
+    validate: toFormikValidation(positionFormSchema),
     onSubmit: async (values, { setStatus }) => {
       try {
-        const sanitizedValues = { ...values };
-
-        // Sanitation Logic
-        if (isHeadOffice) {
-          sanitizedValues.department_code = "";
-          sanitizedValues.division_code = "";
-          sanitizedValues.parent_position_code = null;
-        } else if (isHeadDept) {
-          sanitizedValues.division_code = "";
-          sanitizedValues.parent_position_code = null;
-        } else if (isHeadDiv) {
-          // Head of Division needs division_code, but not parent
-          sanitizedValues.parent_position_code = null;
-        }
-
-        await onSubmit(sanitizedValues);
+        await onSubmit(values);
       } catch (error: any) {
         setStatus(
           error?.message || "Terjadi kesalahan saat menyimpan data jabatan"
@@ -157,12 +107,10 @@ export default function PositionSaveDialog({
   });
 
   // --- Handlers ---
+
   const handleOfficeChange = (officeCode: string | null) => {
     setSelectedOffice(officeCode);
     setSelectedDepartment(null);
-
-    formik.setFieldValue("office_code", officeCode);
-    formik.setFieldValue("department_code", "");
     formik.setFieldValue("division_code", "");
     formik.setFieldValue("parent_position_code", null);
 
@@ -179,8 +127,6 @@ export default function PositionSaveDialog({
 
   const handleDepartmentChange = (deptCode: string | null) => {
     setSelectedDepartment(deptCode);
-
-    formik.setFieldValue("department_code", deptCode);
     formik.setFieldValue("division_code", "");
     formik.setFieldValue("parent_position_code", null);
 
@@ -193,33 +139,30 @@ export default function PositionSaveDialog({
     }
   };
 
-  // --- Hydration & Auto-Clear Logic ---
+  // --- Hydration (Edit vs Add) ---
   useEffect(() => {
     if (isOpen) {
-      if (!positionData) formik.resetForm();
+      formik.resetForm();
 
       if (positionData) {
         // EDIT MODE
         const { office_code, department_code, division_code } = positionData;
 
+        // 1. Load Departments
         if (office_code) {
           setSelectedOffice(office_code);
           fetchDepartmentOptions(office_code);
         }
 
-        if (office_code && department_code && !isHeadOffice) {
+        // 2. Load Divisions
+        if (office_code && department_code) {
           setSelectedDepartment(department_code);
           fetchDivisionOptions(office_code, department_code);
         }
 
-        if (
-          office_code &&
-          department_code &&
-          division_code &&
-          !isHeadOffice &&
-          !isHeadDept &&
-          !isHeadDiv // Don't fetch positions if Head of Division
-        ) {
+        // 3. Load Positions (Pass ALL 3 codes)
+        if (office_code && department_code && division_code) {
+          // FIX: Pass arguments individually as string
           fetchPositionOptions(office_code, department_code, division_code);
         }
       } else {
@@ -232,7 +175,7 @@ export default function PositionSaveDialog({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, positionData, positionType]);
+  }, [isOpen, positionData]);
 
   const handleHide = () => {
     formik.resetForm();
@@ -290,153 +233,102 @@ export default function PositionSaveDialog({
         onSubmit={formik.handleSubmit}
         className="flex flex-column gap-3 mt-2"
       >
-        {/* Office - ALWAYS VISIBLE */}
+        {/* Office */}
         <div className="flex flex-column gap-2">
           <label htmlFor="office_select" className="font-medium">
             Kantor <span className="text-red-500">*</span>
           </label>
           <Dropdown
             id="office_select"
-            value={formik.values.office_code}
+            value={selectedOffice}
             options={officeOptions}
             onChange={(e) => handleOfficeChange(e.value)}
             placeholder="Pilih Kantor"
+            className="w-full"
+            filter
+            showClear
+            optionLabel="label"
+            optionValue="value"
+          />
+        </div>
+
+        {/* Department */}
+        <div className="flex flex-column gap-2">
+          <label htmlFor="dept_select" className="font-medium">
+            Departemen <span className="text-red-500">*</span>
+          </label>
+          <Dropdown
+            id="dept_select"
+            value={selectedDepartment}
+            options={departmentOptions}
+            onChange={(e) => handleDepartmentChange(e.value)}
+            disabled={!selectedOffice || isDeptLoading}
+            loading={isDeptLoading}
+            placeholder={
+              !selectedOffice
+                ? "Pilih Kantor terlebih dahulu"
+                : isDeptLoading
+                  ? "Memuat..."
+                  : "Pilih Departemen"
+            }
+            className="w-full"
+            filter
+            showClear
+            optionLabel="label"
+            optionValue="value"
+          />
+        </div>
+
+        {/* Division */}
+        <div className="flex flex-column gap-2">
+          <label htmlFor="division_code" className="font-medium">
+            Divisi <span className="text-red-500">*</span>
+          </label>
+          <Dropdown
+            id="division_code"
+            value={formik.values.division_code}
+            options={divisionOptions}
+            onChange={(e) => {
+              const divCode = e.value;
+              formik.setFieldValue("division_code", divCode);
+              formik.setFieldValue("parent_position_code", null);
+
+              // FIX: Pass selectedOffice and selectedDepartment from state
+              if (divCode && selectedOffice && selectedDepartment) {
+                fetchPositionOptions(
+                  selectedOffice,
+                  selectedDepartment,
+                  divCode
+                );
+              } else {
+                clearPositionOptions();
+              }
+            }}
+            disabled={!selectedDepartment || isDivLoading}
+            loading={isDivLoading}
+            placeholder={
+              !selectedDepartment
+                ? "Pilih Departemen terlebih dahulu"
+                : isDivLoading
+                  ? "Memuat..."
+                  : "Pilih Divisi"
+            }
             className={classNames("w-full", {
-              "p-invalid": isFieldInvalid("office_code"),
+              "p-invalid": isFieldInvalid("division_code"),
             })}
             filter
             showClear
             optionLabel="label"
             optionValue="value"
           />
-          {isFieldInvalid("office_code") && (
-            <small className="p-error">{formik.errors.office_code}</small>
+          {isFieldInvalid("division_code") && (
+            <small className="p-error">
+              {formik.errors.division_code as string}
+            </small>
           )}
         </div>
 
-        {/* Department - HIDDEN FOR HEAD OF OFFICE */}
-        {!isHeadOffice && (
-          <div className="flex flex-column gap-2">
-            <label htmlFor="dept_select" className="font-medium">
-              Departemen <span className="text-red-500">*</span>
-            </label>
-            <Dropdown
-              id="dept_select"
-              value={formik.values.department_code}
-              options={departmentOptions}
-              onChange={(e) => handleDepartmentChange(e.value)}
-              disabled={!formik.values.office_code || isDeptLoading}
-              loading={isDeptLoading}
-              placeholder={
-                !formik.values.office_code
-                  ? "Pilih Kantor terlebih dahulu"
-                  : isDeptLoading
-                    ? "Memuat..."
-                    : "Pilih Departemen"
-              }
-              className={classNames("w-full", {
-                "p-invalid": isFieldInvalid("department_code"),
-              })}
-              filter
-              showClear
-              optionLabel="label"
-              optionValue="value"
-            />
-            {isFieldInvalid("department_code") && (
-              <small className="p-error">{formik.errors.department_code}</small>
-            )}
-          </div>
-        )}
-
-        {/* Division - HIDDEN FOR HEAD OF OFFICE OR DEPT */}
-        {!isHeadOffice && !isHeadDept && (
-          <div className="flex flex-column gap-2">
-            <label htmlFor="division_code" className="font-medium">
-              Divisi <span className="text-red-500">*</span>
-            </label>
-            <Dropdown
-              id="division_code"
-              value={formik.values.division_code}
-              options={divisionOptions}
-              onChange={(e) => {
-                const divCode = e.value;
-                formik.setFieldValue("division_code", divCode);
-                formik.setFieldValue("parent_position_code", null);
-
-                // Fetch positions only if NOT head of division
-                if (
-                  divCode &&
-                  selectedOffice &&
-                  selectedDepartment &&
-                  !isHeadDiv
-                ) {
-                  fetchPositionOptions(
-                    selectedOffice,
-                    selectedDepartment,
-                    divCode
-                  );
-                } else {
-                  clearPositionOptions();
-                }
-              }}
-              disabled={!formik.values.department_code || isDivLoading}
-              loading={isDivLoading}
-              placeholder={
-                !formik.values.department_code
-                  ? "Pilih Departemen terlebih dahulu"
-                  : isDivLoading
-                    ? "Memuat..."
-                    : "Pilih Divisi"
-              }
-              className={classNames("w-full", {
-                "p-invalid": isFieldInvalid("division_code"),
-              })}
-              filter
-              showClear
-              optionLabel="label"
-              optionValue="value"
-            />
-            {isFieldInvalid("division_code") && (
-              <small className="p-error">
-                {formik.errors.division_code as string}
-              </small>
-            )}
-          </div>
-        )}
-
-        {/* Parent Position - HIDDEN FOR HEAD OF OFFICE / DEPT / DIV */}
-        {!isHeadOffice && !isHeadDept && !isHeadDiv && (
-          <div className="flex flex-column gap-2">
-            <label htmlFor="parent_position_code" className="font-medium">
-              Atasan Langsung (Parent)
-            </label>
-            <Dropdown
-              id="parent_position_code"
-              value={formik.values.parent_position_code}
-              options={filteredParentPositions}
-              onChange={(e) =>
-                formik.setFieldValue("parent_position_code", e.value)
-              }
-              placeholder={
-                !formik.values.division_code
-                  ? "Pilih Divisi terlebih dahulu"
-                  : isPosLoading
-                    ? "Memuat..."
-                    : "Pilih Atasan (Opsional)"
-              }
-              className="w-full"
-              filter
-              showClear
-              disabled={!formik.values.division_code || isPosLoading}
-              loading={isPosLoading}
-              emptyMessage="Tidak ada jabatan lain"
-              optionLabel="label"
-              optionValue="value"
-            />
-          </div>
-        )}
-
-        {/* Other Fields (Name, Salary, Desc) - ALWAYS VISIBLE */}
+        {/* Other Fields */}
         <FormInputText
           props={formik.getFieldProps("name")}
           fieldName="name"
