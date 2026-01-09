@@ -3,7 +3,7 @@ import { Building2, ChevronRight, Users } from "lucide-react";
 
 interface OfficeNodeCardProps {
   data: OfficeNodeData;
-  onDetailClick: () => void;
+  onDetailClick?: () => void;
 }
 
 export default function OfficeNodeCard({
@@ -41,23 +41,25 @@ export default function OfficeNodeCard({
         </div>
       </div>
 
-      <div className="flex align-items-center gap-2 justify-content-between pt-3 border-top-1 border-100">
-        <div className="flex align-items-center gap-1 text-xs text-400">
-          <Users size={14} />
-          <span>Struktur</span>
-        </div>
+      {onDetailClick && (
+        <div className="flex align-items-center gap-2 justify-content-between pt-3 border-top-1 border-100">
+          <div className="flex align-items-center gap-1 text-xs text-400">
+            <Users size={14} />
+            <span>Struktur</span>
+          </div>
 
-        <div
-          className="flex align-items-center gap-1 text-xs font-semibold text-blue-600 cursor-pointer hover:underline"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDetailClick();
-          }}
-        >
-          <span>Lihat Detail</span>
-          <ChevronRight size={14} />
+          <div
+            className="flex align-items-center gap-1 text-xs font-semibold text-blue-600 cursor-pointer hover:underline"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDetailClick();
+            }}
+          >
+            <span>Lihat Detail</span>
+            <ChevronRight size={14} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

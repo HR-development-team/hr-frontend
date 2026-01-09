@@ -38,3 +38,39 @@ export interface SafeTreeNode extends TreeNode {
   children?: SafeTreeNode[];
   data: OfficeNodeData | PositionNodeData; // Generic typing helper
 }
+
+export interface UnitData {
+  id: number;
+  name: string;
+  description: string;
+  code: string;
+  type: "department" | "division";
+}
+
+export interface PositionData {
+  id: number;
+  position_code: string;
+  division_code: string;
+  name: string;
+  employee_name: string | null;
+  employee_code: string | null;
+  holder: string;
+  type: "position";
+}
+
+export type HierarchyNodeData = UnitData | PositionData | OfficeNodeData;
+
+export interface HierarchyResponse {
+  key: string;
+  type: string;
+  label: string;
+  data: unknown;
+  children: HierarchyResponse[];
+}
+
+export interface StructuredNodeCardProps {
+  type: "department" | "division";
+  name: string;
+  code: string;
+  description?: string;
+}

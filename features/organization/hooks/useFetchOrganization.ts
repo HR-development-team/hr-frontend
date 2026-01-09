@@ -3,21 +3,25 @@
 
 import { useCallback, useState } from "react";
 import {
+  HierarchyResponse,
   OfficeStructure,
   PositionStructure,
 } from "../schemas/organizationSchema";
 import {
   getAllOfficeOrganizations,
-  getPositionHierarchyByOffice,
+  getOfficeHierarchyByOfficeCode,
 } from "../services/organizationApi";
 import { useToastContext } from "@components/ToastProvider";
 
 export function useFetchOfficeOrganization() {
   const { showToast } = useToastContext();
   const [offices, setOffices] = useState<OfficeStructure[]>([]);
-  const [positionHierarchy, setPositionHierarchy] = useState<
-    PositionStructure[]
+  const [hierarchyStructured, setHierarchyStructured] = useState<
+    HierarchyResponse[]
   >([]);
+  // const [positionHierarchy, setPositionHierarchy] = useState<
+  //   PositionStructure[]
+  // >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedOffice, setSelectedOffice] = useState<OfficeStructure | null>(
     null
@@ -34,7 +38,8 @@ export function useFetchOfficeOrganization() {
         setOffices(data);
         // Reset selection when refreshing main list
         setSelectedOffice(null);
-        setPositionHierarchy([]);
+        setHierarchyStructured([]);
+        // setPositionHierarchy([]);
 
         if (showToastMessage) {
           showToast(
@@ -63,8 +68,9 @@ export function useFetchOfficeOrganization() {
       setIsLoading(true);
       setSelectedOffice(office); // Set Active Office
 
-      const data = await getPositionHierarchyByOffice(office.office_code);
-      setPositionHierarchy(data);
+      const data = await getOfficeHierarchyByOfficeCode(office.office_code);
+      setHierarchyStructured(data);
+      // setPositionHierarchy(data);
     } catch (err: any) {
       showToast("error", "Gagal Memuat Struktur", err.message);
       setSelectedOffice(null); // Revert if failed
@@ -78,7 +84,8 @@ export function useFetchOfficeOrganization() {
    */
   const handleBackToOffice = () => {
     setSelectedOffice(null);
-    setPositionHierarchy([]);
+    setHierarchyStructured([]);
+    // setPositionHierarchy([]);
   };
 
   return {
@@ -88,7 +95,8 @@ export function useFetchOfficeOrganization() {
 
     // New Exports
     selectedOffice,
-    positionHierarchy,
+    // positionHierarchy,
+    hierarchyStructured,
     handleOfficeClick,
     handleBackToOffice,
   };
