@@ -1,19 +1,16 @@
 import { Axios } from "@/utils/axios"; // Use custom Axios instance
-import {
-  HierarchyResponse,
-  OfficeStructure,
-  PositionStructure,
-} from "../schemas/organizationSchema";
+import { PositionStructure, SafeTreeNode } from "../schemas/organizationSchema";
 
 const BASE_URL = "/api/admin/organization";
 
 /**
  * Fetch all office organizations
  */
-export async function getAllOfficeOrganizations(): Promise<OfficeStructure[]> {
+export async function getAllOfficeOrganizations(): Promise<SafeTreeNode[]> {
   try {
     const { data } = await Axios.get(BASE_URL);
-    return data.offices || [];
+
+    return data.organization || [];
   } catch (error) {
     console.error("getAllOfficeOrganizations error:", error);
     return [];
@@ -25,9 +22,10 @@ export async function getAllOfficeOrganizations(): Promise<OfficeStructure[]> {
  */
 export async function getOfficeHierarchyByOfficeCode(
   officeCode: string
-): Promise<HierarchyResponse[]> {
+): Promise<SafeTreeNode[]> {
   try {
     const { data } = await Axios.get(`${BASE_URL}/office/${officeCode}`);
+    console.log(data.organization);
     return data.organization || [];
   } catch (error) {
     console.error("getOfficeHierarchyByOffice error:", error);

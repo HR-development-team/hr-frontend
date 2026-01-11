@@ -206,23 +206,62 @@ export default function OfficeSaveDialog({
         />
 
         <div className="flex flex-column gap-2">
-          <label htmlFor="parent_office_code" className="font-medium">
-            Kantor Induk (Opsional)
-          </label>
-          <Dropdown
-            id="parent_office_code"
-            value={formik.values.parent_office_code}
-            options={parentOfficeOptions}
-            onChange={(e) =>
-              formik.setFieldValue("parent_office_code", e.value)
-            }
-            placeholder="Pilih Kantor Induk"
-            className={classNames("w-full", {
-              "p-invalid": isFieldInvalid("parent_office_code"),
-            })}
-            showClear
-            filter
-          />
+          {/* LOGIC: Check if there are any parent options available */}
+          {(() => {
+            const hasParentOptions = parentOfficeOptions.length > 0;
+
+            return (
+              <>
+                <label htmlFor="parent_office_code" className="font-medium">
+                  Kantor Induk
+                  {/* If options exist, show Red Asterisk (Required) */}
+                  {hasParentOptions ? (
+                    <span className="text-red-500 ml-1">*</span>
+                  ) : (
+                    <span className="text-gray-500 font-normal text-sm ml-1">
+                      (Akan menjadi Kantor Pusat)
+                    </span>
+                  )}
+                </label>
+                <Dropdown
+                  id="parent_office_code"
+                  value={formik.values.parent_office_code}
+                  options={parentOfficeOptions}
+                  onChange={(e) =>
+                    formik.setFieldValue("parent_office_code", e.value)
+                  }
+                  // Change placeholder based on context
+                  placeholder={
+                    hasParentOptions
+                      ? "Pilih Kantor Induk"
+                      : "Tidak ada kantor induk tersedia"
+                  }
+                  // Disable input if this is the first office (no parents exist)
+                  disabled={!hasParentOptions}
+                  className={classNames("w-full", {
+                    "p-invalid": isFieldInvalid("parent_office_code"),
+                    // Optional: Visual cue if it's required but empty (and touched)
+                    "p-d-block": true,
+                  })}
+                  showClear={hasParentOptions} // Only allow clear if it's actually selectable
+                  filter
+                />
+                {/* Helper text to explain to the user */}
+                {!hasParentOptions && (
+                  <small className="text-gray-500">
+                    Belum ada kantor terdaftar. Kantor ini otomatis akan diatur
+                    sebagai <strong>Kantor Pusat</strong>.
+                  </small>
+                )}
+                {/* Error Message */}
+                {isFieldInvalid("parent_office_code") && (
+                  <small className="p-error">
+                    {getFieldError("parent_office_code")}
+                  </small>
+                )}
+              </>
+            );
+          })()}
         </div>
 
         <div className="flex flex-column gap-2">
