@@ -6,45 +6,42 @@ import OrganizationNode from "../components/OrganizationNode";
 
 export default function OrganizationManagementPage() {
   const {
-    // Data
     offices,
-    // positionHierarchy,
     hierarchyStructured,
-
     selectedOffice,
     isLoading,
-
-    // Handlers
     handleOfficeClick,
     handleBackToOffice,
   } = usePageOrganization();
 
   return (
-    <div>
+    <div className="flex flex-column h-full overflow-hidden mt-4">
       {/* Title Section */}
-      <div className="mb-6 flex align-items-center gap-3 mt-4 mb-6">
+      <div className="flex-none mb-4 flex align-items-center gap-3">
         <div className="bg-blue-100 text-blue-500 p-3 border-round-xl flex align-items-center">
           <Network className="w-2rem h-2rem" />
         </div>
         <div>
-          <h1 className="text-lg md:text-2xl font-bold text-gray-800 mb-2">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-1 m-0">
             Struktur Organisasi
           </h1>
-          <p className="text-sm md:text-md text-gray-500">
+          <p className="text-sm md:text-base text-gray-500 m-0">
             Kelola struktur departemen dan hierarki perusahaan
           </p>
         </div>
       </div>
 
-      <OrganizationNode
-        offices={offices}
-        // positionHierarchy={positionHierarchy}
-        hierarychyStructured={hierarchyStructured}
-        selectedOffice={selectedOffice}
-        isLoading={isLoading}
-        onOfficeClick={handleOfficeClick}
-        onBack={handleBackToOffice}
-      />
+      {/* Chart Section */}
+      <div className="flex-1 overflow-hidden min-h-0">
+        <OrganizationNode
+          offices={offices}
+          hierarychyStructured={hierarchyStructured}
+          selectedOffice={selectedOffice}
+          isLoading={isLoading}
+          onOfficeClick={handleOfficeClick}
+          onBack={handleBackToOffice}
+        />
+      </div>
     </div>
   );
 }

@@ -7,6 +7,8 @@ export interface OfficeStructure {
   name: string;
   address: string;
   description?: string;
+  leader_name?: string;
+  leader_position?: string;
   children?: OfficeStructure[]; // Optional if office has sub-offices
 }
 
@@ -72,5 +74,7 @@ export interface StructuredNodeCardProps {
   type: "department" | "division";
   name: string;
   code: string;
+  leader_name?: string | null;
+  leader_position?: string | null;
   description?: string;
 }

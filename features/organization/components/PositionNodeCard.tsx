@@ -23,7 +23,7 @@ export default function PositionNodeCard({ data }: PositionNodeCardProps) {
       className={`flex flex-column align-items-center surface-card border-1 border-round-xl shadow-2 p-4 relative transition-all transition-duration-300 hover:shadow-6 ${
         isVacant ? "border-gray-300" : "border-blue-200"
       }`}
-      style={{ width: "220px" }}
+      style={{ width: "240px" }}
     >
       {/* Header Background */}
       <div

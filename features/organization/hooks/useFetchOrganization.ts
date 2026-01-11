@@ -2,11 +2,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import {
-  HierarchyResponse,
-  OfficeStructure,
-  PositionStructure,
-} from "../schemas/organizationSchema";
+import { OfficeStructure, SafeTreeNode } from "../schemas/organizationSchema";
 import {
   getAllOfficeOrganizations,
   getOfficeHierarchyByOfficeCode,
@@ -15,13 +11,10 @@ import { useToastContext } from "@components/ToastProvider";
 
 export function useFetchOfficeOrganization() {
   const { showToast } = useToastContext();
-  const [offices, setOffices] = useState<OfficeStructure[]>([]);
+  const [offices, setOffices] = useState<SafeTreeNode[]>([]);
   const [hierarchyStructured, setHierarchyStructured] = useState<
-    HierarchyResponse[]
+    SafeTreeNode[]
   >([]);
-  // const [positionHierarchy, setPositionHierarchy] = useState<
-  //   PositionStructure[]
-  // >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedOffice, setSelectedOffice] = useState<OfficeStructure | null>(
     null
@@ -36,10 +29,8 @@ export function useFetchOfficeOrganization() {
         setIsLoading(true);
         const data = await getAllOfficeOrganizations();
         setOffices(data);
-        // Reset selection when refreshing main list
         setSelectedOffice(null);
         setHierarchyStructured([]);
-        // setPositionHierarchy([]);
 
         if (showToastMessage) {
           showToast(
