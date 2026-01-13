@@ -16,23 +16,20 @@ Axios.interceptors.response.use(
         const currentPath = window.location.pathname;
 
         if (currentPath !== "/login" && !isLoggingOut) {
-          console.log("Session expired. Cleaning up...");
           isLoggingOut = true;
 
           try {
             await Axios.delete("/api/auth/logout");
           } catch (e) {
-            console.warn("Logout API failed", e);
+            console.warn("Backend logout failed - token likely expired", e);
           } finally {
-            // 1. Clean up storage
+            await fetch("/api/auth/cleanup", { method: "POST" });
+
             sessionStorage.removeItem("accessToken");
             localStorage.removeItem("lastActiveTime");
 
-            // 2. DISPATCH EVENT instead of redirecting immediately
-            // This tells the SessionGuard to open the Dialog
             window.dispatchEvent(new CustomEvent("auth:session-expired"));
 
-            // We reset this shortly after so future errors can trigger it again if needed
             setTimeout(() => {
               isLoggingOut = false;
             }, 1000);
