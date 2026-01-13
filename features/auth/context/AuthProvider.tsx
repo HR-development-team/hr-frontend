@@ -46,11 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await loginUser(values);
-      if (response.auth.token) {
-        sessionStorage.setItem("accessToken", response.auth.token);
-      }
       await refreshUser();
-      localStorage.setItem("lastActiveTime", Date.now().toString());
+
       return response;
     } catch (error) {
       setIsLoading(false);
@@ -66,10 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await logoutUser();
 
       setUser(null);
-      sessionStorage.removeItem("accessToken");
-      localStorage.removeItem("lastActiveTime");
-      document.cookie =
-        "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
 
       router.push("/login");
     } catch (error) {

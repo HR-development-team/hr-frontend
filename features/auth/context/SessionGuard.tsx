@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { useAuth } from "../context/AuthProvider";
 
 export const SessionGuard = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, isLoading, isManualLogout } = useAuth();
 
   const [showExpiredDialog, setShowExpiredDialog] = useState(false);
@@ -28,9 +29,18 @@ export const SessionGuard = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!isLoading && !user && !isPublicRoute && !isManualLogout) {
-      setShowExpiredDialog(true);
+      if (!showExpiredDialog) {
+        router.push("/login");
+      }
     }
-  }, [isLoading, user, isPublicRoute, isManualLogout]);
+  }, [
+    isLoading,
+    user,
+    isPublicRoute,
+    isManualLogout,
+    showExpiredDialog,
+    router,
+  ]);
 
   const handleRedirect = () => {
     setShowExpiredDialog(false);
